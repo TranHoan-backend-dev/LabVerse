@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import java.time.LocalDateTime;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Notification {
     @PrimaryKey
+    @NonNull
     String id;
 
     String link;
@@ -37,5 +36,5 @@ public class Notification {
     Boolean status;
 
     @NonNull
-    LocalDateTime createdDate;
+    Long createdDate;
 }

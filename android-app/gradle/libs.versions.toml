@@ -8,6 +8,7 @@ material = "1.13.0"
 activity = "1.11.0"
 constraintlayout = "2.2.1"
 lombokVersion = "1.18.42"
+roomCompiler = "2.5.0"
 roomVersion = "2.8.1"
 recyclerview = "1.4.0"
 cardview = "1.0.0"
@@ -19,6 +20,7 @@ firebaseBom = "34.3.0"
 androidPdfViewer = "3.2.0-beta.3"
 loggingInterceptor = "5.1.0"
 lottieVersion = "6.6.9"
+coreKtx = "1.17.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -29,6 +31,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 lombok-v11830 = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
+room-compiler-v250 = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
 
@@ -52,7 +55,7 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 
 android-pdf-viewer = { module = "com.github.mhiew:android-pdf-viewer", version.ref = "androidPdfViewer" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottieVersion" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

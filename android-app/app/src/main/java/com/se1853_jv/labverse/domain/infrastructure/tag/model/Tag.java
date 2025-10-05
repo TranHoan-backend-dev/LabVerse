@@ -21,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Tag {
     @PrimaryKey
+    @NonNull
     String id;
 
     @NonNull

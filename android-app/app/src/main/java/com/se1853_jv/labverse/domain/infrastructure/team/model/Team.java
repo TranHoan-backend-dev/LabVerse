@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.domain.infrastructure.team.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -20,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Team {
     @PrimaryKey
+    @NonNull
     String id;
 
     String name;

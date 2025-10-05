@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.domain.infrastructure.citation.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -24,5 +25,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Citation extends Metadata {
     @PrimaryKey
+    @NonNull
     String id;
 }

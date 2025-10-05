@@ -19,13 +19,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Roles {
     @PrimaryKey
+    @NonNull
     String id;
 
     @NonNull
     @ColumnInfo(name = "name")
     Role role;
-
-    public void setRole(String role) {
-        this.role = Role.fromValue(role);
-    }
 }

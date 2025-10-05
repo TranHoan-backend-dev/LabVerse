@@ -5,8 +5,8 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
-import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
 import com.se1853_jv.labverse.domain.infrastructure.user.model.Users;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,14 +23,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(
-        tableName = "user_highlight",
-        primaryKeys = {"ownerId", "highlightId"},
+        tableName = "readingWorkflow_highlight",
+        primaryKeys = {"rwCollectionId", "rwPaperId", "rwUserId", "highlightId"},
 
         foreignKeys = {
                 @ForeignKey(
-                        entity = Users.class,
-                        parentColumns = "id",
-                        childColumns = "ownerId"
+                        entity = ReadingWorkflow.class,
+                        parentColumns = {"rwCollectionId", "rwPaperId", "rwUserId"},
+                        childColumns = "readingWorkflowId"
                 ),
                 @ForeignKey(
                         entity = Highlight.class,
@@ -39,10 +39,16 @@ import lombok.experimental.FieldDefaults;
                 )
         }
 )
-public class UsersHighlightCrossRef {
+public class ReadingWorkflowHighlightCrossRef {
     @NonNull
-    String ownerId;
+    String rwCollectionId;
 
     @NonNull
-    String noteId;
+    String rwPaperId;
+
+    @NonNull
+    String rwUserId;
+
+    @NonNull
+    String highlightId;
 }

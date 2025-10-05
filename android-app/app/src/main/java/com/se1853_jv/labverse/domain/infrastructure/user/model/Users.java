@@ -3,12 +3,11 @@ package com.se1853_jv.labverse.domain.infrastructure.user.model;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
 
 import com.se1853_jv.labverse.domain.infrastructure.role.model.Roles;
-
-import java.time.LocalDateTime;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -26,14 +25,19 @@ import lombok.experimental.FieldDefaults;
                         parentColumns = "id",
                         childColumns = "roleId"
                 )
+        },
+        indices = {
+                @Index(value = {"roleId"}),
+                @Index(value = {"email"}, unique = true),
         }
 )
 public class Users {
     @PrimaryKey
+    @NonNull
     String id;
 
     @NonNull
-    // unique, regex
+    // regex
     String email;
 
     @NonNull
@@ -48,7 +52,10 @@ public class Users {
     String username;
 
     @NonNull
-    LocalDateTime createdDate;
+    Long createdDate;
+
+    @NonNull
+    Long updatedDate;
 
     String avatarUrl;
 

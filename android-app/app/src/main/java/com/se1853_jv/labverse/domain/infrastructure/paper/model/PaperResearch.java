@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey;
 
 import com.se1853_jv.labverse.domain.infrastructure.Metadata;
 
+import java.util.List;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,8 +21,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaperResearch extends Metadata {
     @PrimaryKey
+    @NonNull
     String id;
 
     @NonNull
     String dataUrl;
+
+    List<String> keyword;
 }

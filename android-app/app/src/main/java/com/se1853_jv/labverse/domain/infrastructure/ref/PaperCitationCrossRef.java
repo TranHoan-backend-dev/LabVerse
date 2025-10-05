@@ -45,10 +45,4 @@ public class PaperCitationCrossRef {
 
     @NonNull
     String paperResearchId;
-
-    @NonNull
-    Priority priority;
-
-    @NonNull
-    ReadingTag tag;
 }

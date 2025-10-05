@@ -23,5 +23,4 @@ public class NotificationWithUser {
             )
     )
     public List<Users> users;
-
 }

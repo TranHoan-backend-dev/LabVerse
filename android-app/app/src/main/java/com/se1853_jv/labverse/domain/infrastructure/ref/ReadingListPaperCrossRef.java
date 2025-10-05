@@ -4,8 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
+import com.se1853_jv.labverse.domain.enumerate.ReadingTag;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.domain.infrastructure.readinglist.model.ReadingList;
+
+import java.time.LocalDateTime;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,4 +46,10 @@ public class ReadingListPaperCrossRef {
 
     @NonNull
     String readingListId;
+
+    @NonNull
+    LocalDateTime addingDate;
+
+    @NonNull
+    ReadingTag status;
 }

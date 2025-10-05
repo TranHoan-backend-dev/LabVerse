@@ -24,5 +24,4 @@ public class UserWithFavorite {
             )
     )
     public List<PaperResearch> favorites;
-
 }
