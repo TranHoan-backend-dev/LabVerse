@@ -4,7 +4,7 @@ import androidx.room.Embedded;
 import androidx.room.Junction;
 import androidx.room.Relation;
 
-import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collection;
+import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.domain.infrastructure.ref.CollectionPaperCrossRef;
 
@@ -23,6 +23,5 @@ public class PaperWithCollection {
                     entityColumn = "collectionId"
             )
     )
-    public List<Collection> collections;
-
+    public List<Collections> collections;
 }

@@ -8,16 +8,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Role {
-    // actor role
     PRINCIPAL_INVESTIGATOR(List.of("PI")),
     LAB_HEAD(List.of("Lab Head")),
     RESEARCHER(List.of("Postdoc", "PhD")),
-    INTERN(List.of("Student", "Intern")),
-
-    // role in collection
-    OWNER(List.of("Owner")),
-
-    MEMBER(List.of("Member"));
+    INTERN(List.of("Student", "Intern"));
 
     private final List<String> value;
 
@@ -29,7 +23,7 @@ public enum Role {
         for (Role role : Role.values()) {
             if (role.getValue()
                     .stream().map(String::toLowerCase)
-                    .anyMatch(v->v.equals(value.toLowerCase()))) {
+                    .anyMatch(v -> v.equals(value.toLowerCase()))) {
                 return role;
             }
         }

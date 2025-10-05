@@ -23,5 +23,4 @@ public class TeamWithUsers {
             )
     )
     public List<Users> users;
-
 }

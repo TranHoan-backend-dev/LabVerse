@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
-import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections;
+import com.se1853_jv.labverse.domain.infrastructure.institution.model.Institution;
 import com.se1853_jv.labverse.domain.infrastructure.user.model.Users;
 
 import lombok.AccessLevel;
@@ -22,27 +22,25 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(
-        tableName = "collection_users",
-        primaryKeys = {"collectionId", "memberId"},
+        tableName = "users_team",
+        primaryKeys = {"userId", "teamId"},
         foreignKeys = {
                 @ForeignKey(
                         entity = Users.class,
                         parentColumns = "id",
-                        childColumns = "memberId"
+                        childColumns = "userId"
                 ),
                 @ForeignKey(
-                        entity = Collections.class,
+                        entity = Institution.class,
                         parentColumns = "id",
-                        childColumns = "collectionId"
+                        childColumns = "institutionId"
                 )
         }
 )
-public class CollectionUsersCrossRef {
+public class UserInstitutionCrossRef {
     @NonNull
-    String collectionId;
+    String userId;
 
     @NonNull
-    String memberId;
-
-    Boolean isAuthor;
+    String institutionId;
 }

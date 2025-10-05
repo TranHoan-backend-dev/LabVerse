@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Note extends Annotation {
     @PrimaryKey
+    @NonNull
     String id;
 
     @NonNull

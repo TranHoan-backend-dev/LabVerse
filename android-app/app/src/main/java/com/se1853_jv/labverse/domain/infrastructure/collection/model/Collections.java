@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.domain.infrastructure.collection.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -13,8 +14,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Collection {
+public class Collections {
     @PrimaryKey
+    @NonNull
     String id;
 
     String name;

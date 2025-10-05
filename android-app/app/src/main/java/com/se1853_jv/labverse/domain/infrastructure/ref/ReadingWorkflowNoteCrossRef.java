@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
+import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
 import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
 
@@ -22,41 +23,32 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(
-        tableName = "workflow_highlight",
-        primaryKeys = {"highlightId", "workflowOwnerId", "workflowPaperId", "workflowCitationId"},
+        tableName = "user_highlight",
+        primaryKeys = {"ownerId", "noteId"},
+
         foreignKeys = {
+                @ForeignKey(
+                        entity = ReadingWorkflow.class,
+                        parentColumns = {"userId", "paperId", "collectionId"},
+                        childColumns = {"rwCollectionId", "rwPaperId", "rwUserId"}
+                ),
                 @ForeignKey(
                         entity = Note.class,
                         parentColumns = "id",
                         childColumns = "noteId"
-                ),
-                @ForeignKey(
-                        entity = ReadingWorkflow.class,
-                        parentColumns = {"userId", "paperId", "collectionId"},
-                        childColumns = {"workflowOwnerId", "workflowPaperId", "workflowCitationId"}
-                ),
-                @ForeignKey(
-                        entity = ReadingWorkflow.class,
-                        parentColumns = "id",
-                        childColumns = "workflowPaperId"
-                ),
-                @ForeignKey(
-                        entity = ReadingWorkflow.class,
-                        parentColumns = "id",
-                        childColumns = "workflowCitationId"
                 )
         }
 )
-public class WorkflowHighlightCrossRef {
+public class ReadingWorkflowNoteCrossRef {
     @NonNull
-    String highlightId;
+    String rwCollectionId;
 
     @NonNull
-    String workflowOwnerId;
+    String rwPaperId;
 
     @NonNull
-    String workflowPaperId;
+    String rwUserId;
 
     @NonNull
-    String workflowCitationId;
+    String noteId;
 }

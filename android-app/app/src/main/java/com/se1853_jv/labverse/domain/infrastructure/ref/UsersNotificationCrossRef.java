@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(
-        tableName = "user_note",
+        tableName = "user_notification",
         primaryKeys = {"userId", "notificationId"},
         foreignKeys = {
                 @ForeignKey(

@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
-import com.se1853_jv.labverse.domain.infrastructure.workflow.model.Workflow;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,17 +31,17 @@ import lombok.experimental.FieldDefaults;
                         childColumns = "noteId"
                 ),
                 @ForeignKey(
-                        entity = Workflow.class,
+                        entity = ReadingWorkflow.class,
                         parentColumns = "id",
                         childColumns = "workflowOwnerId"
                 ),
                 @ForeignKey(
-                        entity = Workflow.class,
+                        entity = ReadingWorkflow.class,
                         parentColumns = "id",
                         childColumns = "workflowPaperId"
                 ),
                 @ForeignKey(
-                        entity = Workflow.class,
+                        entity = ReadingWorkflow.class,
                         parentColumns = "id",
                         childColumns = "workflowCitationId"
                 )

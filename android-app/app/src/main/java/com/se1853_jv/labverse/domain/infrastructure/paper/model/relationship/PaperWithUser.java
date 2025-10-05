@@ -24,5 +24,4 @@ public class PaperWithUser {
             )
     )
     public List<Users> users;
-
 }

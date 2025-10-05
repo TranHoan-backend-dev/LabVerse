@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     id("io.freefair.lombok") version "8.14.2"
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -28,11 +27,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_15
-        targetCompatibility = JavaVersion.VERSION_15
-    }
-    kotlinOptions {
-        jvmTarget = "15"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -48,9 +44,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.core.ktx)
     compileOnly(libs.lombok.v11830)
-    compileOnly(libs.room.compiler)
+    compileOnly(libs.room.compiler.v250)
     annotationProcessor(libs.lombok.v11830)
-    annotationProcessor(libs.room.compiler)
+    annotationProcessor(libs.room.compiler.v250)
 
     implementation(libs.gson)
     implementation(libs.retrofit)

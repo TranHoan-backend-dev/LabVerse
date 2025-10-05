@@ -4,8 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
-import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collection;
+import com.se1853_jv.labverse.domain.enumerate.Priority;
+import com.se1853_jv.labverse.domain.enumerate.ReadingTag;
+import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
+
+import java.time.LocalDateTime;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,7 +35,7 @@ import lombok.experimental.FieldDefaults;
                         childColumns = "paperResearchId"
                 ),
                 @ForeignKey(
-                        entity = Collection.class,
+                        entity = Collections.class,
                         parentColumns = "id",
                         childColumns = "collectionId"
                 )
@@ -43,4 +47,12 @@ public class CollectionPaperCrossRef {
 
     @NonNull
     String paperResearchId;
+
+    @NonNull
+    Priority priority;
+
+    @NonNull
+    ReadingTag status;
+
+    LocalDateTime addingDate;
 }

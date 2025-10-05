@@ -1,26 +1,26 @@
-package com.se1853_jv.labverse.domain.infrastructure.notification.model;
+package com.se1853_jv.labverse.domain.infrastructure.institution.model;
 
 import androidx.room.Embedded;
 import androidx.room.Junction;
 import androidx.room.Relation;
 
-import com.se1853_jv.labverse.domain.infrastructure.ref.UsersNotificationCrossRef;
+import com.se1853_jv.labverse.domain.infrastructure.ref.UserInstitutionCrossRef;
 import com.se1853_jv.labverse.domain.infrastructure.user.model.Users;
 
 import java.util.List;
 
-public class NotificationWithUser {
+public class InstitutionWithUser {
     @Embedded
-    public Notification notification;
+    private Institution institution;
 
     @Relation(
             parentColumn = "id",
             entityColumn = "id",
             associateBy = @Junction(
-                    value = UsersNotificationCrossRef.class,
-                    parentColumn = "notificationId",
+                    value = UserInstitutionCrossRef.class,
+                    parentColumn = "institutionId",
                     entityColumn = "userId"
             )
     )
-    public List<Users> users;
+    private List<Users> users;
 }

@@ -5,12 +5,12 @@ import androidx.room.Junction;
 import androidx.room.Relation;
 
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
-import com.se1853_jv.labverse.domain.infrastructure.ref.UsersNoteCrossRef;
-import com.se1853_jv.labverse.domain.infrastructure.user.model.Users;
+import com.se1853_jv.labverse.domain.infrastructure.ref.ReadingWorkflowNoteCrossRef;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
 
 import java.util.List;
 
-public class NoteWithUser {
+public class NoteWithReadingWorkflow {
     @Embedded
     public Note note;
 
@@ -18,10 +18,10 @@ public class NoteWithUser {
             parentColumn = "id",
             entityColumn = "id",
             associateBy = @Junction(
-                    value = UsersNoteCrossRef.class,
+                    value = ReadingWorkflowNoteCrossRef.class,
                     parentColumn = "noteId",
-                    entityColumn = "ownerId"
+                    entityColumn = "readingWorkflowId"
             )
     )
-    public List<Users> users;
+    public List<ReadingWorkflow> readingWorkflows;
 }

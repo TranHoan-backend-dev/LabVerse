@@ -24,5 +24,4 @@ public class TagWithPaper {
             )
     )
     public List<PaperResearch> papers;
-
 }
