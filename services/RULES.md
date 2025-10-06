@@ -26,3 +26,14 @@ Sửa thành:
 ```
 
 Đồng thời xóa hết các dependency management bị trùng mà pom.xml cha đã quy định rồi
+
+2. Khi chạy eureka server thì làm các bước sau:
+
+- Vào edit configuration
+- Bật VM Options
+- Thêm dòng sau:
+
+```bash
+# port: 9001, 9002, 9003, áp dụng cho từng instance
+-Dspring.profiles.active=dev -Dserver.port=${port}
+```
