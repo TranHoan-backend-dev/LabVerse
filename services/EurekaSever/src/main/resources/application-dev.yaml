@@ -3,8 +3,7 @@ spring:
     name: EurekaServer
 eureka:
   client:
-    register-with-eureka: true
+    register-with-eureka: false
     fetch-registry: true
     service-url:
-      #      defaultZone: http://localhost:9000/eureka/, http://localhost:9001/eureka/, http://library:9002/eureka
       defaultZone:  http://localhost:9001/eureka/,http://localhost:9002/eureka/,http://localhost:9003/eureka/
