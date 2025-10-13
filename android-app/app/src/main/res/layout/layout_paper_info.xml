@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutPaperInfo"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvPaperTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Machine Learning Approaches for Predictive Analytics in Healthcare Systems"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:lineSpacingExtra="4dp"
+        android:textColor="@android:color/black" />
+
+    <TextView
+        android:id="@+id/tvPaperAuthors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Smith, J., Johnson, M., Brown, K."
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        android:textColor="#555" />
+
+    <TextView
+        android:id="@+id/tvPaperJournal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2024 • Nature Medicine"
+        android:textSize="13sp"
+        android:layout_marginTop="2dp"
+        android:textColor="#777" />
+
+    <LinearLayout
+        android:id="@+id/layoutTags"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Machine Learning"
+            android:background="@drawable/bg_tag_blue"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Healthcare"
+            android:background="@drawable/bg_tag_green"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</LinearLayout>
