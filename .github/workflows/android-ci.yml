@@ -98,3 +98,24 @@ jobs:
         with:
           name: ${{matrix.service}}-jar
           path: services/${{matrix.service}}/target/*.jar
+  qodana-analysis:
+    runs-on: ubuntu-latest
+    needs: [ android-build, spring-boot-build ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Qodana with Android
+        uses: JetBrains/qodana-action@v2025.2
+        with:
+          args: --project-dir=android-app
+          linter: jetbrains/qodana-jvm-community:2025.2
+          results-dir: qodana-results
+
+      - name: Run Qodana with Spring-boot
+        uses: JetBrains/qodana-action@v2025.2
+        with:
+          args: --project-dir=services/${{matrix.service}}
+          linter: jetbrains/qodana-jvm-community:2025.2
+          results-dir: qodana-results
