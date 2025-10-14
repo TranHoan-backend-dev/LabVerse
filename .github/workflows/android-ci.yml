@@ -109,16 +109,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Qodana with Android
+      - name: Run Qodana
         uses: JetBrains/qodana-action@v2025.2
         with:
-          args: --project-dir=android-app
+          args: --project-dir=.
           image: jetbrains/qodana-jvm-community:2025.2
           results-dir: qodana-results/android
-
-      - name: Run Qodana with Spring-boot
-        uses: JetBrains/qodana-action@v2025.2
-        with:
-          args: --project-dir=services/${{matrix.service}}
-          image: jetbrains/qodana-jvm-community:2025.2
-          results-dir: qodana-results/${{matrix.service}}
