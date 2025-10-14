@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: PaperService
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+      format_sql: true
+      dialect: org.hibernate.dialect.MySQL8Dialect
+  cloud:
+    compatibility-verifier:
+      enabled: false
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:9001/eureka/,http://localhost:9002/eureka/
+server:
+  port: 0
