@@ -66,7 +66,7 @@
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
             android:text="Healthcare"
-            android:textColor="@color/fourthGreen"
+            android:textColor="@color/fourth_green"
             android:textSize="12sp" />
     </LinearLayout>
 </LinearLayout>

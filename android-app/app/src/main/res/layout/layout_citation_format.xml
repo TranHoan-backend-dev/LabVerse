@@ -40,14 +40,14 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/firstGreen"
+            android:backgroundTint="@color/first_green"
             android:paddingHorizontal="17dp"
             android:text="@string/mla_style"
-            android:textColor="@color/fourthGreen"
+            android:textColor="@color/fourth_green"
             android:textSize="13sp"
             app:cornerRadius="20dp"
             app:icon="@drawable/baseline_circle_24"
-            app:iconTint="@color/thirdGreen" />
+            app:iconTint="@color/third_green" />
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="0dp"

@@ -10,10 +10,10 @@
     <color name="yellow">#FBBF24</color>
 
     <!--  Mau xanh la cay dat ten theo do dam tang dan  -->
-    <color name="firstGreen">#DCFCE7</color>
-    <color name="secondGreen">#4ADE80</color>
-    <color name="thirdGreen">#22C55E</color>
-    <color name="fourthGreen">#15803D</color>
+    <color name="first_green">#DCFCE7</color>
+    <color name="second_green">#4ADE80</color>
+    <color name="third_green">#22C55E</color>
+    <color name="fourth_green">#15803D</color>
 
     <color name="semi_purple">#F3E8FF</color>
     <color name="purple">#9333EA</color>
