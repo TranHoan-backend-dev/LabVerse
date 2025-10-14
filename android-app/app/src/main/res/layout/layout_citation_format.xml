@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/white"
@@ -21,25 +22,44 @@
         android:orientation="horizontal"
         android:weightSum="3">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="@color/yellow"
-            android:text="@string/apa_style" />
+            android:backgroundTint="@color/skin"
+            android:paddingHorizontal="17dp"
+            android:text="@string/apa_style"
+            android:textColor="@color/brown"
+            android:textSize="13sp"
+            app:cornerRadius="20dp"
+            app:icon="@drawable/baseline_circle_24"
+            app:iconTint="@color/yellow" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/secondGreen"
-            android:text="@string/mla_style" />
+            android:backgroundTint="@color/firstGreen"
+            android:paddingHorizontal="17dp"
+            android:text="@string/mla_style"
+            android:textColor="@color/fourthGreen"
+            android:textSize="13sp"
+            app:cornerRadius="20dp"
+            app:icon="@drawable/baseline_circle_24"
+            app:iconTint="@color/thirdGreen" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="@color/gray"
-            android:text="@string/bibtex_style" />
+            android:backgroundTint="#F3F4F6"
+            android:paddingHorizontal="17dp"
+            android:text="@string/bibtex_style"
+            android:textColor="#4B5563"
+            android:textSize="13sp"
+            app:cornerRadius="20dp"
+            app:icon="@drawable/baseline_circle_24"
+            app:iconTint="#9CA3AF" />
     </LinearLayout>
 </LinearLayout>

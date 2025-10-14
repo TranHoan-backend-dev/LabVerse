@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.paper;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -13,6 +14,8 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.domain.db.AppDatabase;
+import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
 public class PaperDetailsActivity extends AppCompatActivity {
@@ -25,12 +28,14 @@ public class PaperDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paper_details);
 
-        String paperId = getIntent().getStringExtra("paperId");
-        Log.d("PaperDetails", "Paper ID: " + paperId);
+//        var db = DatabaseClient.getInstance(this).getAppDatabase();
+//        var id = getIntent().getStringExtra("id");
+//        var pr = db.paperRepository().getById(id);
 
         bindViews();
         setupToolbar();
         setupTabs();
+//        displayPaperData(pr);
     }
 
     private void bindViews() {
@@ -58,14 +63,14 @@ public class PaperDetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("SetTextI18n")
     private void displayPaperData(PaperResearch paper) {
         tvPaperTitle.setText(paper.getTitle());
         tvPaperAuthors.setText(paper.getAuthors());
-        tvPaperJournal.setText(paper.getJournal());
+        tvPaperJournal.setText(paper.getPublicationYear() + " • " + paper.getJournal());
     }
 
     private void setupTabs() {
-        // Ánh xạ viewPager
         ViewPager2 viewPager = findViewById(R.id.viewPager);
 
 
@@ -73,16 +78,13 @@ public class PaperDetailsActivity extends AppCompatActivity {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                // Xử lý khi tab được chọn
                 Log.d("TabSelected", "Tab được chọn: " + position);
             }
         });
 
-        // Tạo adapter
-        PaperTabsAdapter adapter = new PaperTabsAdapter(this);
+        var adapter = new PaperTabsAdapter(this);
         viewPager.setAdapter(adapter);
 
-        // Kết nối TabLayout với ViewPager2
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             switch (position) {
                 case 0:

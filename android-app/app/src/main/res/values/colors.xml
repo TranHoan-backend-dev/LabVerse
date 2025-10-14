@@ -3,6 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#2563EB</color>
+    <color name="semi_blue">#DBEAFE</color>
     <color name="gray">#E5E7EB</color>
     <color name="skin">#FEF3C7</color>
     <color name="brown">#B45309</color>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layoutPaperInfo"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -10,56 +11,62 @@
         android:id="@+id/tvPaperTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Machine Learning Approaches for Predictive Analytics in Healthcare Systems"
-        android:textStyle="bold"
-        android:textSize="16sp"
         android:lineSpacingExtra="4dp"
-        android:textColor="@android:color/black" />
+        android:text="Machine Learning Approaches for Predictive Analytics in Healthcare Systems"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvPaperAuthors"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Smith, J., Johnson, M., Brown, K."
-        android:textSize="14sp"
         android:layout_marginTop="6dp"
-        android:textColor="#555" />
+        android:drawablePadding="8dp"
+        android:text="Smith, J., Johnson, M., Brown, K."
+        android:textColor="#555"
+        android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_people_24"
+        app:drawableTint="@color/blue" />
 
     <TextView
         android:id="@+id/tvPaperJournal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="2024 • Nature Medicine"
-        android:textSize="13sp"
         android:layout_marginTop="2dp"
-        android:textColor="#777" />
+        android:drawablePadding="8dp"
+        android:text="2024 • Nature Medicine"
+        android:textColor="#777"
+        android:textSize="13sp"
+        app:drawableStartCompat="@drawable/ic_calendar_today_24"
+        app:drawableTint="@color/blue" />
 
     <LinearLayout
         android:id="@+id/layoutTags"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Machine Learning"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/bg_tag_blue"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:layout_marginEnd="8dp" />
+            android:text="Machine Learning"
+            android:textColor="@color/blue"
+            android:textSize="12sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Healthcare"
             android:background="@drawable/bg_tag_green"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/white" />
+            android:text="Healthcare"
+            android:textColor="@color/fourthGreen"
+            android:textSize="12sp" />
     </LinearLayout>
 </LinearLayout>
