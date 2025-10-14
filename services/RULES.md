@@ -8,7 +8,7 @@
 
 ```bash
 # port: 9001, 9002, 9003, áp dụng cho từng instance
--Dspring.profiles.active=dev -Dserver.port=${port}
+-Dspring.profiles.active=instance-(số thứ tự)
 ```
 
 2. Cổng của APIGateway là 8080, service khác quy định cổng random bằng cách set cho server.port=0. Khi đó nếu muốn chạy nhiều instance của 1 service, chỉ cần copy configuration là được

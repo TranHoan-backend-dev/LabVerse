@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">LabVerse</string>
+    <string name="paper_details">Paper Details</string>
+    <string name="citation_information">Citation Information</string>
+    <string name="style">Style</string>
+    <string name="title">Title:</string>
+    <string name="authors">Authors:</string>
+    <string name="journal">Journal:</string>
+    <string name="year">Year:</string>
+    <string name="doi">DOI:</string>
+    <string name="bibtex_style">BibTeX Style</string>
+    <string name="mla_style">MLA Style</string>
+    <string name="apa_style">APA Style</string>
+    <string name="copy_citation_formats">Copy Citation Formats</string>
+    <string name="share">Share</string>
+    <string name="export_all">Export All</string>
+    <string name="export_options">Export Options</string>
 </resources>
