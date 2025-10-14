@@ -100,7 +100,7 @@ jobs:
           path: services/${{matrix.service}}/target/*.jar
   qodana-analysis:
     runs-on: ubuntu-latest
-    needs: [ android-build, spring-boot-build ]
+    needs: [ android-build, spring-boot-build, detect-services ]
     strategy:
       matrix:
         service: ${{ fromJSON(needs.detect-services.outputs.matrix) }}
