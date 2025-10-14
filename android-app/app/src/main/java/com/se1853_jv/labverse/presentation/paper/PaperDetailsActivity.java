@@ -14,6 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.domain.db.AppDatabase;
 import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -27,15 +28,21 @@ public class PaperDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paper_details);
-
-//        var db = DatabaseClient.getInstance(this).getAppDatabase();
-//        var id = getIntent().getStringExtra("id");
-//        var pr = db.paperRepository().getById(id);
+        PaperResearch pr = null;
+        if (!Connectivity.isInternetAvailable(this)) {
+            if (!Connectivity.isApiActive("")) {
+                var db = DatabaseClient.getInstance(this).getAppDatabase();
+                var id = getIntent().getStringExtra("id");
+                pr = db.paperRepository().getById(id);
+            } else {
+                pr = new PaperResearch();
+            }
+        }
 
         bindViews();
         setupToolbar();
         setupTabs();
-//        displayPaperData(pr);
+        displayPaperData(pr);
     }
 
     private void bindViews() {
@@ -65,14 +72,16 @@ public class PaperDetailsActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     private void displayPaperData(PaperResearch paper) {
-        tvPaperTitle.setText(paper.getTitle());
-        tvPaperAuthors.setText(paper.getAuthors());
-        tvPaperJournal.setText(paper.getPublicationYear() + " • " + paper.getJournal());
+        if (paper != null) {
+            tvPaperTitle.setText(paper.getTitle());
+            tvPaperAuthors.setText(paper.getAuthors());
+            tvPaperJournal.setText(paper.getPublicationYear() + " • " + paper.getJournal());
+        }
+        // co dinh noi dung ban dau la "Khong co du lieu"
     }
 
     private void setupTabs() {
         ViewPager2 viewPager = findViewById(R.id.viewPager);
-
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
