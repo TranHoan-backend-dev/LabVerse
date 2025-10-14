@@ -113,12 +113,12 @@ jobs:
         uses: JetBrains/qodana-action@v2025.2
         with:
           args: --project-dir=android-app
-          linter: jetbrains/qodana-jvm-community:2025.2
+          image: jetbrains/qodana-jvm-community:2025.2
           results-dir: qodana-results/android
 
       - name: Run Qodana with Spring-boot
         uses: JetBrains/qodana-action@v2025.2
         with:
           args: --project-dir=services/${{matrix.service}}
-          linter: jetbrains/qodana-jvm-community:2025.2
+          image: jetbrains/qodana-jvm-community:2025.2
           results-dir: qodana-results/${{matrix.service}}
