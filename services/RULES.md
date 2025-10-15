@@ -19,7 +19,7 @@
 
 4. Các services sau sẽ được triển khai:
 
-- Paper service (paper, annotation, tag)
+- Paper service (paper, annotation, tag, citation)
 - Account service (user, role)
 - Notification
 - Reading workflow service (reading list, reading workflow)
