@@ -22,7 +22,4 @@ public class Note extends Annotation {
 
     @NonNull
     String content;
-
-    @NonNull
-    String ownerId;
 }

@@ -1,4 +1,4 @@
-## Lưu ý trước khi code
+# Lưu ý trước khi code
 
 1. Khi chạy eureka server thì làm các bước sau:
 
@@ -16,3 +16,11 @@
 3. Tiền tố của api là v1/api/
     Ví dụ: account service: localhost:8081/v1/api/accounts/**
            notification service: localhost:8082/v1/api/notifications/**
+
+4. Các services sau sẽ được triển khai:
+
+- Paper service (paper, annotation, tag, citation)
+- Account service (user, role)
+- Notification
+- Reading workflow service (reading list, reading workflow)
+- Group service (collection, team)
