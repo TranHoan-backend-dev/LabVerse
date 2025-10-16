@@ -1,0 +1,5 @@
+spring:
+  data:
+    mongodb:
+        uri: mongodb://sa:123@localhost:27017/labverse_paper_service?authSource=admin
+#      mongodb://localhost:27017
