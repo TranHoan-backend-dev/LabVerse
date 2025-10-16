@@ -8,4 +8,5 @@ data class Citation(
     @Id
     val id: String,
     val paperIds: List<String> = emptyList(),
-) : Metadata()
+    val metadata: Metadata? = null,
+)

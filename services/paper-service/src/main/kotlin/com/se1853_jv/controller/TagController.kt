@@ -24,7 +24,8 @@ class TagController(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get tags successfully",
-                service.getTagsByPaperId(encoder.decode(id)),
+//                service.getTagsByPaperId(encoder.decode(id)),
+                service.getTagsByPaperId(id),
                 LocalDateTime.now()
             )
         )

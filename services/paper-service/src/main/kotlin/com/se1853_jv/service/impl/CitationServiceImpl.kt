@@ -22,17 +22,18 @@ class CitationServiceImpl(
 
     override fun getCitationById(id: String): CitationResponse {
         logger.info { "Get details with citation id: $id" }
-        return convert(repo.findById(id).orElseThrow { RuntimeException("Citation not found") })
+        val citation =  repo.findById(id).orElseThrow { RuntimeException("Citation not found") }
+        return convert(citation)
     }
 
     fun convert(citation: Citation): CitationResponse {
         return CitationResponse(
             id = encoder.encode(citation.id),
-            publicationYear = citation.publicationYear!!,
-            doi = citation.doi!!,
-            title = citation.title!!,
-            authors = citation.authors!!,
-            journal = citation.journal!!,
+            publicationYear = citation.metadata?.publicationYear ?: 0,
+            doi = citation.metadata?.doi ?: "",
+            title = citation.metadata?.title ?: "",
+            authors = citation.metadata?.authors ?: "",
+            journal = citation.metadata?.journal ?: "",
         )
     }
 }

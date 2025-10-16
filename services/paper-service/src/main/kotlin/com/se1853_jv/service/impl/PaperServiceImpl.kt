@@ -24,13 +24,13 @@ class PaperServiceImpl(
     private fun convert(paper: Paper): PaperResponse {
         return PaperResponse(
             id = encoder.encode(paper.id!!),
-            dataUrl = paper.dataUrl!!,
+            dataUrl = paper.dataUrl ?: "",
             keywords = paper.keywords,
-            title = paper.title!!,
-            authors = paper.title,
-            journal = paper.journal!!,
-            publicationYear = paper.publicationYear!!,
-            doi = paper.doi!!,
+            title = paper.metadata?.title ?: "",
+            authors = paper.metadata?.title ?: "",
+            journal = paper.metadata?.journal ?: "",
+            publicationYear = paper.metadata?.publicationYear ?: 0,
+            doi = paper.metadata?.doi ?: "",
         )
     }
 }

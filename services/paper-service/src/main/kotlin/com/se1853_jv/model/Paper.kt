@@ -11,4 +11,5 @@ data class Paper(
     val keywords: List<String>? = emptyList(),
     val citationIds: List<String> = emptyList(),
     val tagIds: List<String> = emptyList(),
-    ) : Metadata()
+    val metadata: Metadata? = null,
+)

@@ -24,8 +24,7 @@ class CitationController(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get citations of a paper successfully",
-//                service.getCitationById(encoder.decode(id)),
-                service.getCitationById(id),
+                service.getCitationById(encoder.decode(id)),
                 LocalDateTime.now()
             )
         )

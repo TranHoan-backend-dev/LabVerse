@@ -8,4 +8,5 @@ data class Note(
     @Id
     val id: String? = null,
     val content: String? = null,
-) : Annotation()
+    val annotation: kotlin.Annotation? = null,
+)

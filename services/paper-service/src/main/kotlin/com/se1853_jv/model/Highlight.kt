@@ -8,4 +8,5 @@ data class Highlight(
     @Id
     val id: String? = null,
     val colorCode: String? = null,
-) : Annotation()
+    val annotation: Annotation? = null,
+)
