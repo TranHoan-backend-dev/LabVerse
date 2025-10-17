@@ -11,18 +11,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.domain.db.AppDatabase;
 import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PaperDetailsActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView tvPaperTitle, tvPaperAuthors, tvPaperJournal;
     private TabLayout tabLayout;
+    private static final String TAG = "FIREBASE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +55,49 @@ public class PaperDetailsActivity extends AppCompatActivity {
         setupToolbar();
         setupTabs();
         displayPaperData(pr);
+
+//        PaperApiHandler apiHandler = new PaperApiHandler();
+//        apiHandler.getDetails("b3cde6a5-af2b-4d2c-9caf-7e1867d679b8");
+        FirebaseApp.initializeApp(this);
+
+        var db = FirebaseFirestore.getInstance();
+//        Map<String, Object> user = new HashMap<>();
+//        user.put("name", "Cậu");
+//        user.put("email", "test@example.com");
+//        user.put("role", "developer");
+//
+//        db.collection("users")
+//                .add(user)
+//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                    @Override
+//                    public void onSuccess(DocumentReference documentReference) {
+//                        Log.d(TAG, "Document added: " + documentReference.getId());
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.w(TAG, "Error adding document", e);
+//                    }
+//                });
+
+        // --- Đọc dữ liệu ---
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot result) {
+                        for (QueryDocumentSnapshot document : result) {
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error getting documents", e);
+                    }
+                });
     }
 
     private void bindViews() {

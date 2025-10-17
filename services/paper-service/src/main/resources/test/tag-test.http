@@ -1,0 +1,6 @@
+@url = http://localhost:8080/v1/api/tags
+
+### Get tags by paper
+@id = ZTU1MDdjMWUtZTQzMS00ZjE2LWI1ZDQtYmQxMTEzOGUxOTYz
+GET {{url}}/paper/{{id}}
+Accept: application/json
