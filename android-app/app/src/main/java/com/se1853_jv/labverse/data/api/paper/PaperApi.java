@@ -7,6 +7,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface PaperApi {
-    @GET("/v1/api/papers/details")
+    @GET("/details")
     Call<PaperResearch> getPaperDetails(@Query("id") String id);
 }

@@ -1,0 +1,11 @@
+@url = http://localhost:8080/v1/api/papers
+
+### Get paper details
+@id = YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4
+GET {{url}}/details?id={{id}}
+Accept: application/json
+
+
+### Get citations
+GET {{url}}/citation?id={{id}}
+Accept: application/json

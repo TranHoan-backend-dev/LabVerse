@@ -3,9 +3,9 @@ spring:
     name: PaperService
   profiles:
     active: dev
-  cloud:
-    compatibility-verifier:
-      enabled: false
+#  cloud:
+#    compatibility-verifier:
+#      enabled: false
 #eureka:
 #  client:
 #    register-with-eureka: true
