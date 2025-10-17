@@ -31,4 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+src/main/resources/application-dev.y*ml
+src/main/resources/labverse-18297-firebase-adminsdk-*.json
 src/main/resources/application-dev.[yaml]
