@@ -11,12 +11,13 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
+private const val COLLECTION_NAME: String = "tag"
 
 @Service
 class TagServiceImpl(
     private val repo: TagRepository,
     private val encoder: EncoderService,
-    private val db: Firestore = FirestoreClient.getFirestore(),
+    private val db: Firestore,
 ) : TagService {
 
     override fun getTagsByPaperId(id: String): List<TagResponse> {
@@ -29,7 +30,7 @@ class TagServiceImpl(
             val result = storeData(item)
             dataList.add(result)
         }
-        dataList.forEach { item -> db.collection("tags").add(item) }
+        dataList.forEach { item -> db.collection(COLLECTION_NAME).add(item) }
 
         return response
     }

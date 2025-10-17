@@ -17,8 +17,9 @@ private const val COLLECTION_NAME: String = "paper"
 class PaperServiceImpl(
     private val repo: PaperRepository,
     private val encoder: EncoderService,
-    private val db: Firestore = FirestoreClient.getFirestore(),
+    private val db: Firestore,
 ) : PaperService {
+
     override fun getPaperDetails(paperId: String): PaperResponse {
         logger.info { "Fetching details for paperId=$paperId" }
         val paper = repo.findById(paperId).orElseThrow { IllegalArgumentException("Paper not found") }

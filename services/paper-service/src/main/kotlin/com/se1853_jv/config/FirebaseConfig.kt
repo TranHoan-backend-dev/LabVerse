@@ -12,6 +12,8 @@ import java.io.FileInputStream
 import javax.annotation.PostConstruct
 
 private val logger = KotlinLogging.logger {}
+private const val DATABASE_URL: String = "https://console.firebase.google.com/u/0/project/labverse-18297/database/labverse-18297-default-rtdb/data/~2F"
+private const val RESOURCE: String = "/labverse-18297-firebase-adminsdk-fbsvc-77278ce38c.json"
 
 @Configuration
 class FirebaseConfig {
@@ -19,17 +21,12 @@ class FirebaseConfig {
     @PostConstruct
     fun config() {
         val serviceAccount =
-            this::class.java.getResourceAsStream("/labverse-18297-firebase-adminsdk-fbsvc-77278ce38c.json")
-//        val serviceAccount: FileInputStream =
-//            FileInputStream("D:\\FPTU\\Du_an_ca_nhan\\LabVerse\\services\\paper-service\\src\\main\\resources\\labverse-18297-firebase-adminsdk-fbsvc-77278ce38c.json")
-
-        logger.info { "${serviceAccount?.available()}" }
+            this::class.java.getResourceAsStream(RESOURCE)
 
         val options: FirebaseOptions = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+            .setDatabaseUrl(DATABASE_URL)
             .build()
-
-        logger.info { "Credentials: ${options.projectId}" }
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options)

@@ -19,7 +19,7 @@ private const val COLLECTION_NAME: String = "citation"
 class CitationServiceImpl(
     private val repo: CitationRepository,
     private val encoder: EncoderService,
-    private val db: Firestore = FirestoreClient.getFirestore(),
+    private val db: Firestore,
 ) : CitationService {
 
     override fun getCitationsByPaperId(id: String): List<CitationResponse> {
