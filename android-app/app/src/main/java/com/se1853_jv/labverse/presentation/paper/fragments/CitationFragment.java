@@ -39,21 +39,16 @@ public class CitationFragment extends Fragment {
         Log.d("CitationFragment", "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
 
-//        bindingPaperDetails("YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");
         bindingCitations(view, "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");
 
     }
 
     private void bindingPaperDetails(String id) {
-//        var paper = apiHandler.getPaperDetails(id);
-//        if (paper != null) {
-//            citationDoi.setText(paper.getDoi());
-//        }
     }
 
     private void bindingCitations(View view, String id) {
         Log.d("CitationFragment", "bindingCitations");
-        apiHandler.getCitationsOfPaper(id, new ApiCallback<List<Citation>>() {
+        apiHandler.getCitationsOfPaper(id, new ApiCallback<>() {
             @Override
             public void onSuccess(List<Citation> data) {
                 requireActivity().runOnUiThread(() -> {

@@ -79,12 +79,8 @@ public class PaperApiHandler {
             public void onResponse(@NonNull Call<BaseJsonResponse<List<Citation>>> call, @NonNull Response<BaseJsonResponse<List<Citation>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Citation> citations = response.body().getData();
-                    List<Citation> result = new ArrayList<>();
-                    citations.forEach(c -> {
-//                        Log.d("Citation_DATA", "Citation: " + c.toString());
-                        result.add(c);
-                    });
-                    callback.onSuccess(result);
+
+                    callback.onSuccess(new ArrayList<>(citations));
                 } else {
                     Log.e("Server Error", "Error: " + response.message());
                     callback.onError(response.message());
