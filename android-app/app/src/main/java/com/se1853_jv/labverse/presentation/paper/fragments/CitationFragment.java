@@ -1,11 +1,14 @@
 package com.se1853_jv.labverse.presentation.paper.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
@@ -21,7 +25,7 @@ import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import java.util.List;
 
 public class CitationFragment extends Fragment {
-    private PaperApiHandler apiHandler = new PaperApiHandler();
+    private final PaperApiHandler apiHandler = new PaperApiHandler();
 
     public CitationFragment() {
     }
@@ -71,6 +75,15 @@ public class CitationFragment extends Fragment {
                             citationYear.setText(String.valueOf(c.getPublicationYear()));
                             citationDoi.setText(c.getDoi());
 
+                            // luu du lieu goc
+                            citationTitle.setTag(c.getTitle());
+                            citationAuthors.setTag(c.getAuthors());
+                            citationJournal.setTag(c.getJournal());
+                            citationYear.setTag(String.valueOf(c.getPublicationYear()));
+                            citationDoi.setTag(c.getDoi());
+
+                            handleChangeStyle(itemView);
+
                             container.addView(itemView);
                         });
                         Log.d("CitationFragment", "Size of container: " + container.getChildCount());
@@ -80,10 +93,117 @@ public class CitationFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                requireActivity().runOnUiThread(() -> {
-                    Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                });
+                requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void handleChangeStyle(@NonNull View view) {
+        MaterialButton style = view.findViewById(R.id.btnStyle);
+
+        style.setOnClickListener(v -> {
+            var popup = new PopupMenu(
+                    new ContextThemeWrapper(requireContext(), R.style.PopupMenuWhiteBackground),
+                    v
+            );
+            popup.getMenuInflater().inflate(R.menu.menu_style, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                TextView originalTitle = view.findViewById(R.id.title);
+                TextView originalAuthors = view.findViewById(R.id.authors);
+                TextView originalJournal = view.findViewById(R.id.journal);
+                TextView originalYear = view.findViewById(R.id.year);
+                TextView originalDoi = view.findViewById(R.id.doi);
+
+                // lay du lieu goc
+                var rawTitle = (String) originalTitle.getTag();
+                var rawAuthors = (String) originalAuthors.getTag();
+                var rawJournal = (String) originalJournal.getTag();
+                var rawYear = (String) originalYear.getTag();
+                var rawDoi = (String) originalDoi.getTag();
+
+                if (item.getItemId() == R.id.apa) {
+                    style.setText("APA Style");
+
+                    applyAPA(originalTitle, originalAuthors, originalJournal, originalYear, originalDoi,
+                            rawTitle, rawAuthors, rawJournal, rawYear, rawDoi);
+
+                    return true;
+                }
+                if (item.getItemId() == R.id.mla) {
+                    style.setText("MLA Style");
+
+                    applyMLA(originalTitle, originalAuthors, originalJournal, originalYear, originalDoi,
+                            rawTitle, rawAuthors, rawJournal, rawYear, rawDoi);
+
+                    return true;
+                }
+                if (item.getItemId() == R.id.bibtex) {
+                    style.setText("BibTex Style");
+
+                    applyBibTex(originalTitle, originalAuthors, originalJournal, originalYear, originalDoi,
+                            rawTitle, rawAuthors, rawJournal, rawYear, rawDoi);
+
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
+        });
+    }
+
+    @NonNull
+    private String extractDOI(@NonNull String doi) {
+        if (doi.startsWith("https://doi.org/")) {
+            return doi.substring("https://doi.org/".length());
+        }
+        return doi;
+    }
+
+    @NonNull
+    private String formatAPAAuthors(@NonNull String authors) {
+        return authors.replaceAll("(\\w+),\\s*(\\w+)", "$1, $2.").replace(".,", ".");
+    }
+
+    @NonNull
+    private String formatMLAAuthors(@NonNull String authors) {
+        if (authors.contains(","))
+            return authors.split(",").length > 3 ? authors.split(",")[0] + ", et al." : authors;
+        return authors;
+    }
+
+    @NonNull
+    private String formatBibtexAuthors(@NonNull String authors) {
+        if (authors.contains("et al")) return authors.replace("et al", "and others");
+        return authors;
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void applyAPA(@NonNull TextView title, @NonNull TextView authors, @NonNull TextView journal, @NonNull TextView year, @NonNull TextView doi,
+                          String t, String a, String j, String y, String d) {
+        title.setText("*" + t + "*");
+        authors.setText(formatAPAAuthors(a));
+        journal.setText("*" + j + "*");
+        year.setText("(" + y + ")");
+        doi.setText("https://doi.org/" + extractDOI(d));
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void applyMLA(@NonNull TextView title, @NonNull TextView authors, @NonNull TextView journal, @NonNull TextView year, @NonNull TextView doi,
+                          String t, String a, String j, String y, String d) {
+        title.setText(t);
+        authors.setText(formatMLAAuthors(a));
+        journal.setText("*" + j + "*");
+        year.setText(y);
+        doi.setText("https://doi.org/" + extractDOI(d));
+    }
+
+    private void applyBibTex(@NonNull TextView title, @NonNull TextView authors, @NonNull TextView journal, @NonNull TextView year, @NonNull TextView doi,
+                             String t, String a, String j, String y, String d) {
+        title.setText(t);
+        authors.setText(formatBibtexAuthors(a));
+        journal.setText(j);
+        year.setText(y);
+        doi.setText(extractDOI(d));
     }
 }
