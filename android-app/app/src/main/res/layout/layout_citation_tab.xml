@@ -6,7 +6,23 @@
     android:orientation="vertical"
     tools:context=".presentation.paper.fragments.CitationFragment">
 
-    <include layout="@layout/layout_citation_info" />
+<!--    <include layout="@layout/layout_citation_info" />-->
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".presentation.paper.fragments.CitationFragment">
+
+        <LinearLayout
+            android:id="@+id/container_citations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- layout_citation_info sẽ được add động vào đây -->
+        </LinearLayout>
+    </ScrollView>
 
     <include layout="@layout/layout_citation_format" />
 
