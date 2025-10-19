@@ -1,6 +1,10 @@
 package com.se1853_jv.labverse.presentation.paper.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -14,18 +18,22 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.gson.Gson;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CitationFragment extends Fragment {
     private final PaperApiHandler apiHandler = new PaperApiHandler();
+    private List<Citation> citations = new ArrayList<>();
 
     public CitationFragment() {
     }
@@ -38,13 +46,14 @@ public class CitationFragment extends Fragment {
         return inflater.inflate(R.layout.layout_citation_tab, container, false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Log.d("CitationFragment", "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
 
         bindingCitations(view, "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");
-
+        handleCopyCitation(view);
     }
 
     private void bindingPaperDetails(String id) {
@@ -55,6 +64,7 @@ public class CitationFragment extends Fragment {
         apiHandler.getCitationsOfPaper(id, new ApiCallback<>() {
             @Override
             public void onSuccess(List<Citation> data) {
+                citations = data;
                 requireActivity().runOnUiThread(() -> {
                     if (!data.isEmpty()) {
                         LinearLayout container = view.findViewById(R.id.container_citations);
@@ -152,6 +162,52 @@ public class CitationFragment extends Fragment {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private void handleCopyCitation(@NonNull View parent) {
+        View view = parent.findViewById(R.id.citation_format);
+        MaterialButton apaButton = view.findViewById(R.id.apa);
+        MaterialButton mlaButton = view.findViewById(R.id.mla);
+        MaterialButton bibtexButton = view.findViewById(R.id.bibtex);
+
+        apaButton.setOnClickListener(v -> {
+            List<Citation> data = citations.stream().map(this::deepCopy).toList();
+
+            data.forEach(c -> {
+                c.setTitle("*" + c.getTitle() + "*");
+                c.setAuthors(formatAPAAuthors(c.getAuthors()));
+                c.setDoi("https://doi.org/" + extractDOI(c.getDoi()));
+                c.setJournal("*" + c.getJournal() + "*");
+                c.setPublicationYear("(" + c.getPublicationYear() + ")");
+            });
+            copyToTheClipboard(data);
+        });
+
+        mlaButton.setOnClickListener(v -> {
+            List<Citation> data = citations.stream().map(this::deepCopy).toList();
+
+            data.forEach(c -> {
+                c.setAuthors(formatMLAAuthors(c.getAuthors()));
+                c.setDoi("https://doi.org/" + extractDOI(c.getDoi()));
+                c.setJournal("*" + c.getJournal() + "*");
+                c.setPublicationYear(c.getPublicationYear());
+            });
+            copyToTheClipboard(data);
+        });
+
+        bibtexButton.setOnClickListener(v -> {
+            List<Citation> data = citations.stream().map(this::deepCopy).toList();
+
+            data.forEach(c -> {
+                c.setAuthors(formatBibtexAuthors(c.getAuthors()));
+                c.setDoi(extractDOI(c.getDoi()));
+                c.setJournal(c.getJournal());
+                c.setPublicationYear(c.getPublicationYear());
+            });
+            copyToTheClipboard(data);
+        });
+    }
+
+    // <editor-fold> desc="Re-format data when changing styles"
     @NonNull
     private String extractDOI(@NonNull String doi) {
         if (doi.startsWith("https://doi.org/")) {
@@ -177,7 +233,9 @@ public class CitationFragment extends Fragment {
         if (authors.contains("et al")) return authors.replace("et al", "and others");
         return authors;
     }
+    // </editor-fold>
 
+    // <editor-fold> desc="Handle citation loading when changing styles"
     @SuppressLint("SetTextI18n")
     private void applyAPA(@NonNull TextView title, @NonNull TextView authors, @NonNull TextView journal, @NonNull TextView year, @NonNull TextView doi,
                           String t, String a, String j, String y, String d) {
@@ -205,5 +263,26 @@ public class CitationFragment extends Fragment {
         journal.setText(j);
         year.setText(y);
         doi.setText(extractDOI(d));
+    }
+    // </editor-fold>
+
+    private Citation deepCopy(@NonNull Citation citation) {
+        return Citation.builder()
+                .id(citation.getId())
+                .title(citation.getTitle())
+                .authors(citation.getAuthors())
+                .journal(citation.getJournal())
+                .publicationYear(citation.getPublicationYear())
+                .doi(citation.getDoi())
+                .build();
+    }
+
+    private void copyToTheClipboard(List<Citation> data) {
+        var clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        var gson = new Gson();
+        var json = gson.toJson(data);
+        var clip = ClipData.newPlainText("citation", json);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(requireContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show();
     }
 }

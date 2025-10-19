@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/citation_format"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/white"
@@ -23,6 +24,7 @@
         android:weightSum="3">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/apa"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -36,6 +38,7 @@
             app:iconTint="@color/yellow" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/mla"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
@@ -50,6 +53,7 @@
             app:iconTint="@color/third_green" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/bibtex"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

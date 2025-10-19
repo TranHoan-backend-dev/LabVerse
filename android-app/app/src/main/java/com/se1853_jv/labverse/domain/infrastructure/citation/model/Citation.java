@@ -36,7 +36,7 @@ public class Citation {
     String journal;
 
     @NonNull
-    Integer publicationYear;
+    String publicationYear;
 
     @NonNull
     String doi;
