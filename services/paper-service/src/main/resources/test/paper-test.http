@@ -9,3 +9,15 @@ Accept: application/json
 ### Get citations
 GET {{url}}/citation?id={{id}}
 Accept: application/json
+
+### Parse citations
+POST {{url}}/pdf/parse
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Accept: application/json
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="Phishing_Emails_Detection_in_Cyber_Security.pdf"
+Content-Type: application/pdf
+
+< ./Phishing_Emails_Detection_in_Cyber_Security.pdf
+--WebAppBoundary--
