@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp"
+    android:gravity="center_vertical|end"
+    android:background="@android:color/white">
+
+    <!-- Text: Page X of Y -->
+    <TextView
+        android:id="@+id/tv_page_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Page 1 of 12"
+        android:textColor="#4A4A4A"
+        android:textSize="16sp"
+        android:gravity="start" />
+
+    <!-- Previous button -->
+    <ImageButton
+        android:id="@+id/btn_prev"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_left"
+        android:contentDescription="Previous page" />
+
+    <!-- Next button -->
+    <ImageButton
+        android:id="@+id/btn_next"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_right"
+        android:contentDescription="Next page" />
+
+</LinearLayout>
