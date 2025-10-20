@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:background="@android:color/white">
+
+    <!-- Search box -->
+    <LinearLayout
+        android:id="@+id/search_box"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/bg_search_box"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Search icon -->
+        <ImageView
+            android:id="@+id/icon_search"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_search"
+            android:contentDescription="Search" />
+
+        <!-- Search input -->
+        <EditText
+            android:id="@+id/input_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="Search papers, authors, keywords..."
+            android:background="@android:color/transparent"
+            android:textColor="#000000"
+            android:textColorHint="#A0A0A0"
+            android:inputType="text"
+            android:textSize="14sp"
+            android:padding="0dp" />
+
+        <!-- Filter icon -->
+        <ImageView
+            android:id="@+id/btn_filter"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_filter"
+            android:contentDescription="Filter" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
