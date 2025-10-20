@@ -1,0 +1,6 @@
+<!-- circle_green.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#4ADE80"/> <!-- xanh lá -->
+    <size android:width="16dp" android:height="16dp"/>
+</shape>

@@ -1,0 +1,6 @@
+<!-- circle_yellow.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FACC15"/> <!-- vàng -->
+    <size android:width="20dp" android:height="20dp"/>
+</shape>
