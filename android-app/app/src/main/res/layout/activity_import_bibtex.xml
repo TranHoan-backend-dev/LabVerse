@@ -6,7 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:backgroundTint="@color/white">
+    android:backgroundTint="@color/white"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:fitsSystemWindows="true"
+    tools:context=".presentation.paper.ImportPaperByBibtexActivity">
 
     <!-- Top app bar -->
     <androidx.appcompat.widget.Toolbar
@@ -14,25 +18,20 @@
         android:layout_width="0dp"
         android:layout_height="72dp"
         android:background="@color/purple"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:cardUseCompatPadding="true"
+        android:fitsSystemWindows="true"
+        app:useCompatPadding="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:strokeWidth="0dp">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
+            android:layout_height="match_parent">
 
             <ImageButton
                 android:id="@+id/ic_back"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
                 android:src="@drawable/ic_arrow_back"
@@ -143,9 +142,10 @@
             android:id="@+id/btn_choose_file"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="60dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:gravity="center"
             android:paddingHorizontal="16dp"
             android:text="@string/choose_bibtex_file"
             android:textAllCaps="false"
@@ -154,10 +154,10 @@
             app:backgroundTint="@color/purple"
             app:cornerRadius="12dp"
             app:icon="@drawable/ic_export_file"
-            app:iconTint="@color/white"
-            app:iconPadding="8dp"
             app:iconGravity="textStart"
-            android:gravity="center" />
+            app:iconPadding="8dp"
+            app:iconSize="25dp"
+            app:iconTint="@color/white" />
 
         <!-- spacer to mimic empty area -->
         <View
@@ -171,13 +171,16 @@
         android:id="@+id/bottomActions"
         android:layout_width="0dp"
         android:layout_height="72dp"
-        android:background="@drawable/bg_bottom_rounded"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/bg_top_stroke"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/gray"
+        app:strokeWidth="1dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel"
