@@ -11,12 +11,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:drawableStart="@drawable/ic_file_download_24"
         android:drawablePadding="5dp"
-        android:drawableTint="@color/blue"
         android:text="@string/export_options"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:drawableStartCompat="@drawable/ic_file_download_24"
+        app:drawableTint="@color/blue" />
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"
@@ -36,7 +36,7 @@
             android:text="@string/export_all"
             android:textColor="@color/blue"
             app:cornerRadius="5dp"
-            app:icon="@drawable/ic_export"
+            app:icon="@drawable/ic_export_file"
             app:iconSize="22dp"
             app:iconTint="@color/blue"
             app:strokeColor="@color/blue"
