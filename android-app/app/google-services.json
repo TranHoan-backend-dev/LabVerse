@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "",
-    "project_id": "labverse-18297",
-    "storage_bucket": "labverse-18297.firebasestorage.app"
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "YOUR_PROJECT_ID",
+    "storage_bucket": "YOUR_STORAGE_BUCKET"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "",
+        "mobilesdk_app_id": "YOUR_MOBILE_APP_ID",
         "android_client_info": {
           "package_name": "com.se1853_jv.labverse"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": ""
+          "current_key": "YOUR_API_KEY"
         }
       ],
       "services": {
