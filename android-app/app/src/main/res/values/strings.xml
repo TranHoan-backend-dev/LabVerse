@@ -24,4 +24,9 @@
     <string name="choose_bibtex_file">Choose BibTeX File</string>
     <string name="select_a_bib_file_from_zotero_mendeley_or_google_scholar_to_import_multiple_papers_at_once">Select a .bib file from Zotero, Mendeley, or Google Scholar to import multiple papers at once.</string>
     <string name="import_from_bibtex_file">Import from BibTeX File</string>
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="lists">Lists</string>
+    <string name="collections">Collections</string>
+    <string name="profile">Profile</string>
 </resources>
