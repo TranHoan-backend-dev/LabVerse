@@ -1,0 +1,6 @@
+### Get details information of a citation
+@id = ZjkzMjk3YTItZmM4Yi00MWE4LTgxNTgtNjhkNTQ0OWRjYzA4
+
+GET http://localhost:8080/v1/api/citations/{{id}}
+Accept: application/json
+

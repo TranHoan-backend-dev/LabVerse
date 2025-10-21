@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     tools:context=".presentation.paper.fragments.CitationFragment">
 
-    <include layout="@layout/layout_citation_info" />
+    <LinearLayout
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".presentation.paper.fragments.CitationFragment">
 
-    <include layout="@layout/layout_citation_format" />
+        <LinearLayout
+            android:id="@+id/container_citations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
 
-    <include layout="@layout/layout_export_options" />
-</LinearLayout>
+        </LinearLayout>
+
+        <include layout="@layout/layout_citation_format" />
+
+        <include layout="@layout/layout_export_options" />
+    </LinearLayout>
+</ScrollView>

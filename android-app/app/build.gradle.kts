@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("io.freefair.lombok") version "8.14.2"
+    id("io.freefair.lombok") version "9.0.0"
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -54,6 +55,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
+    implementation(libs.googleServices)
+
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
@@ -61,6 +64,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.firestore)
 
     implementation(libs.android.pdf.viewer)
 

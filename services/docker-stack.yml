@@ -1,0 +1,29 @@
+name: labverse
+version: '3.9'
+
+services:
+#===========================================================================
+
+  grobid:
+    image: lfoppiano/grobid:0.8.1
+    container_name: grobid
+    ports:
+      - "8070:8070"     # REST API
+      - "8071:8071"     # Admin / health endpoint
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      JAVA_OPTS: "-Xmx2G -Xms1G"
+    networks:
+      - labverse
+    volumes:
+      - grobid_data:/opt/grobid/grobid-home/models
+
+networks:
+  labverse:
+    driver: bridge
+
+volumes:
+  grobid_data:

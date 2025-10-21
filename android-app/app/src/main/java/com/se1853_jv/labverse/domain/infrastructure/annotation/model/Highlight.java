@@ -16,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Highlight extends Annotation {
+public class Highlight {
     @PrimaryKey
     @NonNull
     String id;
@@ -24,4 +24,13 @@ public class Highlight extends Annotation {
     @ColumnInfo(name = "color")
     @NonNull
     String colorCode;
+
+    @NonNull
+    Long coordinationX;
+
+    @NonNull
+    Long coordinationY;
+
+    @NonNull
+    Integer pageNumber;
 }

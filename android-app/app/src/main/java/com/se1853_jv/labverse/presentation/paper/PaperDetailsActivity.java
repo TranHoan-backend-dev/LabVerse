@@ -15,7 +15,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.Connectivity;
-import com.se1853_jv.labverse.domain.db.AppDatabase;
 import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 

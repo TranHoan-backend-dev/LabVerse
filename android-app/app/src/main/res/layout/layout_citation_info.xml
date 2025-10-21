@@ -90,6 +90,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="25dp"
@@ -113,6 +114,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/authors"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
@@ -135,6 +137,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/journal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
@@ -158,12 +161,14 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/year"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:paddingLeft="23dp"
+                    android:paddingStart="23dp"
                     android:text="2024"
-                    android:textColor="#333333" />
+                    android:textColor="#333333"
+                    tools:ignore="RtlSymmetry" />
             </LinearLayout>
 
             <!-- DOI -->
@@ -181,14 +186,16 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/doi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:autoLink="web"
-                    android:paddingLeft="28dp"
+                    android:paddingStart="28dp"
                     android:text="https://doi.org/10.1038/s41591-024-0234-5"
                     android:textColor="@color/blue"
-                    android:textColorLink="@color/blue" />
+                    android:textColorLink="@color/blue"
+                    tools:ignore="RtlSymmetry" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

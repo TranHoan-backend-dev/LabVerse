@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
     android:layout_width="match_parent"
-    android:layout_height="60dp"
-    android:orientation="horizontal"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:elevation="4dp"
     android:gravity="center"
-    android:background="@android:color/white"
-    android:elevation="4dp">
+    android:orientation="horizontal">
 
     <!-- Home -->
     <LinearLayout
@@ -14,22 +13,25 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:gravity="center"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
+
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_home"
-            />
+            android:src="@drawable/ic_home" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Home"
-            android:textSize="12sp"
-            android:textColor="#A0A0A0"/>
+            android:text="@string/home"
+            android:textColor="#A0A0A0"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Search -->
@@ -38,22 +40,23 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:gravity="center"
+        android:orientation="vertical">
+
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_search"
-            />
+            android:src="@drawable/ic_search" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search"
-            android:textSize="12sp"
-            android:textColor="#A0A0A0"/>
+            android:text="@string/search"
+            android:textColor="#A0A0A0"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Lists (active) -->
@@ -62,23 +65,23 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:gravity="center"
+        android:orientation="vertical">
+
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_list"
-            />
+            android:src="@drawable/ic_list" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lists"
-            android:textSize="12sp"
+            android:text="@string/lists"
             android:textColor="#A0A0A0"
-            />
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Collections -->
@@ -87,22 +90,23 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:gravity="center"
+        android:orientation="vertical">
+
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_collection"
-            />
+            android:src="@drawable/ic_collection" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Collections"
-            android:textSize="12sp"
-            android:textColor="#A0A0A0"/>
+            android:text="@string/collections"
+            android:textColor="#A0A0A0"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Profile -->
@@ -111,22 +115,23 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:gravity="center"
+        android:orientation="vertical">
+
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_profile"
-            />
+            android:src="@drawable/ic_profile" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Profile"
-            android:textSize="12sp"
-            android:textColor="#A0A0A0"/>
+            android:text="@string/profile"
+            android:textColor="#A0A0A0"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </LinearLayout>
