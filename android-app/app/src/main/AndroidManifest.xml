@@ -26,6 +26,9 @@
         <activity
             android:name=".presentation.paper.PaperDetailsActivity"
             android:exported="true" />
+        <activity
+            android:name=".presentation.paper.ImportPaperByBibtexActivity"
+            android:exported="true" />
     </application>
 
 </manifest>
