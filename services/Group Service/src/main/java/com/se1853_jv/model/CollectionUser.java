@@ -11,16 +11,19 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CollectionUser {
-    @Id
-    private String id;
 
-    @Column(name = "member_id", nullable = false)
-    private String memberId;
+    @EmbeddedId
+    private CollectionUserId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "collection_id")
+    @MapsId("collectionId") // map với khóa tổng hợp
+    @JoinColumn(name = "Collectionid", nullable = false)
     private Collection collection;
 
-    @Column(name = "is_author")
-    private boolean isAuthor;
+    // chỉ lưu id của user, không join sang UserService
+    @Column(name = "member_id", insertable = false, updatable = false)
+    private String memberId;
+
+    @Column(name = "isAuthor")
+    private Boolean isAuthor; // bạn có thể đổi sang boolean nếu cần
 }

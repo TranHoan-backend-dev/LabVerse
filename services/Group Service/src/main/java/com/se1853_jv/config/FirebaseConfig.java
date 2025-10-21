@@ -6,8 +6,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,11 +19,10 @@ import java.io.InputStream;
  * Cấu hình Firebase để khởi tạo FirebaseApp và cung cấp đối tượng Firestore.
  * Sẽ tự động chạy @PostConstruct để khởi tạo FirebaseApp khi ứng dụng khởi động.
  */
+@Slf4j
 @Configuration
 public class FirebaseConfig {
 
-    // Sử dụng SLF4J cho logging tiêu chuẩn của Java
-    private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
 
     // Địa chỉ Database URL, chỉ cần thiết nếu bạn dùng Realtime Database,
     // nhưng tốt nhất nên giữ lại trong cấu hình FirebaseOptions
@@ -45,7 +43,7 @@ public class FirebaseConfig {
             InputStream serviceAccount = getClass().getResourceAsStream(RESOURCE);
 
             if (serviceAccount == null) {
-                logger.error("🚫 Không tìm thấy file service account: {}", RESOURCE);
+                log.error("🚫 Không tìm thấy file service account: {}", RESOURCE);
                 throw new IOException("Service account file not found in resources.");
             }
 
@@ -58,11 +56,11 @@ public class FirebaseConfig {
             // Chỉ khởi tạo FirebaseApp nếu chưa có ứng dụng nào được khởi tạo
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
-                logger.info("🔥 FirebaseApp đã được khởi tạo thành công!");
+                log.info("🔥 FirebaseApp đã được khởi tạo thành công!");
             }
 
         } catch (IOException e) {
-            logger.error("❌ Lỗi khi khởi tạo Firebase: {}", e.getMessage(), e);
+            log.error("❌ Lỗi khi khởi tạo Firebase: {}", e.getMessage(), e);
             // Có thể re-throw RuntimeException để ngăn ứng dụng khởi động nếu cấu hình Firebase thất bại
             throw new RuntimeException("Failed to initialize Firebase services.", e);
         }

@@ -3,6 +3,9 @@ package com.se1853_jv.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
+
 @Entity
 @Table(name = "Collection_Paper")
 @Getter
@@ -11,19 +14,25 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CollectionPaper {
-    @Id
-    private String id;
 
-    @Column(name = "paper_id", nullable = false)
-    private String paperId;
+    @EmbeddedId
+    private CollectionPaperId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "collection_id")
+    @MapsId("collectionId")
+    @JoinColumn(name = "Collectionid", nullable = false)
     private Collection collection;
 
+    // chỉ lưu id của paper (thuộc PaperService)
+    @Column(name = "Paperid", insertable = false, updatable = false)
+    private String paperId;
+
+    @Column(length = 255)
     private String priority;
+
+    @Column(length = 255)
     private String status;
 
     @Column(name = "adding_date")
-    private java.time.LocalDateTime addingDate;
+    private LocalDate addingDate;
 }
