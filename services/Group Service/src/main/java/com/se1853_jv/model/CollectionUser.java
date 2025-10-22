@@ -1,29 +1,27 @@
 package com.se1853_jv.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
-@Entity
-@Table(name = "Collection_Users")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "collection_user")
 public class CollectionUser {
-
     @EmbeddedId
     private CollectionUserId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("collectionId") // map với khóa tổng hợp
-    @JoinColumn(name = "Collectionid", nullable = false)
+    @MapsId("collectionId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "collection_id", nullable = false, columnDefinition = "varchar(36)")
     private Collection collection;
 
-    // chỉ lưu id của user, không join sang UserService
-    @Column(name = "member_id", insertable = false, updatable = false)
-    private String memberId;
 
     @Column(name = "isAuthor")
-    private Boolean isAuthor; // bạn có thể đổi sang boolean nếu cần
+    private Boolean isAuthor;
+
 }

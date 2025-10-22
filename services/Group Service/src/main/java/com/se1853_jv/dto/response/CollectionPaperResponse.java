@@ -1,26 +1,26 @@
 package com.se1853_jv.dto.response;
 
+import com.se1853_jv.model.CollectionPaper;
 import com.se1853_jv.util.IdEncoder;
 import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CollectionPaperResponse {
-    private String paperId; // encoded
+    private String collectionId;
+    private String paperId;
     private String priority;
     private String status;
     private LocalDate addingDate;
 
-    public static CollectionPaperResponse fromEntity(String paperId, String priority, String status, LocalDate addingDate) {
+    public static CollectionPaperResponse fromEntity(CollectionPaper entity) {
         return CollectionPaperResponse.builder()
-                .paperId(IdEncoder.encode(paperId))
-                .priority(priority)
-                .status(status)
-                .addingDate(addingDate)
+                .collectionId(IdEncoder.encode(entity.getId().getCollectionId()))
+                .paperId(IdEncoder.encode(entity.getId().getPaperId()))
+                .priority(entity.getPriority())
+                .status(entity.getStatus())
+                .addingDate(entity.getAddingDate())
                 .build();
     }
 }

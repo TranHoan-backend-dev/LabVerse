@@ -1,13 +1,10 @@
 package com.se1853_jv.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.se1853_jv.model.CollectionPaper;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.se1853_jv.model.CollectionPaperId;
 
-import java.util.List;
+public interface CollectionPaperRepository extends JpaRepository<CollectionPaper, CollectionPaperId> { }
 
-@Repository
-public interface CollectionPaperRepository extends JpaRepository<CollectionPaper, String> {
-    List<CollectionPaper> findByCollectionId(String collectionId);
-}
+
