@@ -5,7 +5,7 @@ import android.os.Build;
 import java.util.Arrays;
 import java.util.Base64;
 
-public class EncoderService {
+public class EncoderUtils {
     public static String encode(String str) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return Arrays.toString(Base64.getUrlEncoder().encode(str.getBytes()));

@@ -39,4 +39,7 @@
     <string name="labverse">LabVerse</string>
     <string name="logo">Logo</string>
     <string name="recent_alerts">Recent Alerts</string>
+    <string name="continue_label">Continue</string>
+    <string name="pdf_file">PDF File</string>
+    <string name="remove_file">Remove File</string>
 </resources>
