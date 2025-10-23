@@ -1,0 +1,118 @@
+@url = http://localhost:8080/v1/api/collections/members
+
+# ===========================================
+# LƯU Ý: Chạy file collection-test.http trước để tạo collections
+# Sau đó copy collectionId thực tế từ response vào đây
+# ===========================================
+
+### 1. Add first member to collection (thay đổi collectionId bằng ID thực tế)
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4",
+  "memberId": "YWJjZGVmZ2hpams=",
+  "isAuthor": true
+}
+
+### 2. Add second member to collection (not author)
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4",
+  "memberId": "bW5vcHFyc3R1dnd4eXo=",
+  "isAuthor": false
+}
+
+### 3. Add member to different collection (thay đổi collectionId)
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=",
+  "memberId": "YWJjZGVmZ2hpams=",
+  "isAuthor": true
+}
+
+# ===========================================
+# STEP 2: Lấy danh sách members (sau khi thêm members)
+# ===========================================
+
+### 4. List members of first collection
+@collectionId = YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4
+GET {{url}}/{{collectionId}}
+Accept: application/json
+
+### 5. List members of second collection
+GET {{url}}/ZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=
+Accept: application/json
+
+# ===========================================
+# STEP 3: Xóa members (sau khi đã có members)
+# ===========================================
+
+### 6. Remove first member from collection
+@memberId = bW5vcHFyc3R1dnd4eXo=
+DELETE {{url}}/{{collectionId}}/{{memberId}}
+Accept: application/json
+
+### 7. Remove second member from collection
+DELETE {{url}}/{{collectionId}}/YWJjZGVmZ2hpams=
+Accept: application/json
+
+### Test validation error - empty collectionId
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "",
+  "memberId": "YWJjZGVmZ2hpams=",
+  "isAuthor": true
+}
+
+### Test validation error - empty memberId
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4",
+  "memberId": "",
+  "isAuthor": true
+}
+
+### Test validation error - missing collectionId
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "memberId": "YWJjZGVmZ2hpams=",
+  "isAuthor": true
+}
+
+### Test validation error - missing memberId
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4",
+  "isAuthor": true
+}
+
+### Test with null isAuthor (should be allowed)
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4",
+  "memberId": "dGVzdE1lbWJlcklk",
+  "isAuthor": null
+}
