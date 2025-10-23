@@ -4,6 +4,8 @@ package com.se1853_jv.exception;
 import com.se1853_jv.dto.response.WrapperApiResponse;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,6 +26,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<WrapperApiResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(WrapperApiResponse.error(400, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<WrapperApiResponse> handleValidation(MethodArgumentNotValidException ex) {
+        StringBuilder errorMessage = new StringBuilder("Validation failed: ");
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errorMessage.append(error.getField()).append(" ").append(error.getDefaultMessage()).append("; ");
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(WrapperApiResponse.error(400, errorMessage.toString()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<WrapperApiResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(WrapperApiResponse.error(400, "Validation failed: " + ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

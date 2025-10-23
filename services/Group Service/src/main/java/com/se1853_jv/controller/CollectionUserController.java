@@ -6,6 +6,7 @@ import com.se1853_jv.service.CollectionUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/collections/members")
@@ -15,7 +16,7 @@ public class CollectionUserController {
     private final CollectionUserService collectionUserService;
 
     @PostMapping
-    public ResponseEntity<WrapperApiResponse> addMember(@RequestBody CollectionUserRequest request) {
+    public ResponseEntity<WrapperApiResponse> addMember(@Valid @RequestBody CollectionUserRequest request) {
         return ResponseEntity.ok(
                 WrapperApiResponse.success(collectionUserService.addMember(request))
         );

@@ -39,6 +39,16 @@ public class CollectionServiceImpl implements CollectionService {
                 throw new IllegalArgumentException("Collection name must not be blank");
             }
 
+            // Kiểm tra trùng tên, nếu trùng thì thêm (1), (2)
+            String baseName = request.getName().trim();
+            String newName = baseName;
+            int counter = 1;
+
+            while (collectionRepository.existsByName(newName)) {
+                newName = baseName + " (" + counter + ")";
+                counter++;
+            }
+
             Collection entity = Collection.builder()
                     .id(UUID.randomUUID().toString())
                     .name(request.getName())
@@ -63,9 +73,34 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public Page<CollectionResponse> getAllCollections(Pageable pageable) {
-        Page<Collection> page = collectionRepository.findAll(pageable);
-        return page.map(CollectionResponse::fromEntity);
+    public Map<String, Object> getCollectionsManual(int page, int size) {
+        List<Collection> all = collectionRepository.findAll();
+
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, all.size());
+
+        if (fromIndex >= all.size()) {
+            return Map.of(
+                    "content", Collections.emptyList(),
+                    "page", page,
+                    "size", size,
+                    "totalElements", all.size(),
+                    "totalPages", (int) Math.ceil((double) all.size() / size)
+            );
+        }
+
+        List<CollectionResponse> pageContent = all.subList(fromIndex, toIndex)
+                .stream()
+                .map(CollectionResponse::fromEntity)
+                .toList();
+
+        return Map.of(
+                "content", pageContent,
+                "page", page,
+                "size", size,
+                "totalElements", all.size(),
+                "totalPages", (int) Math.ceil((double) all.size() / size)
+        );
     }
 
     @Override

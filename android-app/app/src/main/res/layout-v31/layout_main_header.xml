@@ -3,34 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="12dp"
     android:layout_marginTop="8dp"
-    android:background="@android:color/white"
-    android:padding="12dp">
+    android:background="@android:color/white">
 
     <!-- Logo + tên -->
     <LinearLayout
         android:id="@+id/logo_section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:gravity="center_vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
             android:id="@+id/logo_icon"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:contentDescription="@string/logo"
-            android:src="@drawable/logo_labverse" />
+            android:src="@drawable/logo_labverse"
+        android:contentDescription="Logo" />
 
         <TextView
             android:id="@+id/app_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="@string/labverse"
+            android:text="LabVerse"
             android:textColor="#000000"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -41,26 +41,26 @@
         android:id="@+id/btn_notification"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:layout_marginEnd="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/notifications"
         android:src="@drawable/ic_bell"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="@string/notifications"
         app:layout_constraintEnd_toStartOf="@+id/avatar"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="16dp" />
 
     <!-- Avatar -->
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="36dp"
         android:layout_height="36dp"
+        android:src="@mipmap/avt_mock_round"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/user_avatar"
         android:background="@drawable/bg_circle_crop"
         android:clipToOutline="true"
-        android:contentDescription="@string/user_avatar"
         android:elevation="2dp"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/avt_mock_round"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

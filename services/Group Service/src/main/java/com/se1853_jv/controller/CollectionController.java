@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/group/collections")
@@ -16,7 +17,7 @@ public class CollectionController {
     private final CollectionService collectionService;
 
     @PostMapping
-    public ResponseEntity<WrapperApiResponse> create(@RequestBody CollectionRequest request) {
+    public ResponseEntity<WrapperApiResponse> create(@Valid @RequestBody CollectionRequest request) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.createCollection(request)));
     }
 
@@ -26,17 +27,22 @@ public class CollectionController {
     }
 
     @GetMapping
-    public ResponseEntity<WrapperApiResponse> getAll(Pageable pageable) {
-        return ResponseEntity.ok(WrapperApiResponse.success(collectionService.getAllCollections(pageable)));
+    public ResponseEntity<WrapperApiResponse> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ResponseEntity.ok(
+                WrapperApiResponse.success(collectionService.getCollectionsManual(page, size))
+        );
     }
 
     @PostMapping("/papers")
-    public ResponseEntity<WrapperApiResponse> addPaper(@RequestBody CollectionPaperRequest request) {
+    public ResponseEntity<WrapperApiResponse> addPaper(@Valid @RequestBody CollectionPaperRequest request) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.addPaperToCollection(request)));
     }
 
     @PutMapping("/papers/status")
-    public ResponseEntity<WrapperApiResponse> updateStatus(@RequestBody CollectionPaperRequest request) {
+    public ResponseEntity<WrapperApiResponse> updateStatus(@Valid @RequestBody CollectionPaperRequest request) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.updatePaperStatus(request)));
     }
 }

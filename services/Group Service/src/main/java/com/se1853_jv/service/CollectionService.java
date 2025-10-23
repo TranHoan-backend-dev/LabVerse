@@ -4,10 +4,12 @@ import com.se1853_jv.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Map;
+
 public interface CollectionService {
     CollectionResponse createCollection(CollectionRequest request);
     CollectionResponse getCollectionById(String encodedId);
-    Page<CollectionResponse> getAllCollections(Pageable pageable);
+    Map<String, Object> getCollectionsManual(int page, int size);
     CollectionPaperResponse addPaperToCollection(CollectionPaperRequest request);
     CollectionPaperResponse updatePaperStatus(CollectionPaperRequest request);
 }
