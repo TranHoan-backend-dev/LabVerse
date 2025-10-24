@@ -159,94 +159,18 @@
             app:iconSize="25dp"
             app:iconTint="@color/white" />
 
-        <!-- Card hiển thị file PDF + badge nút X -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/pdfSummaryWrapper"
+        <ScrollView
+            android:id="@+id/scrollable"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clipChildren="false"
-            android:clipToPadding="false">
+            android:layout_height="wrap_content">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/pdfSummaryCard"
+            <LinearLayout
+                android:id="@+id/pdfSummaryWrapper"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardPreventCornerOverlap="false"
-                app:cardUseCompatPadding="false"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:id="@+id/pdfIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="60dp"
-                        android:contentDescription="@string/pdf_file"
-                        android:src="@drawable/ic_pdf_file" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:paddingStart="12dp"
-                        tools:ignore="RtlSymmetry">
-
-                        <TextView
-                            android:id="@+id/pdfTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Deep Learning in Medical Imaging"
-                            android:textColor="@color/black"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/pdfAuthor"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="John Doe, 2021"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/pdfFileSize"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="1.2 MB • 12 pages"
-                            android:textColor="@color/black"
-                            android:textSize="13sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Badge nút X -->
-            <ImageButton
-                android:id="@+id/btn_remove_pdf"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:background="@drawable/bg_close_badge"
-                android:contentDescription="@string/remove_file"
-                android:elevation="20dp"
-                android:src="@drawable/ic_close_24"
-                android:translationX="10dp"
-                android:translationY="-10dp"
-                android:translationZ="20dp"
-                app:layout_constraintEnd_toEndOf="@id/pdfSummaryCard"
-                app:layout_constraintTop_toTopOf="@id/pdfSummaryCard"
-                app:tint="@android:color/black" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:orientation="vertical"
+                android:padding="8dp" />
+        </ScrollView>
 
         <!-- spacer to mimic empty area -->
         <View

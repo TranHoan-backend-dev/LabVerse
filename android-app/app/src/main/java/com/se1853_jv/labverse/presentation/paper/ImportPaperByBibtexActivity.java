@@ -2,36 +2,51 @@ package com.se1853_jv.labverse.presentation.paper;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-//import androidx.core.content.FileProvider;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
+import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 
+@RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ImportPaperByBibtexActivity extends AppCompatActivity {
     @NonFinal
-    MaterialButton button;
+    MaterialButton chooseFileBtn;
+    @NonFinal
+    MaterialButton importBtn;
     @NonFinal
     ActivityResultLauncher<Intent> filePickerLauncher;
 
@@ -39,13 +54,20 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_import_bibtex);
+
+        AtomicReference<List<BibEntry>> entries = new AtomicReference<>(new ArrayList<>());
+
         filePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        var uri = result.getData().getData();
-                        savePdfFile(uri);
-                        copyPdfInBackground(uri);
+                        var uri = result.getData().getData(); // dia chi truu tuong cua du lieu
+                        var bibContent = readBibFile(uri);
+                        entries.set(ParseFileUtils.parseBibEntries(bibContent));
+                        runOnUiThread(() -> {
+                            displayPreview(entries.get());
+                            handleImportEvent(entries.get());
+                        });
                     }
                 }
         );
@@ -54,97 +76,176 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     }
 
     private void bindView() {
-        button = findViewById(R.id.btn_choose_file);
+        chooseFileBtn = findViewById(R.id.btn_choose_file);
+        importBtn = findViewById(R.id.btn_import);
     }
 
     private void handleImportFileEvent() {
-        button.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("application/pdf"); // mo moi loai file
+        Log.e("Guess", "Hehe");
+
+        chooseFileBtn.setOnClickListener(v -> {
+            var intent = new Intent(Intent.ACTION_GET_CONTENT);
+            Log.e("Guess", intent.toString());
+
+            intent.setType("*/*"); // mo moi loai file
             intent.addCategory(Intent.CATEGORY_OPENABLE);
+            Log.e("Guess", "huhu");
+
             filePickerLauncher.launch(Intent.createChooser(intent, "Choose a file"));
         });
     }
 
-    private void displaySummaryInformationOfPdfFile() {
-        MaterialCardView layout = findViewById(R.id.pdfSummaryCard);
-        MaterialButton importBtn = findViewById(R.id.btn_import);
-        layout.setVisibility(View.VISIBLE);
-        importBtn.setClickable(true);
-    }
+    // <editor-fold> desc="read file module"
+    @NonNull
+    private String readBibFile(Uri uri) {
+        var builder = new StringBuilder();
 
-    @Nullable
-    @SuppressLint("Range")
-    private File savePdfFile(Uri uri) {
-        File outFile = null;
-        try {
-            var pdfDir = new File(getFilesDir(), "papers");
-            if (!pdfDir.exists()) {
-                boolean created = pdfDir.mkdirs();
-                if (!created) {
-                    Log.e("Save pdf file", "Không thể tạo thư mục lưu file PDF");
-                    return null;
+        // anh xa dang dia chi vat ly roi doc file do
+        // content resolver xac dinh provider can thiet de xu ly (media, downloads,...)
+        try (var inputStream = getContentResolver().openInputStream(uri);
+             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(Objects.requireNonNull(inputStream)))) {
+
+            String line;
+            var lineCount = 0;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line).append('\n');
+
+                if (++lineCount > 50000) {
+                    Log.w("ReadBibFile", "File quá lớn, dừng đọc sớm để tránh tràn bộ nhớ");
+                    break;
                 }
             }
 
-            Log.d("Location of pdf file", pdfDir.getAbsolutePath());
-
-            var fileName = "document.pdf";
-            var cursor = getContentResolver().query(uri, null, null, null, null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                cursor.close();
-            }
-
-            var input = getContentResolver().openInputStream(uri);
-            @SuppressLint("UnsanitizedFilenameFromContentProvider")
-            var uniqueName = System.currentTimeMillis() + "_" + fileName;
-            outFile = new File(pdfDir, uniqueName);
-            var output = new FileOutputStream(outFile);
-
-            var buffer = new byte[1024];
-            int length;
-            while ((length = Objects.requireNonNull(input).read(buffer)) > 0) {
-                output.write(buffer, 0, length);
-            }
-
-            input.close();
-            output.close();
-
         } catch (Exception e) {
-            Log.e("Save pdf file", Objects.requireNonNull(e.getMessage()));
+            Log.e("ReadBibFile", "Error reading file: " + e.getMessage(), e);
+            return "";
         }
-        return outFile;
+
+        return builder.toString();
     }
 
-    private void copyPdfInBackground(Uri uri) {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            var imported = savePdfFile(uri);
-            runOnUiThread(() -> {
-//                if (imported != null) viewPdfFileAfterImporting(imported);
-                displaySummaryInformationOfPdfFile();
-            });
+    @SuppressLint("SetTextI18n")
+    private void displayPreview(@NonNull List<BibEntry> entries) {
+        LinearLayout previewContainer = findViewById(R.id.pdfSummaryWrapper);
+        previewContainer.removeAllViews();
+
+        for (var e : entries) {
+            MaterialCardView card = buildCardView();
+
+            LinearLayout body = buildParentForBibTexContent();
+            body.addView(buildIcon());
+
+            LinearLayout mainContent = new LinearLayout(this);
+            mainContent.setOrientation(LinearLayout.VERTICAL);
+            mainContent.setPadding(16, 0, 0, 0);
+
+            mainContent.addView(buildTitle(e));
+            mainContent.addView(buildAuthorsAndYear(e));
+
+            body.addView(mainContent);
+
+            // Bọc nội dung và nút xóa trong FrameLayout
+            FrameLayout wrapper = new FrameLayout(this);
+            wrapper.setLayoutParams(new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            ));
+            wrapper.addView(body);
+            wrapper.addView(buildDeleteButton(card));
+
+            card.addView(wrapper);
+            previewContainer.addView(card);
+        }
+
+        importBtn.setClickable(true);
+    }
+
+    @NonNull
+    private TextView buildTitle(@NonNull BibEntry e) {
+        var title = new TextView(this);
+        title.setText(e.getTitle());
+        title.setTextSize(16);
+        title.setTypeface(title.getTypeface(), Typeface.BOLD);
+        return title;
+    }
+
+    @SuppressLint("SetTextI18n")
+    @NonNull
+    private TextView buildAuthorsAndYear(@NonNull BibEntry e) {
+        var authorsAndYear = new TextView(this);
+        authorsAndYear.setText(e.getAuthor() + " (" + e.getYear() + ")");
+        authorsAndYear.setTextSize(14);
+        return authorsAndYear;
+    }
+
+    @NonNull
+    private ImageView buildIcon() {
+        var icon = new ImageView(this);
+        var width = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics());
+        var height = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics());
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(width, height);
+        icon.setLayoutParams(iconParams);
+        icon.setImageResource(R.drawable.ic_pdf_file);
+        icon.setContentDescription(getString(R.string.pdf_file));
+        return icon;
+    }
+
+    @NonNull
+    private LinearLayout buildParentForBibTexContent() {
+        var body = new LinearLayout(this);
+        body.setOrientation(LinearLayout.HORIZONTAL);
+        body.setPadding(16, 16, 16, 16);
+        body.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        return body;
+    }
+
+    @NonNull
+    private MaterialCardView buildCardView() {
+        var card = new MaterialCardView(this);
+        card.setId(View.generateViewId());
+        card.setContentPadding(16, 16, 16, 16);
+        card.setUseCompatPadding(true);
+        ConstraintLayout.LayoutParams cardParams = new ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.MATCH_PARENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+        card.setLayoutParams(cardParams);
+        return card;
+    }
+
+    @NonNull
+    private ImageButton buildDeleteButton(@NonNull MaterialCardView card) {
+        ImageButton btn = new ImageButton(this);
+        btn.setImageResource(R.drawable.ic_close_24);
+        btn.setBackgroundResource(R.color.white);
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics())
+        );
+        params.gravity = Gravity.END | Gravity.TOP;
+        params.setMargins(0, 8, 8, 0);
+        btn.setLayoutParams(params);
+
+        btn.setOnClickListener(v -> {
+            ((ViewGroup) card.getParent()).removeView(card);
+            Toast.makeText(this, "Đã xoá thẻ", Toast.LENGTH_SHORT).show();
+        });
+
+        return btn;
+    }
+    // </editor-fold>
+
+    // <editor-fold> desc="import file module"
+    private void handleImportEvent(List<BibEntry> entries) {
+        importBtn.setOnClickListener(v -> {
+
         });
     }
-
-    // only use for debugging
-//    private void viewPdfFileAfterImporting(File importedFile) {
-//        try {
-//            var uri = FileProvider.getUriForFile(
-//                    this,
-//                    getPackageName() + ".provider",
-//                    importedFile
-//            );
-//
-//            var intent = new Intent(Intent.ACTION_VIEW);
-//            intent.setDataAndType(uri, "application/pdf");
-//            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-//
-//            startActivity(intent);
-//        } catch (Exception e) {
-//            Log.e("View pdf file", Objects.requireNonNull(e.getMessage()));
-//        }
-//    }
+    // </editor-fold>
 }
