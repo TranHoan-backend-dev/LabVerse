@@ -68,6 +68,10 @@ dependencies {
 
     implementation(libs.android.pdf.viewer)
 
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    annotationProcessor(libs.jackson.annotation)
+
     implementation(libs.lottie)
 
     testImplementation(libs.junit)

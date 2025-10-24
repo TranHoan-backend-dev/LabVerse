@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BibEntry {
-    private String type, title, author, year, source, pages;
+    private String type, title, author, year, source, pages, doi;
 }

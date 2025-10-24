@@ -35,6 +35,7 @@ public class ParseFileUtils {
                         case "year" -> entry.setYear(value);
                         case "journal", "booktitle" -> entry.setSource(value);
                         case "page" -> entry.setPages(value);
+                        case "doi" -> entry.setDoi(value);
                     }
                 }
             }

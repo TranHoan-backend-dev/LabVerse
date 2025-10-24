@@ -43,7 +43,7 @@ public class CitationFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_citation_tab, container, false);
+        return inflater.inflate(R.layout.layout_tab_citation, container, false);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)

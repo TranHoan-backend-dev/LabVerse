@@ -216,7 +216,6 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:clickable="false"
-            android:enabled="false"
             android:text="@string/import_selected"
             android:textAllCaps="false"
             android:textColor="@color/black"

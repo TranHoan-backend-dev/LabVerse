@@ -4,41 +4,33 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.*;
+import android.util.*;
+import android.view.*;
+import android.widget.*;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
+import androidx.annotation.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
+import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
+import lombok.experimental.*;
 
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -49,13 +41,13 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     MaterialButton importBtn;
     @NonFinal
     ActivityResultLauncher<Intent> filePickerLauncher;
+    @NonFinal
+    List<BibEntry> entries = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_import_bibtex);
-
-        AtomicReference<List<BibEntry>> entries = new AtomicReference<>(new ArrayList<>());
 
         filePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -63,16 +55,14 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         var uri = result.getData().getData(); // dia chi truu tuong cua du lieu
                         var bibContent = readBibFile(uri);
-                        entries.set(ParseFileUtils.parseBibEntries(bibContent));
-                        runOnUiThread(() -> {
-                            displayPreview(entries.get());
-                            handleImportEvent(entries.get());
-                        });
+                        entries = ParseFileUtils.parseBibEntries(bibContent);
+                        runOnUiThread(() -> displayPreview(entries));
                     }
                 }
         );
         bindView();
         handleImportFileEvent();
+        handleImportEvent();
     }
 
     private void bindView() {
@@ -85,11 +75,9 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
 
         chooseFileBtn.setOnClickListener(v -> {
             var intent = new Intent(Intent.ACTION_GET_CONTENT);
-            Log.e("Guess", intent.toString());
 
             intent.setType("*/*"); // mo moi loai file
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            Log.e("Guess", "huhu");
 
             filePickerLauncher.launch(Intent.createChooser(intent, "Choose a file"));
         });
@@ -151,13 +139,15 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
                     FrameLayout.LayoutParams.WRAP_CONTENT
             ));
             wrapper.addView(body);
-            wrapper.addView(buildDeleteButton(card));
+            wrapper.addView(buildDeleteBadge(card));
 
             card.addView(wrapper);
             previewContainer.addView(card);
         }
 
         importBtn.setClickable(true);
+        importBtn.bringToFront();
+        importBtn.setElevation(10);
     }
 
     @NonNull
@@ -219,8 +209,8 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private ImageButton buildDeleteButton(@NonNull MaterialCardView card) {
-        ImageButton btn = new ImageButton(this);
+    private ImageButton buildDeleteBadge(@NonNull MaterialCardView card) {
+        var btn = new ImageButton(this);
         btn.setImageResource(R.drawable.ic_close_24);
         btn.setBackgroundResource(R.color.white);
 
@@ -242,9 +232,37 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     // </editor-fold>
 
     // <editor-fold> desc="import file module"
-    private void handleImportEvent(List<BibEntry> entries) {
+    private void handleImportEvent() {
+        var handler = new CrossRefApiHandler();
         importBtn.setOnClickListener(v -> {
-
+            if (entries == null || entries.isEmpty()) {
+                Toast.makeText(this, "Chưa có file BibTex nào được chọn", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            var count = new AtomicInteger();
+            Executors.newSingleThreadExecutor().execute(() -> {
+//                for (BibEntry e : entries) {
+//                    count.incrementAndGet();
+//                    Log.e("DOI empty", e.getDoi() + " " + count.get());
+//                    if (e.getDoi() == null || e.getDoi().isEmpty()) {
+//                        runOnUiThread(() -> Toast.makeText(this, "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
+//                        return;
+//                    }
+//                    var paper = handler.getArticleUrlFromDOI(e.getDoi());
+                var object = handler.getArticleUrlFromDOI("10.34190/iccws.20.1.3366");
+                if (object != null) {
+                    Log.d("Paper", object.toString());
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        mapper.readValue(object.toString(), PaperResearch.class);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
+                }
+//                }
+            });
         });
     }
     // </editor-fold>
