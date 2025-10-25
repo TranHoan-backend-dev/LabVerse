@@ -12,7 +12,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.feed.tabs.TabAdapter;
-import com.se1853_jv.labverse.presentation.paper.PaperTabsAdapter;
 
 public class FeedActivity extends AppCompatActivity {
     private TabLayout tabLayout;

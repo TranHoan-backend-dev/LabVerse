@@ -8,8 +8,12 @@ data class Paper(
     @Id
     val id: String? = null,
     val dataUrl: String? = null,
+    val description: String? = null,
     val keywords: List<String>? = emptyList(),
     val citationIds: List<String> = emptyList(),
     val tagIds: List<String> = emptyList(),
     val metadata: Metadata? = null,
+    val userWhoFavorite: String? = null,
+    val collectionIds: List<String>? = emptyList(),
+    val readingListIds: List<String>? = emptyList(),
 )

@@ -1,0 +1,94 @@
+[
+  {
+    "_id": "f93297a2-fc8b-41a8-8158-68d5449dcc08",
+    "metadata": {
+      "title": "Cited by Deep Learning Methods",
+      "authors": "Smith et al.",
+      "journal": "Neural Networks Review",
+      "publicationYear": 2020,
+      "doi": "10.1234/cite.2020.001"
+    },
+    "paperIds": [
+      "1bd295a0-7746-494a-8ae9-ccf7c973a902",
+      "1270ad3e-a299-4d6e-b436-c9bd7c030121",
+      "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c",
+      "32bb063b-55e3-46a1-8dfb-d555e5bb325a"
+    ]
+  },
+  {
+    "_id": "5b0a7ccb-dc0e-4ef8-8b5a-660a18323782",
+    "metadata": {
+      "title": "Reference on AI-assisted Healthcare",
+      "authors": "Johnson et al.",
+      "journal": "Medical AI Journal",
+      "publicationYear": 2021,
+      "doi": "10.5678/cite.2021.002"
+    },
+    "paperIds": [
+      "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c",
+      "6c9d7a12-a873-42d3-97b7-cfd77e7c1b01",
+      "45fa2d91-c54a-44b9-8291-6938e9a746b2",
+      "8e04b6d2-02f3-4afc-9cbf-4d53772e9121"
+    ]
+  },
+  {
+    "_id": "a03cf387-55e6-42e8-993e-8a5995173d31",
+    "metadata": {
+      "title": "Blockchain Security Principles",
+      "authors": "Lee K.",
+      "journal": "CyberSecurity Review",
+      "publicationYear": 2022,
+      "doi": "10.7777/cite.2022.003"
+    },
+    "paperIds": [
+      "1bd295a0-7746-494a-8ae9-ccf7c973a902",
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+      "1270ad3e-a299-4d6e-b436-c9bd7c030121",
+      "e28fc03f-2c7c-4e3c-8f7e-49cde533ef3f",
+      "5b20e512-c29b-4a46-a465-c2b7c88d1a7a",
+      "32bb063b-55e3-46a1-8dfb-d555e5bb325a",
+      "cf19d421-413f-47a5-a3a0-411f51b237f5",
+      "f3e1c581-7f9c-4a62-a15a-8adcf6b261b1",
+      "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a"
+    ]
+  },
+  {
+    "_id": "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+    "metadata": {
+      "title": "Applications of NLP in Asian Languages",
+      "authors": "Nguyen P.",
+      "journal": "Linguistic Computing",
+      "publicationYear": 2023,
+      "doi": "10.8888/cite.2023.004"
+    },
+    "paperIds": [
+      "b3cde6a5-af2b-4d2c-9caf-7e1867d679b8",
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+      "1270ad3e-a299-4d6e-b436-c9bd7c030121",
+      "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c",
+      "e28fc03f-2c7c-4e3c-8f7e-49cde533ef3f",
+      "5b20e512-c29b-4a46-a465-c2b7c88d1a7a",
+      "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a"
+    ]
+  },
+  {
+    "_id": "9e74cf1d-6aee-475f-b5ab-89b237823613",
+    "metadata": {
+      "title": "Trends in AI and Robotics",
+      "authors": "Tran D.",
+      "journal": "Automation Review",
+      "publicationYear": 2024,
+      "doi": "10.9999/cite.2024.005"
+    },
+    "paperIds": [
+      "b3cde6a5-af2b-4d2c-9caf-7e1867d679b8",
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+      "e28fc03f-2c7c-4e3c-8f7e-49cde533ef3f",
+      "0740eef8-c778-40d1-8c4e-a25aa61761ab",
+      "f69c7933-27e8-40bc-9d1b-720ba033159a",
+      "c8e4127d-fc4e-4ffb-9a1d-34ff4a6512be",
+      "cf19d421-413f-47a5-a3a0-411f51b237f5",
+      "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a"
+    ]
+  }
+]

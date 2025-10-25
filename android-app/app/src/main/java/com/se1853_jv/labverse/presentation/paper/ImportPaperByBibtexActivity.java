@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.experimental.*;
 
-@RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ImportPaperByBibtexActivity extends AppCompatActivity {
     @NonFinal

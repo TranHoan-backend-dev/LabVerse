@@ -12,7 +12,7 @@ import java.io.FileInputStream
 import javax.annotation.PostConstruct
 
 private val logger = KotlinLogging.logger {}
-private const val DATABASE_URL: String = "https://console.firebase.google.com/u/0/project/labverse-18297/database/labverse-18297-default-rtdb/data/~2F"
+private const val DATABASE_URL: String = "https://labverse-18297-default-rtdb.asia-southeast1.firebasedatabase.app"
 private const val RESOURCE: String = "/labverse-18297-firebase-adminsdk-fbsvc-77278ce38c.json"
 
 @Configuration

@@ -59,9 +59,9 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 android-pdf-viewer = { module = "com.github.mhiew:android-pdf-viewer", version.ref = "androidPdfViewer" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottieVersion" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-databind = { module = "com.fasterxml.jackson.module:jackson-module", version.ref = "jackson" }
-jackson-annotation = { module = "com.fasterxml.jackson.core:jackson-annotation", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-annotation = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

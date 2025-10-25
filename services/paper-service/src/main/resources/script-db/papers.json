@@ -1,0 +1,404 @@
+[
+  {
+    "_id": "b3cde6a5-af2b-4d2c-9caf-7e1867d679b8",
+    "metadata": {
+      "title": "Deep Learning for Biomedical Text Mining",
+      "authors": "Nguyen Van A, Tran Thi B",
+      "journal": "Journal of AI in Medicine",
+      "publicationYear": 2022,
+      "doi": "10.1007/ai-med.2022.001"
+    },
+    "dataUrl": "https://example.com/paper1.pdf",
+    "keywords": [
+      "AI",
+      "Deep Learning",
+      "Biomedical"
+    ],
+    "citationIds": [
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963"
+    ],
+    "description": "This study explores the integration of deep learning models into biomedical text mining, emphasizing automatic extraction of clinical entities, relationships, and key findings from unstructured literature. By leveraging contextual embeddings and transformer-based architectures such as BERT, the authors demonstrate notable improvements in biomedical named entity recognition and document classification tasks. The paper also discusses the challenges of data imbalance, annotation scarcity, and model interpretability within biomedical NLP. Results suggest that deep learning can effectively bridge the gap between textual medical knowledge and clinical decision support systems, paving the way for more intelligent healthcare analytics platforms."
+  },
+  {
+    "_id": "1bd295a0-7746-494a-8ae9-ccf7c973a902",
+    "metadata": {
+      "title": "Quantum Computing in Modern Cryptography",
+      "authors": "Le Quang Huy",
+      "journal": "Vietnam Journal of Computer Science",
+      "publicationYear": 2021,
+      "doi": "10.1234/vjcs.2021.045"
+    },
+    "dataUrl": "https://example.com/paper2.pdf",
+    "keywords": [
+      "Quantum",
+      "Cryptography",
+      "Security"
+    ],
+    "citationIds": [
+      "f93297a2-fc8b-41a8-8158-68d5449dcc08",
+      "a03cf387-55e6-42e8-993e-8a5995173d31"
+    ],
+    "tagIds": [
+      "656183be-aa82-46d5-bc43-24938a671576"
+    ],
+    "description": "The paper investigates the disruptive influence of quantum computing on modern cryptographic systems, particularly asymmetric algorithms such as RSA and ECC. It reviews the theoretical underpinnings of quantum algorithms like Shor’s and Grover’s, which challenge current encryption standards by drastically reducing computational hardness. Furthermore, it discusses the development of post-quantum cryptography (PQC) schemes that rely on lattice, code, and hash-based problems to ensure long-term data security. The study concludes with recommendations for gradual migration strategies and hybrid cryptographic models suitable for quantum-resilient infrastructures."
+  },
+  {
+    "_id": "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+    "metadata": {
+      "title": "Blockchain Applications in Healthcare",
+      "authors": "Pham Hoang Linh",
+      "journal": "Healthcare IT Today",
+      "publicationYear": 2023,
+      "doi": "10.5678/hit.2023.007"
+    },
+    "dataUrl": "https://example.com/paper3.pdf",
+    "keywords": [
+      "Blockchain",
+      "Healthcare",
+      "Privacy"
+    ],
+    "citationIds": [
+      "9e74cf1d-6aee-475f-b5ab-89b237823613",
+      "a03cf387-55e6-42e8-993e-8a5995173d31",
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+      "53e497b0-9ec7-4ebc-9ade-56f4d3e7be67",
+      "e6ae0fc9-bd5d-44c2-89a4-20bc82fc0531"
+    ],
+    "description": "This paper presents an in-depth exploration of blockchain-based frameworks for healthcare data management. It highlights how decentralized ledgers enhance data transparency, traceability, and integrity while safeguarding patient privacy through smart contracts. The authors evaluate several blockchain prototypes designed for medical record sharing, supply chain tracking, and clinical trials. The study identifies scalability, regulatory compliance, and interoperability as persistent challenges, proposing a hybrid architecture that combines public and private blockchains for optimized efficiency. The findings emphasize blockchain’s potential to revolutionize trust and accountability in digital healthcare ecosystems."
+  },
+  {
+    "_id": "1270ad3e-a299-4d6e-b436-c9bd7c030121",
+    "metadata": {
+      "title": "Efficient Algorithms for Big Data Analytics",
+      "authors": "Vo Thi Thanh",
+      "journal": "International Journal of Data Science",
+      "publicationYear": 2020,
+      "doi": "10.9999/ijds.2020.032"
+    },
+    "dataUrl": "https://example.com/paper4.pdf",
+    "keywords": [
+      "Big Data",
+      "Algorithms",
+      "Analytics"
+    ],
+    "citationIds": [
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+      "f93297a2-fc8b-41a8-8158-68d5449dcc08",
+      "a03cf387-55e6-42e8-993e-8a5995173d31"
+    ],
+    "tagIds": [
+      "39668bee-e3e8-48c7-a8c3-d6006e3a7767"
+    ],
+    "description": "This research focuses on designing and optimizing algorithms to handle large-scale data analytics efficiently. The authors propose several parallel and distributed computation techniques, including MapReduce optimizations and in-memory processing frameworks. Performance benchmarks are conducted using real-world datasets, showcasing significant reductions in computational latency and resource utilization. The paper also explores the role of approximation algorithms in managing high-dimensional data streams. Overall, it contributes valuable insights into scalable big data solutions applicable across industries such as finance, healthcare, and IoT analytics."
+  },
+  {
+    "_id": "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c",
+    "metadata": {
+      "title": "Natural Language Processing for Vietnamese",
+      "authors": "Nguyen Tuan Kiet",
+      "journal": "Computational Linguistics Vietnam",
+      "publicationYear": 2023,
+      "doi": "10.7777/clv.2023.010"
+    },
+    "dataUrl": "https://example.com/paper5.pdf",
+    "keywords": [
+      "NLP",
+      "Vietnamese",
+      "AI"
+    ],
+    "citationIds": [
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+      "f93297a2-fc8b-41a8-8158-68d5449dcc08",
+      "5b0a7ccb-dc0e-4ef8-8b5a-660a18323782"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+      "974fb8dc-cb6f-439d-8ecf-1ac73845cafb"
+    ],
+    "description": "This paper investigates advances in natural language processing (NLP) tailored to the Vietnamese language, a low-resource language characterized by complex tones and word segmentation challenges. The study reviews recent deep learning models, including transformer-based architectures fine-tuned for Vietnamese corpora. It also proposes a hybrid tokenization and embedding technique to improve text classification and sentiment analysis accuracy. The authors discuss dataset limitations, propose transfer learning strategies, and highlight the potential of multilingual pretraining. The research contributes valuable benchmarks and open datasets to accelerate Vietnamese NLP development."
+  },
+  {
+    "_id": "e28fc03f-2c7c-4e3c-8f7e-49cde533ef3f",
+    "metadata": {
+      "title": "Cloud-native Microservice Architectures",
+      "authors": "Tran Hoang Nam",
+      "journal": "Software Engineering Review",
+      "publicationYear": 2024,
+      "doi": "10.5555/ser.2024.022"
+    },
+    "dataUrl": "https://example.com/paper6.pdf",
+    "keywords": [
+      "Microservice",
+      "Spring Boot",
+      "Kubernetes"
+    ],
+    "citationIds": [
+      "a03cf387-55e6-42e8-993e-8a5995173d31",
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [],
+    "description": "The study explores modern cloud-native architecture patterns emphasizing microservices, containerization, and orchestration with Kubernetes. It provides a detailed analysis of how modular service decomposition improves scalability, maintainability, and fault isolation in distributed systems. The paper also compares service communication strategies, including REST, gRPC, and event-driven messaging. Case studies highlight practical deployments using Spring Boot and Docker. The research concludes with best practices for CI/CD automation and observability integration to enhance microservice system reliability."
+  },
+  {
+    "_id": "0740eef8-c778-40d1-8c4e-a25aa61761ab",
+    "metadata": {
+      "title": "Reinforcement Learning in Autonomous Driving",
+      "authors": "Doan Minh Tri",
+      "journal": "AI & Robotics Journal",
+      "publicationYear": 2022,
+      "doi": "10.4242/airob.2022.015"
+    },
+    "dataUrl": "https://example.com/paper7.pdf",
+    "keywords": [
+      "Reinforcement Learning",
+      "Autonomous",
+      "Robotics"
+    ],
+    "citationIds": [
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [
+      "6f427030-28b7-4f8b-a1b0-2db4249af49d"
+    ],
+    "description": "This research applies reinforcement learning (RL) techniques to autonomous driving control systems. It details the use of deep Q-networks and policy gradient algorithms to optimize real-time decision-making in dynamic road environments. Simulation experiments demonstrate how RL agents adapt to varying traffic densities and unpredictable human behaviors. The authors emphasize the importance of reward function design and domain randomization to enhance model generalization. The study suggests a hybrid RL approach integrating safety constraints for deployment in real-world autonomous vehicles."
+  },
+  {
+    "_id": "f69c7933-27e8-40bc-9d1b-720ba033159a",
+    "metadata": {
+      "title": "Medical Image Segmentation using U-Net",
+      "authors": "Pham Quoc Bao",
+      "journal": "Medical Imaging Today",
+      "publicationYear": 2021,
+      "doi": "10.3131/mit.2021.044"
+    },
+    "dataUrl": "https://example.com/paper8.pdf",
+    "keywords": [
+      "U-Net",
+      "Image Segmentation",
+      "Medical AI"
+    ],
+    "citationIds": [
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963"
+    ],
+    "description": "This paper presents an extensive evaluation of U-Net-based architectures for medical image segmentation tasks. It analyzes performance variations across MRI, CT, and ultrasound modalities and proposes optimization strategies to reduce overfitting in small datasets. The authors introduce an attention-augmented U-Net variant that improves boundary precision and segmentation consistency. Experimental results demonstrate superior Dice coefficients compared to traditional convolutional models. The findings underline U-Net’s effectiveness in automating diagnostic imaging workflows and accelerating computer-assisted clinical analysis."
+  },
+  {
+    "_id": "5b20e512-c29b-4a46-a465-c2b7c88d1a7a",
+    "metadata": {
+      "title": "Data Privacy in IoT Systems",
+      "authors": "Tran Duc Minh",
+      "journal": "IoT Security Review",
+      "publicationYear": 2020,
+      "doi": "10.4455/iotsec.2020.099"
+    },
+    "dataUrl": "https://example.com/paper9.pdf",
+    "keywords": [
+      "IoT",
+      "Privacy",
+      "Security"
+    ],
+    "citationIds": [
+      "a03cf387-55e6-42e8-993e-8a5995173d31",
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5"
+    ],
+    "tagIds": [],
+    "description": "The paper investigates data privacy challenges inherent in Internet of Things (IoT) ecosystems, emphasizing lightweight encryption, secure key management, and anomaly detection for privacy preservation. It introduces a layered architecture combining device-level privacy controls with cloud-based data anonymization techniques. Simulation studies illustrate how the proposed framework mitigates unauthorized data inference attacks while maintaining system efficiency. The authors advocate for standardized privacy protocols and adaptive policies to ensure resilience in large-scale IoT deployments across smart cities and healthcare applications."
+  },
+  {
+    "_id": "32bb063b-55e3-46a1-8dfb-d555e5bb325a",
+    "metadata": {
+      "title": "AI-assisted Drug Discovery",
+      "authors": "Nguyen Hoang Phuc",
+      "journal": "Bioinformatics Advances",
+      "publicationYear": 2024,
+      "doi": "10.3211/bioadv.2024.011"
+    },
+    "dataUrl": "https://example.com/paper10.pdf",
+    "keywords": [
+      "Drug Discovery",
+      "AI",
+      "Bioinformatics"
+    ],
+    "citationIds": [
+      "f93297a2-fc8b-41a8-8158-68d5449dcc08",
+      "a03cf387-55e6-42e8-993e-8a5995173d31"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+      "b968add3-0634-4fef-87ab-78722ffd65bc"
+    ],
+    "description": "This work explores artificial intelligence techniques applied to drug discovery pipelines, particularly molecular property prediction and virtual screening. The study reviews graph neural networks (GNNs) for molecular representation learning and demonstrates their performance in predicting binding affinities. It highlights AI’s role in reducing the cost and time of traditional drug development by enabling faster compound prioritization. The authors also discuss the ethical considerations and reproducibility challenges in AI-driven pharmaceutical research, suggesting frameworks for transparent model validation."
+  },
+  {
+    "_id": "6c9d7a12-a873-42d3-97b7-cfd77e7c1b01",
+    "metadata": {
+      "title": "Federated Learning for Edge Devices",
+      "authors": "Le Minh Quan",
+      "journal": "Journal of Distributed AI Systems",
+      "publicationYear": 2023,
+      "doi": "10.9087/jdai.2023.019"
+    },
+    "dataUrl": "https://example.com/paper11.pdf",
+    "keywords": [
+      "Federated Learning",
+      "Edge",
+      "Privacy"
+    ],
+    "citationIds": [
+      "5b0a7ccb-dc0e-4ef8-8b5a-660a18323782"
+    ],
+    "tagIds": [],
+    "description": "This research introduces a federated learning framework optimized for edge devices with constrained computational power. The model enables decentralized training while preserving user data privacy, using adaptive aggregation and compression techniques to minimize communication overhead. Experimental evaluations on IoT datasets reveal improved convergence rates compared to standard federated averaging. The paper also discusses adversarial robustness and model poisoning countermeasures. Its findings support scalable AI deployment at the network edge, aligning with the next generation of privacy-preserving distributed intelligence."
+  },
+  {
+    "_id": "45fa2d91-c54a-44b9-8291-6938e9a746b2",
+    "metadata": {
+      "title": "Ethical Challenges in Artificial Intelligence",
+      "authors": "Nguyen Thi Hong",
+      "journal": "AI & Society Review",
+      "publicationYear": 2024,
+      "doi": "10.5668/aisoc.2024.012"
+    },
+    "dataUrl": "https://example.com/paper12.pdf",
+    "keywords": [
+      "Ethics",
+      "AI",
+      "Policy"
+    ],
+    "citationIds": [
+      "5b0a7ccb-dc0e-4ef8-8b5a-660a18323782"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963"
+    ],
+    "description": "This paper provides a comprehensive examination of ethical issues surrounding artificial intelligence, including bias, accountability, and transparency. The author evaluates the moral implications of algorithmic decision-making in sensitive domains such as healthcare and criminal justice. The study further proposes a governance framework emphasizing human-centered AI principles and multi-stakeholder oversight. Through case analyses and policy reviews, it highlights the urgent need for international collaboration to ensure AI aligns with social responsibility and fairness."
+  },
+  {
+    "_id": "8e04b6d2-02f3-4afc-9cbf-4d53772e9121",
+    "metadata": {
+      "title": "Speech Recognition for Low-resource Languages",
+      "authors": "Pham Duy Tan",
+      "journal": "Speech Technology Letters",
+      "publicationYear": 2022,
+      "doi": "10.2345/stl.2022.055"
+    },
+    "dataUrl": "https://example.com/paper13.pdf",
+    "keywords": [
+      "Speech Recognition",
+      "ASR",
+      "Low-resource"
+    ],
+    "citationIds": [
+      "5b0a7ccb-dc0e-4ef8-8b5a-660a18323782"
+    ],
+    "tagIds": [],
+    "description": "This study develops an automatic speech recognition (ASR) system tailored for low-resource languages, leveraging transfer learning and self-supervised pretraining. The model utilizes wav2vec and conformer architectures to achieve high accuracy with limited labeled data. The paper presents experiments across multiple Southeast Asian languages and highlights improvements in phoneme recognition rates. It also discusses linguistic adaptation and data augmentation strategies. The work contributes significantly to inclusive technology development for underrepresented linguistic communities."
+  },
+  {
+    "_id": "c8e4127d-fc4e-4ffb-9a1d-34ff4a6512be",
+    "metadata": {
+      "title": "AI-driven Cybersecurity Defense",
+      "authors": "Tran Bao Long",
+      "journal": "Cyber Defense Quarterly",
+      "publicationYear": 2023,
+      "doi": "10.7899/cdq.2023.027"
+    },
+    "dataUrl": "https://example.com/paper14.pdf",
+    "keywords": [
+      "AI",
+      "Cybersecurity",
+      "Intrusion Detection"
+    ],
+    "citationIds": [
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+      "9ebbecf2-2fdd-4127-893f-2a0808407b22"
+    ],
+    "description": "The paper explores the application of artificial intelligence for automated cybersecurity defense systems. It proposes a deep reinforcement learning framework capable of dynamic threat response and anomaly detection. Using real-world attack simulations, the model outperforms traditional rule-based systems in identifying zero-day vulnerabilities. The study further examines explainability and ethical concerns in autonomous security operations. Its conclusions advocate for a hybrid human–AI defense strategy balancing automation with expert supervision."
+  },
+  {
+    "_id": "cf19d421-413f-47a5-a3a0-411f51b237f5",
+    "metadata": {
+      "title": "Augmented Reality in Medical Education",
+      "authors": "Do Thi Kim Anh",
+      "journal": "Journal of Medical Simulation",
+      "publicationYear": 2024,
+      "doi": "10.6767/jms.2024.005"
+    },
+    "dataUrl": "https://example.com/paper15.pdf",
+    "keywords": [
+      "AR",
+      "Medical Education",
+      "Simulation"
+    ],
+    "citationIds": [
+      "9e74cf1d-6aee-475f-b5ab-89b237823613",
+      "a03cf387-55e6-42e8-993e-8a5995173d31"
+    ],
+    "tagIds": [],
+    "description": "This research examines how augmented reality (AR) can enhance medical education by providing immersive and interactive anatomy and surgical training experiences. The authors design an AR platform using Unity and HoloLens to visualize 3D anatomical structures and procedural steps. User studies among medical students reveal improved retention and engagement compared to traditional teaching methods. The paper concludes by addressing scalability, content standardization, and the future integration of AR with haptic feedback for comprehensive medical training systems."
+  },
+  {
+    "_id": "f3e1c581-7f9c-4a62-a15a-8adcf6b261b1",
+    "metadata": {
+      "title": "Computer Vision for Environmental Monitoring",
+      "authors": "Vo Le Huy",
+      "journal": "Environmental Data Journal",
+      "publicationYear": 2023,
+      "doi": "10.8444/edj.2023.018"
+    },
+    "dataUrl": "https://example.com/paper16.pdf",
+    "keywords": [
+      "Computer Vision",
+      "Environment",
+      "Sustainability"
+    ],
+    "citationIds": [
+      "a03cf387-55e6-42e8-993e-8a5995173d31"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963"
+    ],
+    "description": "This paper applies computer vision and deep learning to monitor environmental changes from satellite and drone imagery. It proposes a CNN-based pipeline for deforestation detection, water pollution assessment, and urban growth mapping. The model integrates temporal image analysis to track ecological shifts over time. Results from multi-country datasets demonstrate accuracy improvements over conventional remote sensing approaches. The authors highlight AI’s role in sustainable development and environmental policymaking."
+  },
+  {
+    "_id": "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a",
+    "metadata": {
+      "title": "Explainable AI for Healthcare Diagnosis",
+      "authors": "Pham Hong Quang",
+      "journal": "AI in Medicine Insights",
+      "publicationYear": 2025,
+      "doi": "10.9991/aimi.2025.004"
+    },
+    "dataUrl": "https://example.com/paper17.pdf",
+    "keywords": [
+      "Explainable AI",
+      "Healthcare",
+      "Diagnostics"
+    ],
+    "citationIds": [
+      "a03cf387-55e6-42e8-993e-8a5995173d31",
+      "c9ab5060-14d0-4833-9af3-f3e54ae46fb5",
+      "9e74cf1d-6aee-475f-b5ab-89b237823613"
+    ],
+    "tagIds": [
+      "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+      "53e497b0-9ec7-4ebc-9ade-56f4d3e7be67"
+    ],
+    "description": "This study investigates explainability in healthcare-oriented AI models, proposing interpretable neural networks that provide transparent diagnostic reasoning. It integrates attention mechanisms and post-hoc explanation tools such as SHAP and Grad-CAM to visualize clinical feature importance. Evaluations on medical imaging datasets show that explainable AI increases clinician trust without compromising accuracy. The research contributes to safer AI adoption in healthcare through human-centered model design and interpretability metrics."
+  }
+]
