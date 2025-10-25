@@ -43,5 +43,6 @@
     <string name="pdf_file">PDF File</string>
     <string name="remove_file">Remove File</string>
     <string name="description">Description</string>
+    <string name="collection_options">Collection Options</string>
     <string name="no_data">No data</string>
 </resources>
