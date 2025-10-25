@@ -25,6 +25,9 @@ public class PaperResearch {
     @NonNull
     String dataUrl;
 
+    @NonNull
+    String description;
+
     List<String> keyword;
 
     @NonNull

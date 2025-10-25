@@ -43,7 +43,7 @@
                 android:fontFamily="@font/poppins_regular"
                 android:letterSpacing="0.01"
                 android:lineSpacingExtra="4dp"
-                android:text="Smith, J., Johnson, M., &amp; Brown, K. (2024). Machine Learning Approaches for Predictive Analytics in Healthcare Systems. Nature Medicine. doi:10.1038/s41591-024-0234-5"
+                android:text="@string/no_data"
                 android:textAlignment="viewStart"
                 android:textColor="#444444"
                 android:textSize="15sp" />

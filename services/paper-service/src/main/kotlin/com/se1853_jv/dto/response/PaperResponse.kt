@@ -9,4 +9,5 @@ data class PaperResponse(
     val journal: String,
     val publicationYear: Int,
     val doi: String,
+    val description: String?,
 )

@@ -31,11 +31,15 @@ import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import java.util.ArrayList;
 import java.util.List;
 
+// android 14
+@RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class CitationFragment extends Fragment {
-    private final PaperApiHandler apiHandler = new PaperApiHandler();
-    private List<Citation> citations = new ArrayList<>();
+    private final PaperApiHandler apiHandler;
+    private List<Citation> citations;
 
     public CitationFragment() {
+        this.apiHandler = new PaperApiHandler();
+        this.citations = new ArrayList<>();
     }
 
     @Nullable
@@ -46,10 +50,8 @@ public class CitationFragment extends Fragment {
         return inflater.inflate(R.layout.layout_tab_citation, container, false);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Log.d("CitationFragment", "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
 
         bindingCitations(view, "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");

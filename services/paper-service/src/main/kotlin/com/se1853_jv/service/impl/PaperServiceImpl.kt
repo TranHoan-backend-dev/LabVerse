@@ -41,6 +41,7 @@ class PaperServiceImpl(
             journal = paper.metadata?.journal ?: "",
             publicationYear = paper.metadata?.publicationYear ?: 0,
             doi = paper.metadata?.doi ?: "",
+            description = paper.description,
         )
     }
 
