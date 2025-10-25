@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
@@ -24,10 +23,10 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PaperApiHandler {
-    private final String BASE_URL = "http://10.0.2.2:8080/v1/api/papers/";
     private final PaperApi apiService;
 
     public PaperApiHandler() {
+        final var BASE_URL = "http://10.0.2.2:8080/v1/api/papers/";
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();

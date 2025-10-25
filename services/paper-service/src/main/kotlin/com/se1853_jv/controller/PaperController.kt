@@ -5,6 +5,7 @@ import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.GrobidService
 import com.se1853_jv.service.boundary.CitationService
 import com.se1853_jv.service.boundary.PaperService
+import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.time.LocalDateTime
 
+private val logger = KotlinLogging.logger {}
+
 @RestController
 @RequestMapping("papers")
 class PaperController(
@@ -27,6 +30,7 @@ class PaperController(
 ) {
     @GetMapping("/details")
     fun getDetails(@RequestParam("id") data: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getDetails controller. id: ${encoder.decode(data)}" }
         val id = encoder.decode(data)
 
         return ResponseEntity.ok(
@@ -41,7 +45,9 @@ class PaperController(
 
     @GetMapping("/citation")
     fun getCitationsOfPaperResearch(@RequestParam("id") paperId: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getCitationsOfPaperResearch controller. id: ${encoder.decode(paperId)}" }
         val id = encoder.decode(paperId)
+
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
@@ -54,6 +60,7 @@ class PaperController(
 
     @PostMapping("/pdf/parse", produces = ["application/json"], consumes = ["multipart/form-data"])
     fun extractDataFromPdfFile(@RequestParam("file") file: MultipartFile): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to extractDataFromPdfFile controller" }
         val temp: File = File.createTempFile("pdf_", ".pdf")
         file.transferTo(temp)
 
