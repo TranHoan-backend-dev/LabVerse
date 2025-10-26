@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingVertical="10dp">
+
+    <TextView
+        android:id="@+id/tvStatValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="247"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/dark_blue" />
+
+    <TextView
+        android:id="@+id/tvStatLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Papers"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+</LinearLayout>

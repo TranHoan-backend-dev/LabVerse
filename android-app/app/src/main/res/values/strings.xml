@@ -45,4 +45,10 @@
     <string name="description">Description</string>
     <string name="collection_options">Collection Options</string>
     <string name="no_data">No data</string>
+    <string name="previous_page">Previous page</string>
+    <string name="next_page">Next page</string>
+    <string name="read">Read</string>
+    <string name="new_title">New</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="recently_added">Recently Added</string>
 </resources>

@@ -3,11 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:background="@android:color/white"
+    android:gravity="center_vertical|end"
     android:orientation="horizontal"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="8dp"
-    android:gravity="center_vertical|end"
-    android:background="@android:color/white">
+    android:paddingVertical="8dp">
 
     <!-- Text: Page X of Y -->
     <TextView
@@ -15,27 +17,29 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:gravity="start"
         android:text="Page 1 of 12"
         android:textColor="#4A4A4A"
-        android:textSize="16sp"
-        android:gravity="start" />
+        android:textSize="16sp" />
 
     <!-- Previous button -->
     <ImageButton
         android:id="@+id/btn_prev"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="15dp"
+        android:layout_height="13dp"
+        android:layout_marginEnd="8dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_left"
-        android:contentDescription="Previous page" />
+        android:contentDescription="@string/previous_page"
+        android:src="@drawable/ic_left" />
 
     <!-- Next button -->
     <ImageButton
         android:id="@+id/btn_next"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="15dp"
+        android:layout_height="13dp"
+        android:layout_marginStart="8dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_right"
-        android:contentDescription="Next page" />
+        android:contentDescription="@string/next_page"
+        android:src="@drawable/ic_right" />
 
 </LinearLayout>

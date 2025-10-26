@@ -115,10 +115,10 @@ public class PaperDetailsActivity extends AppCompatActivity {
                             tab.setText("Overview");
                             break;
                         case 1:
-                            tab.setText("Citation");
+                            tab.setText("References");
                             break;
                         case 2:
-                            tab.setText("References");
+                            tab.setText("Citation");
                             break;
                     }
                 }).attach();

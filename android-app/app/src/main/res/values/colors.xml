@@ -2,9 +2,10 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="blue">#2563EB</color>
-    <color name="light_blue">#DBEAFE</color>BFDBFE
+    <color name="light_blue">#DBEAFE</color>
     <color name="semi_blue">#BFDBFE</color>
+    <color name="blue">#2563EB</color>
+    <color name="dark_blue">#4F46E5</color>
     <color name="gray">#F3F4F6</color>
     <color name="dark_gray">#D1D5DB</color>
     <color name="skin">#FEF3C7</color>

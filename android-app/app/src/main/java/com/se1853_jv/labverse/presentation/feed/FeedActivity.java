@@ -18,7 +18,7 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_feed_content);
+        setContentView(R.layout.activity_feed);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.header), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);

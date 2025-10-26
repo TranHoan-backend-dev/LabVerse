@@ -47,7 +47,7 @@ public class CitationFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_tab_citation, container, false);
+        return inflater.inflate(R.layout.layout_paperdetails_tab_citation, container, false);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class CitationFragment extends Fragment {
                         LayoutInflater inflater = LayoutInflater.from(getContext());
 
                         data.forEach(c -> {
-                            View itemView = inflater.inflate(R.layout.layout_citation_info, container, false);
+                            View itemView = inflater.inflate(R.layout.layout_paperdetails_references_info, container, false);
 
                             TextView citationTitle = itemView.findViewById(R.id.title);
                             TextView citationAuthors = itemView.findViewById(R.id.authors);
