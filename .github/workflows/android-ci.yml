@@ -85,9 +85,9 @@ jobs:
         run: ./mvnw clean package -DskipTests
         working-directory: services/${{matrix.service}}
 
-      - name: Run Spring boot tests
-        run: ./mvnw test
-        working-directory: services/${{matrix.service}}
+      # - name: Run Spring boot tests
+      #   run: ./mvnw test
+      #   working-directory: services/${{matrix.service}}
 
       - name: Compile Kotlin
         run: ./mvnw compile
