@@ -27,4 +27,16 @@
         <item name="android:layout_marginEnd">8dp</item>
         <item name="android:backgroundTintMode">src_in</item>
     </style>
+
+    <style name="Widget.App.StatusRadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_radio_button_selector</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:drawablePadding">16dp</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+        <item name="android:textColor">@color/radio_text_selector</item>
+    </style>
 </resources>
