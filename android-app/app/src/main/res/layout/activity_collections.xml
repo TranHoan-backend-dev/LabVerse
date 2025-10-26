@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <include
+        android:id="@+id/header"
+        layout="@layout/layout_common_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        app:layout_constraintBottom_toTopOf="@+id/scroll_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <!-- 2. Nội dung có thể cuộn -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp">
+
+        <!-- Container cho tất cả nội dung -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <!-- Thẻ Active (Nổi bật) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_active_collection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/blue"
+                app:cardElevation="4dp"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <!-- Chip "Active" -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_active"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Active"
+                        app:chipBackgroundColor="#6589DC"
+                        android:textColor="@color/white"
+                        app:chipMinHeight="24dp"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <!-- Nút tùy chọn (3 chấm) -->
+                    <ImageView
+                        android:id="@+id/button_active_options"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_more_vert_24"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                    <!-- Tiêu đề thẻ -->
+                    <TextView
+                        android:id="@+id/text_active_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="AI in Healthcare Research"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/chip_active"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/button_active_options" />
+
+                    <!-- Thông tin papers/members -->
+                    <TextView
+                        android:id="@+id/text_active_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="23 papers • 5 members"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_active_title"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <!-- Nhóm avatar -->
+                    <LinearLayout
+                        android:id="@+id/layout_active_avatars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_active_info"
+                        app:layout_constraintStart_toStartOf="parent">
+
+                        <!-- Các avatar sẽ được thêm vào đây, ví dụ: -->
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                    </LinearLayout>
+
+                    <!-- Thông tin cập nhật -->
+                    <TextView
+                        android:id="@+id/text_active_timestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Updated 2h ago"
+                        android:drawablePadding="4dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnPrimary"
+                        app:layout_constraintBottom_toBottomOf="@id/layout_active_avatars"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tiêu đề phần "My Collections" -->
+            <TextView
+                android:id="@+id/title_my_collections"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Collections"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="24dp" />
+
+            <!-- Thẻ "Machine Learning..." -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_collection_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/text_collection_1_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Machine Learning Fundamentals"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/chip_collection_1_role" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_collection_1_role"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Owner"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        app:chipBackgroundColor="#7CCA97"
+                        android:textColor="@color/fourth_green"
+                        app:chipMinHeight="24dp"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintTop_toTopOf="@id/text_collection_1_title"
+                        app:layout_constraintStart_toEndOf="@id/text_collection_1_title"
+                        app:layout_constraintEnd_toStartOf="@id/button_collection_1_options" />
+
+                    <ImageView
+                        android:id="@+id/button_collection_1_options"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_more_vert_24"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:layout_constraintTop_toTopOf="@id/text_collection_1_title"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:contentDescription="@string/collection_options" />
+
+                    <TextView
+                        android:id="@+id/text_collection_1_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="15 papers • 3 members"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_collection_1_title"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <LinearLayout
+                        android:id="@+id/layout_collection_1_avatars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_collection_1_info"
+                        app:layout_constraintStart_toStartOf="parent">
+                        <!-- Avatars -->
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/text_collection_1_timestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 days ago"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:layout_constraintBottom_toBottomOf="@id/layout_collection_1_avatars"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Thẻ "Quantum Computing..." -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_collection_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+                    <!-- Tương tự thẻ 1, chỉ thay đổi nội dung -->
+                    <TextView
+                        android:id="@+id/text_collection_2_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Quantum Computing Research"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/chip_collection_2_role" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_collection_2_role"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Collaborator"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        app:chipBackgroundColor="#8CA5D3"
+                        android:textColor="@color/blue"
+                        app:chipMinHeight="24dp"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintTop_toTopOf="@id/text_collection_2_title"
+                        app:layout_constraintStart_toEndOf="@id/text_collection_2_title"
+                        app:layout_constraintEnd_toStartOf="@id/button_collection_2_options" />
+                    <!-- ... các thành phần khác tương tự thẻ 1 ... -->
+                    <ImageView
+                        android:id="@+id/button_collection_2_options"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_more_vert_24"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:layout_constraintTop_toTopOf="@id/text_collection_2_title"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:contentDescription="@string/collection_options" />
+                    <TextView
+                        android:id="@+id/text_collection_2_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8 papers • 2 members"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_collection_2_title"
+                        app:layout_constraintStart_toStartOf="parent" />
+                    <LinearLayout
+                        android:id="@+id/layout_collection_2_avatars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_collection_2_info"
+                        app:layout_constraintStart_toStartOf="parent">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/text_collection_2_timestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1 week ago"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:layout_constraintBottom_toBottomOf="@id/layout_collection_2_avatars"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tiêu đề phần "Shared with Me" -->
+            <TextView
+                android:id="@+id/title_shared_with_me"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shared with Me"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="24dp" />
+
+            <!-- Thẻ "Biomedical Engineering..." -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shared_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/text_shared_1_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Biomedical Engineering Papers"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/chip_shared_1_role" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_shared_1_role"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reader"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        app:chipBackgroundColor="#DEB845"
+                        android:textColor="#CA4E26"
+                        app:chipMinHeight="24dp"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintTop_toTopOf="@id/text_shared_1_title"
+                        app:layout_constraintStart_toEndOf="@id/text_shared_1_title"
+                        app:layout_constraintEnd_toStartOf="@id/button_shared_1_options" />
+
+                    <ImageView
+                        android:id="@+id/button_shared_1_options"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_more_vert_24"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:layout_constraintTop_toTopOf="@id/text_shared_1_title"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:contentDescription="@string/collection_options" />
+
+                    <TextView
+                        android:id="@+id/text_shared_1_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="31 papers • 8 members"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_shared_1_title"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/text_shared_1_by"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Shared by Dr. Sarah Chen"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="4dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_shared_1_info"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <LinearLayout
+                        android:id="@+id/layout_shared_1_avatars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="12dp"
+                        app:layout_constraintTop_toBottomOf="@id/text_shared_1_by"
+                        app:layout_constraintStart_toStartOf="parent">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:src="@mipmap/avt_mock_round"
+                            android:contentDescription="@string/user_avatar"/>
+                        <!-- Thẻ "+5" -->
+                        <TextView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-8dp"
+                            android:text="+5"
+                            android:gravity="center"
+                            android:textSize="10sp"
+                            android:textColor="#5D5757"
+                            android:background="@color/white"
+                            tools:ignore="SmallSp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/text_shared_1_timestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5 hours ago"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:layout_constraintBottom_toBottomOf="@id/layout_shared_1_avatars"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Nút "Create New Collection" -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_create_collection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Create New Collection"
+                app:iconGravity="textStart"
+                android:layout_marginTop="24dp"
+                style="@style/Widget.Material3.Button"
+                app:backgroundTint="#5780D9" />
+
+
+            <!-- Nút "Invite Team Members" -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_invite_members"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Invite Team Members"
+                app:icon="@drawable/ic_people_24"
+                app:iconGravity="textStart"
+                android:layout_marginTop="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 3. Thanh điều hướng dưới cùng -->
+    <include
+        android:id="@+id/bottomNav"
+        layout="@layout/layout_common_nav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

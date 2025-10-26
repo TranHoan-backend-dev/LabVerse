@@ -1,12 +1,18 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface PaperApi {
-    @GET("/v1/api/papers/details")
-    Call<PaperResearch> getPaperDetails(@Query("id") String id);
+    @GET("details")
+    Call<BaseJsonResponse<PaperResearch>> getPaperDetails(@Query("id") String id);
+    @GET("citation")
+    Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
 }

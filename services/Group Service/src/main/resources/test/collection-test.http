@@ -1,0 +1,133 @@
+@url = http://localhost:8080/v1/api/group/collections
+
+# ===========================================
+# STEP 1: Tạo collections trước (chạy trước)
+# ===========================================
+
+### 1. Create first collection
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Machine Learning Research Papers"
+}
+
+### 2. Create second collection
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Computer Vision Papers"
+}
+
+### 3. Create third collection
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Natural Language Processing"
+}
+
+
+# ===========================================
+# STEP 2: Lấy danh sách collections (sau khi tạo)
+# ===========================================
+
+### 4. Get all collections with pagination
+GET {{url}}?page=0&size=10
+Accept: application/json
+
+### 5. Get all collections with different page size
+GET {{url}}?page=0&size=5
+Accept: application/json
+
+# ===========================================
+# STEP 3: Lấy collection by ID (copy ID từ response trên)
+# ===========================================
+
+### 6. Get collection by ID (thay đổi ID này bằng ID thực tế từ response trên)
+@collectionId = YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4
+GET {{url}}/{{collectionId}}
+Accept: application/json
+
+# ===========================================
+# STEP 4: Thêm papers vào collection (sau khi có collection)
+# ===========================================
+
+### 7. Add first paper to collection
+POST {{url}}/papers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "{{collectionId}}",
+  "paperId": "YWJjZGVmZ2hpams=",
+  "priority": "HIGH",
+  "status": "ToRead"
+}
+
+### 8. Add second paper to collection
+POST {{url}}/papers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "{{collectionId}}",
+  "paperId": "bW5vcHFyc3R1dnd4eXo=",
+  "priority": "MEDIUM",
+  "status": "Reading"
+}
+
+### 9. Update paper status in collection
+PUT {{url}}/papers/status
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "{{collectionId}}",
+  "paperId": "YWJjZGVmZ2hpams=",
+  "priority": "LOW",
+  "status": "Finished"
+}
+
+### Test validation error - empty name
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": ""
+}
+
+### Test validation error - missing name
+POST {{url}}
+Content-Type: application/json
+Accept: application/json
+
+{
+}
+
+### Test validation error - missing collectionId for add paper
+POST {{url}}/papers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "paperId": "YWJjZGVmZ2hpams=",
+  "priority": "HIGH",
+  "status": "ToRead"
+}
+
+### Test validation error - missing paperId for add paper
+POST {{url}}/papers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "collectionId": "{{collectionId}}",
+  "priority": "HIGH",
+  "status": "ToRead"
+}

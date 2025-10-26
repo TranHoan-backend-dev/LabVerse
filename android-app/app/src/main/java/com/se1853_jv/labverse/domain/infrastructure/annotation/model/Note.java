@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Note extends Annotation {
+public class Note {
     @PrimaryKey
     @NonNull
     String id;
@@ -24,5 +24,11 @@ public class Note extends Annotation {
     String content;
 
     @NonNull
-    String ownerId;
+    Long coordinationX;
+
+    @NonNull
+    Long coordinationY;
+
+    @NonNull
+    Integer pageNumber;
 }

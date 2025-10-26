@@ -35,3 +35,22 @@ google-services.json
 
 
 *.env.*
+
+logs/
+*.log
+*.out
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Microservices ###
+services/**/target/
+services/**/build/
+services/**/.mvn/
+
+**/src/main/resources/application-dev.yml
+**/src/main/resources/application-dev.yaml
+**/src/main/resources/application-dev.properties
+**/src/main/resources/firebase-service-account.json
+**/src/main/resources/labverse-*-firebase-adminsdk-*.json

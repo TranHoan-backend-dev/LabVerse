@@ -1,12 +1,15 @@
 package com.se1853_jv.labverse.presentation.paper;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
@@ -14,15 +17,24 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.utils.Connectivity;
-import com.se1853_jv.labverse.domain.db.AppDatabase;
 import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
+import com.se1853_jv.labverse.presentation.paper.adapter.PaperTabsAdapter;
+import com.se1853_jv.labverse.presentation.paper.fragments.OverviewFragment;
 
+@RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class PaperDetailsActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView tvPaperTitle, tvPaperAuthors, tvPaperJournal;
     private TabLayout tabLayout;
+    private final PaperApiHandler apiHandler;
+
+    public PaperDetailsActivity() {
+        this.apiHandler = new PaperApiHandler();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,22 +103,34 @@ public class PaperDetailsActivity extends AppCompatActivity {
             }
         });
 
-        var adapter = new PaperTabsAdapter(this);
-        viewPager.setAdapter(adapter);
+        apiHandler.getPaperDetails("YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4", new ApiCallback<>() {
+            @Override
+            public void onSuccess(PaperResearch data) {
+                var adapter = new PaperTabsAdapter(PaperDetailsActivity.this, data.getDescription());
+                viewPager.setAdapter(adapter);
 
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            switch (position) {
-                case 0:
-                    tab.setText("Overview");
-                    break;
-                case 1:
-                    tab.setText("Citation");
-                    break;
-                case 2:
-                    tab.setText("References");
-                    break;
+                new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+                    switch (position) {
+                        case 0:
+                            tab.setText("Overview");
+                            break;
+                        case 1:
+                            tab.setText("References");
+                            break;
+                        case 2:
+                            tab.setText("Citation");
+                            break;
+                    }
+                }).attach();
             }
-        }).attach();
-    }
 
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() ->
+                        Toast.makeText(PaperDetailsActivity.this, "Error when fetching data", Toast.LENGTH_SHORT).show());
+            }
+        });
+
+
+    }
 }

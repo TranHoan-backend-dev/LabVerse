@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.se1853_jv.labverse.domain.infrastructure.Metadata;
-
 import java.util.List;
 
 import lombok.*;
@@ -19,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaperResearch extends Metadata {
+public class PaperResearch {
     @PrimaryKey
     @NonNull
     String id;
@@ -27,5 +25,23 @@ public class PaperResearch extends Metadata {
     @NonNull
     String dataUrl;
 
+    @NonNull
+    String description;
+
     List<String> keyword;
+
+    @NonNull
+    String title;
+
+    @NonNull
+    String authors;
+
+    @NonNull
+    String journal;
+
+    @NonNull
+    Integer publicationYear;
+
+    @NonNull
+    String doi;
 }

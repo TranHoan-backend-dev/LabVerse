@@ -1,0 +1,79 @@
+[
+  {
+    "_id": "e5507c1e-e431-4f16-b5d4-bd11138e1963",
+    "name": "AI",
+    "paperIds": [
+      "b3cde6a5-af2b-4d2c-9caf-7e1867d679b8",
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+      "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c",
+      "f69c7933-27e8-40bc-9d1b-720ba033159a",
+      "32bb063b-55e3-46a1-8dfb-d555e5bb325a",
+      "45fa2d91-c54a-44b9-8291-6938e9a746b2",
+      "c8e4127d-fc4e-4ffb-9a1d-34ff4a6512be",
+      "f3e1c581-7f9c-4a62-a15a-8adcf6b261b1",
+      "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a"
+    ]
+  },
+  {
+    "_id": "53e497b0-9ec7-4ebc-9ade-56f4d3e7be67",
+    "name": "Healthcare",
+    "paperIds": [
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac",
+      "4aab73a4-bb7c-46a7-89f7-8fda0b3a908a"
+    ]
+  },
+  {
+    "_id": "e6ae0fc9-bd5d-44c2-89a4-20bc82fc0531",
+    "name": "Blockchain",
+    "paperIds": [
+      "74c1df61-5d64-4404-8285-99eb8fdba9ac"
+    ]
+  },
+  {
+    "_id": "9ebbecf2-2fdd-4127-893f-2a0808407b22",
+    "name": "Cybersecurity",
+    "paperIds": [
+      "c8e4127d-fc4e-4ffb-9a1d-34ff4a6512be"
+    ]
+  },
+  {
+    "_id": "39668bee-e3e8-48c7-a8c3-d6006e3a7767",
+    "name": "Big Data",
+    "paperIds": [
+      "1270ad3e-a299-4d6e-b436-c9bd7c030121"
+    ]
+  },
+  {
+    "_id": "9d1bf555-d337-4954-9082-95b1be10ab55",
+    "name": "Cloud Computing",
+    "paperIds": []
+  },
+  {
+    "_id": "974fb8dc-cb6f-439d-8ecf-1ac73845cafb",
+    "name": "NLP",
+    "paperIds": [
+      "ffac3859-cdcf-4ad3-ac9d-7f7626ecce6c"
+    ]
+  },
+  {
+    "_id": "656183be-aa82-46d5-bc43-24938a671576",
+    "name": "Quantum",
+    "paperIds": [
+      "1bd295a0-7746-494a-8ae9-ccf7c973a902"
+    ]
+  },
+  {
+    "_id": "b968add3-0634-4fef-87ab-78722ffd65bc",
+    "name": "Bioinformatics",
+    "paperIds": [
+      "32bb063b-55e3-46a1-8dfb-d555e5bb325a"
+    ]
+  },
+  {
+    "_id": "6f427030-28b7-4f8b-a1b0-2db4249af49d",
+    "name": "Autonomous Systems",
+    "paperIds": [
+      "0740eef8-c778-40d1-8c4e-a25aa61761ab"
+    ]
+  }
+]

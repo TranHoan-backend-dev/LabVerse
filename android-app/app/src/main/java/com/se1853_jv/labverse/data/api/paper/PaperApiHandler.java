@@ -2,8 +2,20 @@ package com.se1853_jv.labverse.data.api.paper;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.GsonBuilder;
+import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -11,34 +23,73 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PaperApiHandler {
-    private final String BASE_URL = "http://localhost:8080/v1/api/papers";
     private final PaperApi apiService;
 
     public PaperApiHandler() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL.concat("/details"))
-                .addConverterFactory(GsonConverterFactory.create())
+        final var BASE_URL = "http://10.0.2.2:8080/v1/api/papers/";
+        var gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+                .create();
+
+        var logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        var client = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build();
+
+        var retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(client)
                 .build();
         apiService = retrofit.create(PaperApi.class);
     }
 
-    public void getDetails(String id) {
-        Call<PaperResearch> call = apiService.getPaperDetails(id);
+    public void getPaperDetails(String id, ApiCallback<PaperResearch> callback) {
+        Log.d("PAPER_DATA", "getPaperDetails: " + id);
+        Call<BaseJsonResponse<PaperResearch>> call = apiService.getPaperDetails(id);
         call.enqueue(new Callback<>() {
             @Override
-            public void onResponse(Call<PaperResearch> call, Response<PaperResearch> response) {
-                if (response.isSuccessful()) {
-                    System.out.println("hehe");
+            public void onResponse(@NonNull Call<BaseJsonResponse<PaperResearch>> call, @NonNull Response<BaseJsonResponse<PaperResearch>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d("PAPER_DATA", "PaperResearch: " + result.toString());
                 } else {
-                    // err from server
-                    Log.e("Server Error", "Error: " + response.code());
+                    Log.e("Server Error", "Error: " + response.message());
+                    callback.onError(response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<PaperResearch> call, Throwable t) {
-                // err khong ket noi duoc api
+            public void onFailure(@NonNull Call<BaseJsonResponse<PaperResearch>> call, @NonNull Throwable t) {
                 Log.e("API Error", "Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getCitationsOfPaper(String id, ApiCallback<List<Citation>> callback) {
+        Log.d("CITATION_DATA", "getCitationsOfPaper: " + id);
+        Call<BaseJsonResponse<List<Citation>>> call = apiService.getCitationOfPaper(id);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<Citation>>> call, @NonNull Response<BaseJsonResponse<List<Citation>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Citation> citations = response.body().getData();
+
+                    callback.onSuccess(new ArrayList<>(citations));
+                } else {
+                    Log.e("Server Error", "Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<Citation>>> call, @NonNull Throwable t) {
+                Log.e("API Error", "Error: " + t.getMessage());
+                callback.onError(t.getMessage());
             }
         });
     }
