@@ -39,4 +39,11 @@
         <item name="android:lineSpacingMultiplier">1.2</item>
         <item name="android:textColor">@color/radio_text_selector</item>
     </style>
+
+    <style name="Widget.App.Chip.Filter" parent="Widget.MaterialComponents.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_background_color_selector</item>
+        <item name="android:textColor">@color/chip_text_color_selector</item>
+        <item name="chipStrokeWidth">0dp</item>
+    </style>
+
 </resources>
