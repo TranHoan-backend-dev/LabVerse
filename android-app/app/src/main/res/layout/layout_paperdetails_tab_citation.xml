@@ -21,8 +21,8 @@
 
         </LinearLayout>
 
-        <include layout="@layout/layout_citation_format" />
+        <include layout="@layout/layout_paperdetails_citation_format" />
 
-        <include layout="@layout/layout_export_options" />
+        <include layout="@layout/layout_paperdetails_export_options" />
     </LinearLayout>
 </ScrollView>

@@ -17,7 +17,7 @@ public class OverviewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_tab_overview, container, false);
+        return inflater.inflate(R.layout.layout_paperdetails_tab_overview, container, false);
     }
 
     @Override

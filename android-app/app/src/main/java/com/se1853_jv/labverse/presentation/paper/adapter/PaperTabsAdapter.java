@@ -35,8 +35,8 @@ public class PaperTabsAdapter extends FragmentStateAdapter {
                 fragment.setArguments(bundle);
                 yield fragment;
             }
-            case 1 -> new CitationFragment();
-            default -> new ReferenceFragment();
+            case 1 -> new ReferenceFragment();
+            default -> new CitationFragment();
         };
     }
 
