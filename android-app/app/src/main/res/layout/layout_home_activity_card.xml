@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New paper added"
+        android:text="@string/new_paper_added"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -19,35 +19,39 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="“Machine Learning Applications in Biomedical Research”"
+        android:text="@string/no_data"
         android:textColor="#555"
         android:textSize="13sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="8dp">
 
         <com.google.android.material.button.MaterialButton
             style="?attr/materialIconButtonStyle"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
+            android:layout_marginEnd="8dp"
             android:backgroundTint="@color/white"
             app:icon="@drawable/ic_share"
-            app:iconSize="20dp"
+            app:iconSize="40dp"
             app:iconTint="@color/black" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:backgroundTint="@color/dark_blue"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
             android:paddingHorizontal="16dp"
             android:paddingVertical="4dp"
             android:text="@string/read"
             android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:cornerRadius="6dp" />
     </LinearLayout>
 </LinearLayout>
