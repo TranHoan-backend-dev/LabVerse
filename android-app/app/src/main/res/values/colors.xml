@@ -20,4 +20,10 @@
 
     <color name="semi_purple">#F3E8FF</color>
     <color name="purple">#9333EA</color>
+
+    <!--  Mau cua cac trang thai status/ priority cua paper -->
+    <color name="status_finished">#388E3C</color>
+    <color name="status_to_read">#757575</color>
+    <color name="priority_medium">#1976D2</color>
+    <color name="priority_low">#757575</color>
 </resources>
