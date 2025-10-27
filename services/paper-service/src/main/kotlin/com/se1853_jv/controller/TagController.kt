@@ -29,4 +29,16 @@ class TagController(
             )
         )
     }
+
+    @GetMapping("/")
+    fun getTheFiveMostPopularTags(): ResponseEntity<WrapperApiResponse> {
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get tags successfully",
+                service.getTheFiveMostPopularTag(),
+                LocalDateTime.now()
+            )
+        )
+    }
 }

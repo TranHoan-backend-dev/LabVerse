@@ -109,7 +109,6 @@ public class PaperDetailsActivity extends AppCompatActivity {
             tvPaperAuthors.setText(paper.getAuthors());
             tvPaperJournal.setText(paper.getPublicationYear() + " • " + paper.getJournal());
         }
-        // co dinh noi dung ban dau la "Khong co du lieu"
     }
 
     /**
@@ -173,8 +172,10 @@ public class PaperDetailsActivity extends AppCompatActivity {
                     tv.setText(R.string.no_data);
                 } else {
                     for (var tag : data) {
+                        // tạo chip cho tag
                         var tv = new TextView(PaperDetailsActivity.this);
 
+                        // Lấy vị trí màu sắc tương ứng
                         var position = data.indexOf(tag) > bg.length ? data.indexOf(tag) % bg.length : data.indexOf(tag);
                         tv.setId(View.generateViewId());
                         tv.setText(tag.getName());
@@ -205,7 +206,8 @@ public class PaperDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onError(String error) {
-
+                runOnUiThread(() ->
+                        Toast.makeText(PaperDetailsActivity.this, "Error when fetching data", Toast.LENGTH_SHORT).show());
             }
         });
     }

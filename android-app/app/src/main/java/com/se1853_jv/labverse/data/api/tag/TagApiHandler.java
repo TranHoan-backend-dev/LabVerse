@@ -75,4 +75,28 @@ public class TagApiHandler {
             }
         });
     }
+
+    public void getTheFiveMostPopularTags(ApiCallback<List<Tag>> callback) {
+        Call<BaseJsonResponse<List<Tag>>> call = tagApi.getFiveMostPopularTag();
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(
+                    @NonNull Call<BaseJsonResponse<List<Tag>>> call,
+                    @NonNull Response<BaseJsonResponse<List<Tag>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d("Tag_Data", result.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    @NonNull Call<BaseJsonResponse<List<Tag>>> call,
+                    @NonNull Throwable t) {
+                Log.e("API Error", "Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
 }

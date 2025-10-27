@@ -2,25 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/feedActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:fitsSystemWindows="true"
     tools:context=".presentation.feed.FeedActivity">
-
-    <include
-        android:id="@+id/header"
-        layout="@layout/layout_common_header"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:paddingTop="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/feedScrollView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Nội dung có thể cuộn -->
     <ScrollView
@@ -31,20 +17,30 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingStart="8dp"
-        android:paddingTop="16dp"
         android:paddingEnd="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Toàn bộ nội dung trong ScrollView -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="vertical">
+
+            <include
+                android:id="@+id/header"
+                layout="@layout/layout_common_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:fitsSystemWindows="true"
+                app:layout_constraintBottom_toTopOf="@+id/feedScrollView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <!-- Tabs -->
             <include layout="@layout/layout_common_tab_section" />
@@ -65,26 +61,16 @@
                 android:scrollbars="none">
 
                 <LinearLayout
+                    android:id="@+id/tags_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minHeight="32dp"
                     android:orientation="horizontal"
                     android:spacing="8dp">
 
-                    <TextView
-                        style="@style/ChipTag"
-                        android:text="AIML" />
-
-                    <TextView
-                        style="@style/ChipTag"
-                        android:text="Biotechnology" />
-
-                    <TextView
-                        style="@style/ChipTag"
-                        android:text="Physics" />
-
-                    <TextView
-                        style="@style/ChipTag"
-                        android:text="Chemistry" />
+                    <!--                    <TextView-->
+                    <!--                        style="@style/ChipTag"-->
+                    <!--                        android:text="AIML" />-->
                 </LinearLayout>
             </HorizontalScrollView>
 
