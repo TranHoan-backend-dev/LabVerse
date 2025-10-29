@@ -17,7 +17,7 @@ public class PaperDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+        setContentView(R.layout.layout_common_details);
 
         TextView header = findViewById(R.id.title);
         header.setText(ContextCompat.getString(this, R.string.paper_details));
