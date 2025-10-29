@@ -1,21 +1,11 @@
 package com.se1853_jv.labverse.presentation.user;
 
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.se1853_jv.labverse.R;
-import com.se1853_jv.labverse.domain.db.AppDatabase;
-import com.se1853_jv.labverse.domain.db.DatabaseClient;
-import com.se1853_jv.labverse.domain.enumerate.Role;
-import com.se1853_jv.labverse.domain.infrastructure.role.model.Roles;
-import com.se1853_jv.labverse.domain.infrastructure.user.model.Users;
-import com.se1853_jv.labverse.domain.infrastructure.user.repo.UserRepository;
 
 public class UserActivity extends AppCompatActivity {
 
@@ -23,12 +13,12 @@ public class UserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        setContentView(R.layout.layout_common_activity_home);
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+//            return insets;
+//        });
 
 //        AppDatabase db = DatabaseClient.getInstance(this).getAppDatabase();
 //        UserRepository userRepo = db.userRepository();

@@ -2,25 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/feedActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:fitsSystemWindows="true"
     tools:context=".presentation.feed.FeedActivity">
-
-    <include
-        android:id="@+id/header"
-        layout="@layout/layout_common_component_header"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:paddingTop="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/feedScrollView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Nội dung có thể cuộn -->
     <ScrollView
@@ -31,31 +17,35 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingStart="8dp"
-        android:paddingTop="16dp"
         android:paddingEnd="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Toàn bộ nội dung trong ScrollView -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="vertical">
 
-            <include layout="@layout/layout_common_tab_component_section" />
-
+            <include
+                android:id="@+id/header"
+                layout="@layout/layout_common_component_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:fitsSystemWindows="true"
+                app:layout_constraintBottom_toTopOf="@+id/feedScrollView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <!-- Content -->
             <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/viewPager"
+                android:id="@+id/viewPager1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <include layout="@layout/layout_common_component_search" />
-
-            <include layout="@layout/layout_home_content"/>
-
         </LinearLayout>
     </ScrollView>
 
@@ -68,6 +58,7 @@
         app:layout_constraintTop_toBottomOf="@+id/feedScrollView"
         app:layout_constraintWidth="match_parent" />
 
+    <!-- Navbar cố định đáy -->
     <include
         android:id="@+id/bottomNav"
         layout="@layout/layout_common_component_nav"
