@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.se1853_jv.labverse.presentation.common.fragment.DetailsFragment;
+import com.se1853_jv.labverse.presentation.paper.fragments.PaperDetailsFragment;
 
 @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class DetailsAdapter extends FragmentStateAdapter {
@@ -19,7 +19,7 @@ public class DetailsAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return new DetailsFragment();
+        return new PaperDetailsFragment();
     }
 
     @Override

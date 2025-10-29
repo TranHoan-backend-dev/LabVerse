@@ -30,9 +30,6 @@
             android:orientation="horizontal"
             android:spacing="8dp">
 
-            <!--                    <TextView-->
-            <!--                        style="@style/ChipTag"-->
-            <!--                        android:text="AIML" />-->
         </LinearLayout>
     </HorizontalScrollView>
 

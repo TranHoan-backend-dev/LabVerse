@@ -14,7 +14,7 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_common_activity_home);
+        setContentView(R.layout.layout_common_home);
 
         ViewPager2 pager2 = findViewById(R.id.viewPager1);
         FeedAdapter adapter = new FeedAdapter(FeedActivity.this);

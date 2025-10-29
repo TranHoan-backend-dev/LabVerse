@@ -1,5 +1,7 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
+
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -26,7 +28,6 @@ public class PaperApiHandler {
     private final PaperApi apiService;
 
     public PaperApiHandler() {
-        final var BASE_URL = "http://10.0.2.2:8080/v1/api/papers/";
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
@@ -39,7 +40,7 @@ public class PaperApiHandler {
                 .build();
 
         var retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(PAPER_ENDPOINT_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
