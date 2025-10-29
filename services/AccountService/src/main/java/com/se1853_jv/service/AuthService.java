@@ -13,6 +13,7 @@ import com.se1853_jv.repository.RoleRepository;
 import com.se1853_jv.repository.UserRepository;
 import com.se1853_jv.security.JwtTokenProvider;
 import com.se1853_jv.security.UserPrincipal;
+import com.se1853_jv.util.IdEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -89,7 +90,7 @@ public class AuthService {
 
         return new AuthResponse(
             token,
-            savedUser.getId(),
+            IdEncoder.encode(savedUser.getId()),
             savedUser.getEmail(),
             savedUser.getUsername(),
             savedUser.getFullName(),
@@ -116,7 +117,7 @@ public class AuthService {
 
         return new AuthResponse(
             token,
-            user.getId(),
+            IdEncoder.encode(user.getId()),
             user.getEmail(),
             user.getUsername(),
             user.getFullName(),
@@ -181,7 +182,7 @@ public class AuthService {
 
             return new AuthResponse(
                 token,
-                user.getId(),
+                IdEncoder.encode(user.getId()),
                 user.getEmail(),
                 user.getUsername(),
                 user.getFullName(),

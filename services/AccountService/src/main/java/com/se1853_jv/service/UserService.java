@@ -7,6 +7,7 @@ import com.se1853_jv.exception.BadRequestException;
 import com.se1853_jv.exception.ResourceNotFoundException;
 import com.se1853_jv.model.User;
 import com.se1853_jv.repository.UserRepository;
+import com.se1853_jv.util.IdEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class UserService {
 
     private UserResponse mapToUserResponse(User user) {
         return new UserResponse(
-            user.getId(),
+            IdEncoder.encode(user.getId()),
             user.getEmail(),
             user.getUsername(),
             user.getFullName(),
@@ -107,6 +108,7 @@ public class UserService {
         );
     }
 }
+
 
 
 

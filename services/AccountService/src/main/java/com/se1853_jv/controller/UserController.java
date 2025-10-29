@@ -2,10 +2,11 @@ package com.se1853_jv.controller;
 
 import com.se1853_jv.dto.request.ChangePasswordRequest;
 import com.se1853_jv.dto.request.UpdateProfileRequest;
-import com.se1853_jv.dto.response.MessageResponse;
-import com.se1853_jv.dto.response.UserResponse;
+import com.se1853_jv.dto.response.WrapperApiResponse;
+import com.se1853_jv.exception.BadRequestException;
 import com.se1853_jv.security.UserPrincipal;
 import com.se1853_jv.service.UserService;
+import com.se1853_jv.util.IdEncoder;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,45 +27,46 @@ public class UserController {
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<WrapperApiResponse> getCurrentUser(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        UserResponse response = userService.getUserById(userPrincipal.getId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserById(userPrincipal.getId())));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
-        UserResponse response = userService.getUserById(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<WrapperApiResponse> getUserById(@PathVariable String id) {
+        String decodedId = IdEncoder.decode(id);
+        if (decodedId == null) {
+            throw new BadRequestException("Invalid user ID format");
+        }
+        return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserById(decodedId)));
     }
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> updateProfile(
+    public ResponseEntity<WrapperApiResponse> updateProfile(
             Authentication authentication,
             @Valid @RequestBody UpdateProfileRequest request) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        UserResponse response = userService.updateProfile(userPrincipal.getId(), request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(WrapperApiResponse.success(userService.updateProfile(userPrincipal.getId(), request)));
     }
 
     @PutMapping("/me/password")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<MessageResponse> changePassword(
+    public ResponseEntity<WrapperApiResponse> changePassword(
             Authentication authentication,
             @Valid @RequestBody ChangePasswordRequest request) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         userService.changePassword(userPrincipal.getId(), request);
-        return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+        return ResponseEntity.ok(WrapperApiResponse.success("Password changed successfully", null));
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<MessageResponse> deleteAccount(Authentication authentication) {
+    public ResponseEntity<WrapperApiResponse> deleteAccount(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         userService.deleteAccount(userPrincipal.getId());
-        return ResponseEntity.ok(new MessageResponse("Account deleted successfully"));
+        return ResponseEntity.ok(WrapperApiResponse.success("Account deleted successfully", null));
     }
 }
 

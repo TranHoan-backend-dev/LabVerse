@@ -4,8 +4,7 @@ import com.se1853_jv.dto.request.ForgotPasswordRequest;
 import com.se1853_jv.dto.request.GoogleLoginRequest;
 import com.se1853_jv.dto.request.LoginRequest;
 import com.se1853_jv.dto.request.RegisterRequest;
-import com.se1853_jv.dto.response.AuthResponse;
-import com.se1853_jv.dto.response.MessageResponse;
+import com.se1853_jv.dto.response.WrapperApiResponse;
 import com.se1853_jv.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-public class    AuthController {
+public class AuthController {
 
     private final AuthService authService;
 
@@ -24,32 +23,29 @@ public class    AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        AuthResponse response = authService.register(registerRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<WrapperApiResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        return ResponseEntity.ok(WrapperApiResponse.success(authService.register(registerRequest)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        AuthResponse response = authService.login(loginRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<WrapperApiResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok(WrapperApiResponse.success(authService.login(loginRequest)));
     }
 
     @PostMapping("/google")
-    public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest googleLoginRequest) {
-        AuthResponse response = authService.googleLogin(googleLoginRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<WrapperApiResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest googleLoginRequest) {
+        return ResponseEntity.ok(WrapperApiResponse.success(authService.googleLogin(googleLoginRequest)));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<WrapperApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok(new MessageResponse("New password has been sent to your email"));
+        return ResponseEntity.ok(WrapperApiResponse.success("New password has been sent to your email", null));
     }
 
     @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("Account Service is running");
+    public ResponseEntity<WrapperApiResponse> health() {
+        return ResponseEntity.ok(WrapperApiResponse.success("Account Service is running", null));
     }
 }
 
