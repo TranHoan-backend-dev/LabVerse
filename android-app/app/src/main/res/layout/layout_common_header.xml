@@ -52,14 +52,32 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Avatar -->
+<!--    <ImageView-->
+<!--        android:id="@+id/avatar"-->
+<!--        android:layout_width="36dp"-->
+<!--        android:layout_height="36dp"-->
+<!--        android:background="@drawable/bg_circle_crop"-->
+<!--        android:clipToOutline="true"-->
+<!--        android:contentDescription="@string/user_avatar"-->
+<!--        android:elevation="2dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        android:src="@mipmap/avt_mock_round"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:background="@drawable/bg_circle_crop"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clipToOutline="true"
         android:contentDescription="@string/user_avatar"
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="2dp"
+        android:padding="4dp"
         android:scaleType="centerCrop"
         android:src="@mipmap/avt_mock_round"
         app:layout_constraintBottom_toBottomOf="parent"

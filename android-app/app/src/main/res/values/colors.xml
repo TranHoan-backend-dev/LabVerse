@@ -20,4 +20,6 @@
 
     <color name="semi_purple">#F3E8FF</color>
     <color name="purple">#9333EA</color>
+    <color name="success_icon_color">#4CAF50</color>
+    <color name="success_text_color">#2E7D32</color>
 </resources>
