@@ -74,6 +74,8 @@ dependencies {
 
     implementation(libs.lottie)
 
+    implementation(libs.snake.yaml)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

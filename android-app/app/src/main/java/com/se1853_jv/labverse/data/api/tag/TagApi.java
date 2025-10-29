@@ -12,4 +12,6 @@ import retrofit2.http.Path;
 public interface TagApi {
     @GET("paper/{id}")
     Call<BaseJsonResponse<List<Tag>>> getByPaper(@Path("id") String id);
+    @GET(".")
+    Call<BaseJsonResponse<List<Tag>>> getFiveMostPopularTag();
 }
