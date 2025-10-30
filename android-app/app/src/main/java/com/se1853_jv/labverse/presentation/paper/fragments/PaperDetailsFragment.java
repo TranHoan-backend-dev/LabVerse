@@ -75,7 +75,7 @@ public class PaperDetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         bindingView(view);
 
-        AtomicReference<PaperResearch> pr = new AtomicReference<>();
+        var pr = new AtomicReference<PaperResearch>();
         Future<Boolean> apiStatus = Executors
                 .newSingleThreadExecutor()
                 .submit(() -> Connectivity.isApiActive(PAPER_ENDPOINT_URL.concat("health")));
@@ -84,7 +84,6 @@ public class PaperDetailsFragment extends Fragment {
                 .submit(() -> Connectivity.isInternetAvailable(view.getContext()));
 
         try {
-            Log.d("asdasd", String.valueOf(apiStatus.get()));
             if (!internetStatus.get()) {
                 Executors.newSingleThreadExecutor().execute(() -> {
                     var db = DatabaseClient.getInstance(view.getContext()).getAppDatabase();
