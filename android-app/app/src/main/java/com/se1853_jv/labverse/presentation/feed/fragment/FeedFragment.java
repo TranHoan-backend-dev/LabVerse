@@ -22,7 +22,7 @@ import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.tag.TagApiHandler;
 import com.se1853_jv.labverse.domain.infrastructure.tag.model.Tag;
-import com.se1853_jv.labverse.presentation.feed.tabs.TabAdapter;
+import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 
 import java.util.List;
 

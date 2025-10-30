@@ -1,12 +1,12 @@
-package com.se1853_jv.labverse.presentation.feed.tabs;
+package com.se1853_jv.labverse.presentation.feed.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.se1853_jv.labverse.presentation.feed.tabs.fragments.DiscoveryFragment;
-import com.se1853_jv.labverse.presentation.feed.tabs.fragments.TeamFragment;
+import com.se1853_jv.labverse.presentation.feed.fragment.tabs.DiscoveryFragment;
+import com.se1853_jv.labverse.presentation.feed.fragment.tabs.TeamFragment;
 
 public class TabAdapter extends FragmentStateAdapter {
     public TabAdapter(@NonNull FragmentActivity fragmentActivity) {

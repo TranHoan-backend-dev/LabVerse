@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.presentation.feed.tabs.fragments;
+package com.se1853_jv.labverse.presentation.feed.fragment.tabs;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

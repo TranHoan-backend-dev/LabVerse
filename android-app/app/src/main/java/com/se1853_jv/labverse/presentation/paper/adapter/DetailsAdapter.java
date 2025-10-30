@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.presentation.common.adapter;
+package com.se1853_jv.labverse.presentation.paper.adapter;
 
 import android.os.Build;
 
