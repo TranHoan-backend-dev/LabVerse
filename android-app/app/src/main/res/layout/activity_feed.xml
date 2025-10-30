@@ -4,16 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- Tabs -->
-    <include layout="@layout/layout_common_tab_component_section" />
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <include layout="@layout/layout_common_component_search" />
-
     <!-- Tags -->
     <HorizontalScrollView
         android:layout_width="match_parent"

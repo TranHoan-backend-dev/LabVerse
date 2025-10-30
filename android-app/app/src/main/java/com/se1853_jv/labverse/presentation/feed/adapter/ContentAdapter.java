@@ -7,8 +7,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.se1853_jv.labverse.presentation.feed.fragment.FeedFragment;
 
-public class FeedAdapter extends FragmentStateAdapter {
-    public FeedAdapter(@NonNull FragmentActivity fragmentActivity) {
+public class ContentAdapter extends FragmentStateAdapter {
+    public ContentAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
 

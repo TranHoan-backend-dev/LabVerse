@@ -2,7 +2,6 @@ package com.se1853_jv.labverse.presentation.feed.fragment;
 
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,20 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.tag.TagApiHandler;
 import com.se1853_jv.labverse.domain.infrastructure.tag.model.Tag;
-import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 
 import java.util.List;
 
 public class FeedFragment extends Fragment {
-    private TabLayout tabLayout;
     private final TagApiHandler apiHandler;
 
     public FeedFragment() {
@@ -43,37 +37,7 @@ public class FeedFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ViewPager2 viewPager = view.findViewById(R.id.viewPager);
-        tabLayout = view.findViewById(R.id.tabLayoutPaper);
         bindingDataForTagChips();
-        setupTabs(viewPager);
-    }
-
-    private void setupTabs(ViewPager2 viewPager) {
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                Log.d("TabSelected", "Tab được chọn: " + position);
-            }
-        });
-
-        var adapter = new TabAdapter(requireActivity());
-        viewPager.setAdapter(adapter);
-
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            switch (position) {
-                case 0:
-                    tab.setText("Discovery");
-                    break;
-                case 1:
-                    tab.setText("Saved");
-                    break;
-                case 2:
-                    tab.setText("Team");
-                    break;
-            }
-        }).attach();
     }
 
     private void bindingDataForTagChips() {
