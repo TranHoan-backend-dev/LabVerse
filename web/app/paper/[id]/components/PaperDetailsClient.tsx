@@ -22,7 +22,7 @@ import {
 import { FiDownload, FiShare2 } from "react-icons/fi";
 
 import { Paper } from "@/types/paper.type";
-import PaperDetailsHeader from "@/app/paper/components/PaperDetailsHeader";
+import PaperDetailsHeader from "@/app/paper/[id]/components/PaperDetailsHeader";
 
 export default function PaperDetailsClient() {
   const [selectedTab, setSelectedTab] = useState<string>("overview");

@@ -7,16 +7,25 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineListBullet,
   HiOutlineSquares2X2,
-  HiOutlineUser,
 } from "react-icons/hi2";
 import clsx from "clsx";
+import {
+  Avatar,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/react";
+import { HiLogout, HiOutlineUser } from "react-icons/hi";
+import { FcSettings } from "react-icons/fc";
+
+import { LabVerseLogo } from "@/components/icons";
 
 const navItems = [
   { href: "/", label: "Home", icon: HiOutlineHome },
   { href: "/search", label: "Search", icon: HiOutlineMagnifyingGlass },
   { href: "/lists", label: "Lists", icon: HiOutlineListBullet },
   { href: "/collections", label: "Collections", icon: HiOutlineSquares2X2 },
-  { href: "/profile", label: "Profile", icon: HiOutlineUser },
 ];
 
 export default function Navbar() {
@@ -26,8 +35,9 @@ export default function Navbar() {
     <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm backdrop-blur-md bg-opacity-90">
       <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="text-xl font-semibold text-blue-600 tracking-tight">
-          LabVerse
+        <div className="text-xl font-semibold text-blue-600 tracking-tight flex flex-row justify-center">
+          <LabVerseLogo />
+          <span className="mx-2">LabVerse</span>
         </div>
 
         {/* Nav Items */}
@@ -59,12 +69,42 @@ export default function Navbar() {
 
         {/* Right Side */}
         <div className="hidden md:block">
-          <Link
-            className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-            href="/profile"
-          >
-            Sign In
-          </Link>
+          {/*<Link*/}
+          {/*  className="text-sm text-gray-600 hover:text-blue-600 transition-colors mx-5"*/}
+          {/*  href="/signin"*/}
+          {/*>*/}
+          {/*  Sign In*/}
+          {/*</Link>*/}
+          {/*<Link*/}
+          {/*  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"*/}
+          {/*  href="/signup"*/}
+          {/*>*/}
+          {/*  Sign Up*/}
+          {/*</Link>*/}
+          <Dropdown>
+            <DropdownTrigger>
+              <Avatar
+                showFallback
+                className="cursor-pointer"
+                size="sm"
+                src="https://images.unsplash.com/broken"
+              />
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Example with disabled actions"
+              disabledKeys={["edit", "delete"]}
+            >
+              <DropdownItem key="new" startContent={<HiOutlineUser />}>
+                Profile
+              </DropdownItem>
+              <DropdownItem key="setting" startContent={<FcSettings />}>
+                Settings
+              </DropdownItem>
+              <DropdownItem key="copy" startContent={<HiLogout />}>
+                Logout
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </div>
     </nav>
