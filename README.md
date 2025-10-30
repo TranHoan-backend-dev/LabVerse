@@ -3,7 +3,7 @@
 🚀 **LabVerse** is an Android application designed to support laboratories and research teams in discovering, organizing, annotating, and collaborating on academic research papers.  
 The system streamlines the literature review process and builds a shared knowledge base, serving research institutions from Hanoi to Ho Chi Minh City and across the globe.
 
-This project is developed as part of the **Mobile Application Development course (PRM392)** at **FPT University**, by a team of 5 members.
+This project is developed as part of the **Mobile Application Development course (PRM392)** and **Microservice and Cloud course (MSS301)** at **FPT University**, by a team of 5 members.
 
 ---
 
@@ -24,7 +24,8 @@ This project is developed as part of the **Mobile Application Development course
 
 ## 🛠️ Technologies Used
 
-- **Mobile**: Android (Java + Kotlin)  
+- **Mobile**: Android (Java + Kotlin)
+- **Frontend**: Next.js (Typescript, Tailwindcss)
 - **Backend**: Microservices (Java + Kotlin)  
 - **Database**: Room (offline) + backend APIs  
 - **Cloud & Messaging**: Firebase (Authentication, Storage, FCM)  
@@ -54,7 +55,7 @@ This project is developed as part of the **Mobile Application Development course
 
 ## 📎 License
 
-This project is developed as part of the PRM392 coursework. Distribution or reuse is subject to course and university guidelines.
+This project is developed as part of the PRM392 and MSS301 coursework. Distribution or reuse is subject to course and university guidelines.
 
 ---
 
