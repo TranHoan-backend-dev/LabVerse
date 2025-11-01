@@ -54,4 +54,8 @@
     <string name="user">User</string>
     <string name="new_paper_added">New paper added</string>
     <string name="go_back">Go back</string>
+    <string name="recently_read">Recently Read</string>
+    <string name="favorites">Favorites</string>
+    <string name="heart">❤️</string>
+    <string name="in_progress">In Progress</string>
 </resources>

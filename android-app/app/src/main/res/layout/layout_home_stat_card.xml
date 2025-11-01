@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="247"
-        android:textSize="16sp"
+        android:textSize="25sp"
         android:textStyle="bold"
         android:textColor="@color/dark_blue" />
 
@@ -23,5 +23,5 @@
         android:layout_height="wrap_content"
         android:text="Papers"
         android:textColor="@color/black"
-        android:textSize="12sp" />
+        android:textSize="15sp" />
 </LinearLayout>

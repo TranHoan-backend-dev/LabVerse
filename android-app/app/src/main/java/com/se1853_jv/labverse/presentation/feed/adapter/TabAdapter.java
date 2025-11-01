@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.se1853_jv.labverse.presentation.feed.fragment.tabs.DiscoveryFragment;
-import com.se1853_jv.labverse.presentation.feed.fragment.tabs.MyPaperFragment;
-import com.se1853_jv.labverse.presentation.feed.fragment.tabs.TeamFragment;
+import com.se1853_jv.labverse.presentation.feed.fragment.DiscoveryFragment;
+import com.se1853_jv.labverse.presentation.feed.fragment.MyPaperFragment;
+import com.se1853_jv.labverse.presentation.feed.fragment.TeamFragment;
 
 public class TabAdapter extends FragmentStateAdapter {
     public TabAdapter(@NonNull FragmentActivity fragmentActivity) {
@@ -18,8 +18,8 @@ public class TabAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         return switch (position) {
-            case 1 -> new DiscoveryFragment();
-            case 2 -> new MyPaperFragment();
+            case 0 -> new DiscoveryFragment();
+            case 1 -> new MyPaperFragment();
             default -> new TeamFragment();
         };
     }

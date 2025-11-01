@@ -1,20 +1,15 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="5dp"
+    android:backgroundTint="@color/blue"
     android:gravity="center"
-    android:orientation="vertical">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/continue_label"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:background="@drawable/bg_continue"
-        android:padding="12dp"
-        android:gravity="center"
-        tools:ignore="MissingConstraints" />
-</LinearLayout>
+    android:text="@string/continue_label"
+    android:textColor="@color/white"
+    android:textSize="11sp"
+    android:textStyle="bold"
+    app:cornerRadius="10dp"
+    tools:ignore="MissingConstraints" />
