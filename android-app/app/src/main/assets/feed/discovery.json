@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "tags": [
+      {
+        "name": "New",
+        "color": "#4CAF50"
+      }
+    ],
+    "title": "Deep Learning Approaches for Protein Structure Prediction: A Comprehensive Review",
+    "summary": "This paper presents a comprehensive analysis of recent deep learning methodologies.",
+    "journal": "Nature Biotechnology",
+    "timeAgo": "2 days ago",
+    "citations": 15,
+    "author": {
+      "name": "User",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/1.jpg"
+    }
+  },
+  {
+    "id": 2,
+    "tags": [
+      {
+        "name": "Trending",
+        "color": "#FF9800"
+      },
+      {
+        "name": "AI-Assisted",
+        "color": "#3F51B5"
+      }
+    ],
+    "title": "Quantum Computing Applications in Drug Discovery: Current State and Future Prospects",
+    "summary": "An extensive review of quantum computing methodologies being applied to accelerate drug discovery.",
+    "journal": "Science",
+    "timeAgo": "1 week ago",
+    "citations": 42,
+    "author": {
+      "name": "User",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/2.jpg"
+    }
+  },
+  {
+    "id": 3,
+    "tags": [
+      {
+        "name": "Collaborative",
+        "color": "#9C27B0"
+      },
+      {
+        "name": "Biotech",
+        "color": "#009688"
+      }
+    ],
+    "title": "CRISPR–Cas9 Gene Editing: Recent Advances in Therapeutic Applications",
+    "summary": "This review summarizes the latest developments in CRISPR–Cas9 technology for therapeutic use.",
+    "journal": "Cell",
+    "timeAgo": "3 days ago",
+    "citations": 28,
+    "author": {
+      "name": "User",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/3.jpg"
+    }
+  },
+  {
+    "id": 4,
+    "tags": [
+      {
+        "name": "Editor's Pick",
+        "color": "#E91E63"
+      }
+    ],
+    "title": "Machine Learning for Medical Imaging: Opportunities and Challenges",
+    "summary": "An overview of how machine learning is transforming diagnostic imaging and healthcare analytics.",
+    "journal": "IEEE Transactions on Medical Imaging",
+    "timeAgo": "5 days ago",
+    "citations": 37,
+    "author": {
+      "name": "FPTU",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/4.jpg"
+    }
+  },
+  {
+    "id": 5,
+    "tags": [
+      {
+        "name": "Highlighted",
+        "color": "#673AB7"
+      },
+      {
+        "name": "AI",
+        "color": "#607D8B"
+      }
+    ],
+    "title": "Ethical Considerations in AI-driven Healthcare Systems",
+    "summary": "Discusses fairness, transparency, and accountability in AI adoption for clinical decision-making.",
+    "journal": "Journal of Ethics in AI",
+    "timeAgo": "4 days ago",
+    "citations": 19,
+    "author": {
+      "name": "Hoan-sama",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/5.jpg"
+    }
+  },
+  {
+    "id": 6,
+    "tags": [
+      {
+        "name": "Trending",
+        "color": "#FF9800"
+      }
+    ],
+    "title": "Neural Interfaces: Bridging Brain and Machine Communication",
+    "summary": "Explores the latest advancements in neural interface technology enabling brain-computer interaction.",
+    "journal": "Frontiers in Neuroscience",
+    "timeAgo": "1 day ago",
+    "citations": 31,
+    "author": {
+      "name": "Peter and his friends",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/6.jpg"
+    }
+  },
+  {
+    "id": 7,
+    "tags": [
+      {
+        "name": "Recommended",
+        "color": "#00BCD4"
+      }
+    ],
+    "title": "Blockchain for Secure Patient Data Management",
+    "summary": "Evaluates blockchain solutions for enhancing privacy, interoperability, and traceability in healthcare.",
+    "journal": "Health Informatics Journal",
+    "timeAgo": "6 days ago",
+    "citations": 23,
+    "author": {
+      "name": "Hoo Lee Sheet, Hung Le, Cao Ly Ma",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/7.jpg"
+    }
+  },
+  {
+    "id": 8,
+    "tags": [
+      {
+        "name": "Collaborative",
+        "color": "#9C27B0"
+      }
+    ],
+    "title": "Synthetic Biology in Pharmaceutical Development",
+    "summary": "Summarizes the integration of synthetic biology tools in the creation of novel drug candidates.",
+    "journal": "Nature Reviews Drug Discovery",
+    "timeAgo": "2 weeks ago",
+    "citations": 45,
+    "author": {
+      "name": "User",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/8.jpg"
+    }
+  },
+  {
+    "id": 9,
+    "tags": [
+      {
+        "name": "AI-Assisted",
+        "color": "#3F51B5"
+      },
+      {
+        "name": "Highlighted",
+        "color": "#673AB7"
+      }
+    ],
+    "title": "Automated Literature Mining for Biomedical Insights",
+    "summary": "Introduces an NLP-driven approach to extract key findings from biomedical literature efficiently.",
+    "journal": "Bioinformatics",
+    "timeAgo": "3 weeks ago",
+    "citations": 62,
+    "author": {
+      "name": "Coordination",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/9.jpg"
+    }
+  },
+  {
+    "id": 10,
+    "tags": [
+      {
+        "name": "New",
+        "color": "#4CAF50"
+      },
+      {
+        "name": "Experimental",
+        "color": "#FF5722"
+      }
+    ],
+    "title": "Nanorobotics in Targeted Cancer Therapy: A New Frontier",
+    "summary": "Describes emerging nanorobotic systems engineered for precision drug delivery to cancerous cells.",
+    "journal": "Advanced Science",
+    "timeAgo": "1 month ago",
+    "citations": 74,
+    "author": {
+      "name": "Diddy",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/10.jpg"
+    }
+  }
+]
