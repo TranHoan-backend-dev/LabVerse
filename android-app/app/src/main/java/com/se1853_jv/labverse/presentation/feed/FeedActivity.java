@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.feed.adapter.ContentAdapter;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 
@@ -37,6 +38,11 @@ public class FeedActivity extends AppCompatActivity {
         ViewPager2 pager3 = findViewById(R.id.viewPager);
         ContentAdapter contentAdapter = new ContentAdapter(FeedActivity.this);
         pager3.setAdapter(contentAdapter);
+
+        // Setup avatar and profile navigation click listeners
+        HeaderHelper.setupProfileClickListeners(this);
+        // Setup Lists navigation click listener
+        HeaderHelper.setupListsNavigationClickListener(this);
 
     }
 

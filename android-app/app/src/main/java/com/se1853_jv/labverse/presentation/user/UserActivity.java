@@ -6,6 +6,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 
 public class UserActivity extends AppCompatActivity {
 
@@ -14,6 +15,11 @@ public class UserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.layout_common_home);
+        
+        // Setup avatar and profile navigation click listeners
+        HeaderHelper.setupProfileClickListeners(this);
+        // Setup Lists navigation click listener
+        HeaderHelper.setupListsNavigationClickListener(this);
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
 //            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 //            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

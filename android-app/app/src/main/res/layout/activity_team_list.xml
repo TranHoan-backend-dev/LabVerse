@@ -10,7 +10,7 @@
 
     <include
         android:id="@+id/header"
-        layout="@layout/layout_common_header"
+        layout="@layout/layout_common_component_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +40,7 @@
 
             <include
                 android:id="@+id/searchSection"
-                layout="@layout/layout_common_search"
+                layout="@layout/layout_common_component_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -62,6 +62,23 @@
                 android:text="Monitor progress across your research teams"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
+
+            <!-- Create Team Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateTeam"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Create New Team"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingVertical="14dp"
+                app:icon="@drawable/ic_team"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                android:backgroundTint="@color/primary"
+                app:cornerRadius="12dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -95,7 +112,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="AI Labs"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="@color/gray" />
 
                     <com.google.android.material.chip.Chip
@@ -103,7 +120,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Biomedical"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="@color/gray" />
 
                     <com.google.android.material.chip.Chip
@@ -111,7 +128,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Environment"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_primary"
                         app:chipBackgroundColor="@color/gray" />
 
                 </com.google.android.material.chip.ChipGroup>
@@ -129,11 +146,17 @@
 
             </LinearLayout>
 
-            <include layout="@layout/layout_team_card" />
+            <include
+                android:id="@+id/teamCard1"
+                layout="@layout/layout_team_card" />
 
-            <include layout="@layout/layout_team_card" />
+            <include
+                android:id="@+id/teamCard2"
+                layout="@layout/layout_team_card" />
 
-            <include layout="@layout/layout_team_card" />
+            <include
+                android:id="@+id/teamCard3"
+                layout="@layout/layout_team_card" />
 
             <TextView
                 android:id="@+id/tvRecommended"
@@ -145,7 +168,9 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <include layout="@layout/layout_team_card" />
+            <include
+                android:id="@+id/teamCard4"
+                layout="@layout/layout_team_card" />
 
         </LinearLayout>
 
@@ -161,7 +186,7 @@
 
     <include
         android:id="@+id/bottomNav"
-        layout="@layout/layout_common_nav"
+        layout="@layout/layout_common_component_nav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
