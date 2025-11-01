@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/group/collections")
+@RequestMapping("/collections")
 @RequiredArgsConstructor
 public class CollectionController {
 

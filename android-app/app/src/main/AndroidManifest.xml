@@ -28,12 +28,20 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+<!--        <activity-->
+<!--            android:name=".presentation.user.UserActivity"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <activity
-            android:name=".presentation.user.UserActivity"
+            android:name=".presentation.collection.CollectionsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -47,6 +55,9 @@
         <activity
             android:name=".presentation.feed.FeedActivity"
             android:exported="true" />
+<!--        <activity-->
+<!--            android:name=".presentation.collection.CollectionsActivity"-->
+<!--            android:exported="true" />-->
     </application>
 
 </manifest>
