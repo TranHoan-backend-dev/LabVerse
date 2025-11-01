@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.presentation.feed.fragment.tabs;
+package com.se1853_jv.labverse.presentation.feed.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class DiscoveryFragment extends Fragment {
+public class TeamFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

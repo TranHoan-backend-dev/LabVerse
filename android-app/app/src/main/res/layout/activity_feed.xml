@@ -47,12 +47,13 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <include layout="@layout/layout_feed_paper_card" />
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <include layout="@layout/layout_feed_paper_card_trending" />
-
-    <include layout="@layout/layout_feed_paper_card_collab" />
-
+    </LinearLayout>
     <include layout="@layout/layout_common_component_pagination" />
 
     <!-- Recent Alerts -->

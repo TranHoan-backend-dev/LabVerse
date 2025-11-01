@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="247"
+        android:textColor="#2196F3"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Papers"
+        android:textColor="#757575"
+        android:textSize="12sp" />
+</LinearLayout>
+    <!--            <LinearLayout-->
+    <!--                android:layout_width="0dp"-->
+    <!--                android:layout_height="wrap_content"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:orientation="vertical"-->
+    <!--                android:gravity="center">-->
+
+    <!--                <TextView-->
+    <!--                    android:layout_width="wrap_content"-->
+    <!--                    android:layout_height="wrap_content"-->
+    <!--                    android:text="18"-->
+    <!--                    android:textSize="28sp"-->
+    <!--                    android:textColor="#4CAF50"-->
+    <!--                    android:textStyle="bold"/>-->
+
+    <!--                <TextView-->
+    <!--                    android:layout_width="wrap_content"-->
+    <!--                    android:layout_height="wrap_content"-->
+    <!--                    android:text="Collections"-->
+    <!--                    android:textSize="12sp"-->
+    <!--                    android:textColor="#757575"-->
+    <!--                    android:layout_marginTop="4dp"/>-->
+    <!--            </LinearLayout>-->
+
+    <!--            <LinearLayout-->
+    <!--                android:layout_width="0dp"-->
+    <!--                android:layout_height="wrap_content"-->
+    <!--                android:layout_weight="1"-->
+    <!--                android:orientation="vertical"-->
+    <!--                android:gravity="center">-->
+
+    <!--                <TextView-->
+    <!--                    android:layout_width="wrap_content"-->
+    <!--                    android:layout_height="wrap_content"-->
+    <!--                    android:text="5"-->
+    <!--                    android:textSize="28sp"-->
+    <!--                    android:textColor="#FF9800"-->
+    <!--                    android:textStyle="bold"/>-->
+
+    <!--                <TextView-->
+    <!--                    android:layout_width="wrap_content"-->
+    <!--                    android:layout_height="wrap_content"-->
+    <!--                    android:text="Team Projects"-->
+    <!--                    android:textSize="12sp"-->
+    <!--                    android:textColor="#757575"-->
+    <!--                    android:layout_marginTop="4dp"/>-->
+    <!--            </LinearLayout>-->
