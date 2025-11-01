@@ -75,7 +75,7 @@ public class ReferenceFragment extends Fragment {
                         data.forEach(c -> {
                             View itemView = inflater.inflate(R.layout.layout_paperdetails_references_info, container, false);
 
-                            TextView citationTitle = itemView.findViewById(R.id.title);
+                            TextView citationTitle = itemView.findViewById(R.id.title_view);
                             TextView citationAuthors = itemView.findViewById(R.id.authors);
                             TextView citationJournal = itemView.findViewById(R.id.journal);
                             TextView citationYear = itemView.findViewById(R.id.year);
@@ -121,7 +121,7 @@ public class ReferenceFragment extends Fragment {
             );
             popup.getMenuInflater().inflate(R.menu.menu_style, popup.getMenu());
             popup.setOnMenuItemClickListener(item -> {
-                TextView originalTitle = view.findViewById(R.id.title);
+                TextView originalTitle = view.findViewById(R.id.title_view);
                 TextView originalAuthors = view.findViewById(R.id.authors);
                 TextView originalJournal = view.findViewById(R.id.journal);
                 TextView originalYear = view.findViewById(R.id.year);

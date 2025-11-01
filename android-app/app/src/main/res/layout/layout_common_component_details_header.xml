@@ -9,7 +9,17 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     android:titleTextColor="@android:color/white">
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginStart="20dp"
+        android:background="@color/blue"
+        android:contentDescription="@string/go_back"
+        android:src="@drawable/ic_arrow_back" />
+
     <TextView
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

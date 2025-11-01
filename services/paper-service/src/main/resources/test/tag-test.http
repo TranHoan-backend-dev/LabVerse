@@ -4,3 +4,13 @@
 @id = YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4
 GET {{url}}/paper/{{id}}
 Accept: application/json
+
+###
+POST http://localhost:8080/v1/api/papers/pdf/parse
+Content-Type: multipart/form-data
+
+###
+GET {{url}}
+
+###
+HEAD {{url}}/health

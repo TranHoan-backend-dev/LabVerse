@@ -19,10 +19,11 @@ glide = "5.0.5"
 firebaseBom = "34.4.0"
 androidPdfViewer = "3.2.0-beta.3"
 loggingInterceptor = "5.2.1"
-lottieVersion = "6.6.10"
+lottieVersion = "6.7.0"
 coreKtx = "1.17.0"
 googleServices = "4.4.4"
 jackson = "2.17.2"
+yaml = "2.5"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -59,9 +60,12 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 android-pdf-viewer = { module = "com.github.mhiew:android-pdf-viewer", version.ref = "androidPdfViewer" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottieVersion" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-annotation = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+
+snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
