@@ -12,7 +12,7 @@ public interface ReadingWorkflowService {
 
     ReadingWorkflowResponse createWorkflow(ReadingWorkflowCreateRequest request);
 
-    List<ReadingWorkflowResponse> getWorkflowsByUser(String userId, String status);
+    List<ReadingWorkflowResponse> getWorkflowsByUser(String usersid, String status);
 
     void updateProgress(ReadingWorkflowProgressRequest request);
 

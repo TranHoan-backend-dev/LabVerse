@@ -5,8 +5,8 @@ import com.se1853_jv.readingservice.dto.response.ReadingSummaryResponse;
 
 public interface SummaryService {
 
-    ReadingSummaryResponse getReadingSummary(String userId);
+    ReadingSummaryResponse getReadingSummary(String usersid);
 
-    AnnotationsResponse getAnnotations(String paperId, String userId);
+    AnnotationsResponse getAnnotations(String paperId, String usersid);
 }
 

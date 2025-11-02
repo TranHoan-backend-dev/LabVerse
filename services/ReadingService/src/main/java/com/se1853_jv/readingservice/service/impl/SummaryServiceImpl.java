@@ -26,8 +26,8 @@ public class SummaryServiceImpl implements SummaryService {
     private final HighlightService highlightService;
 
     @Override
-    public ReadingSummaryResponse getReadingSummary(String userId) {
-        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_UserId(userId);
+    public ReadingSummaryResponse getReadingSummary(String usersid) {
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_Usersid(usersid);
 
         long unread = workflows.stream()
                 .filter(w -> "unread".equals(w.getStatus()))
@@ -49,29 +49,43 @@ public class SummaryServiceImpl implements SummaryService {
     }
 
     @Override
-    public AnnotationsResponse getAnnotations(String paperId, String userId) {
+    public AnnotationsResponse getAnnotations(String paperId, String usersid) {
         // Get all notes and highlights for this paper and user
-        // Find workflows for this paper+user to get collectionIds
-        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_UserId(userId)
+        // Find workflows for this paper+user
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_Usersid(usersid)
                 .stream()
                 .filter(w -> paperId.equals(w.getId().getPaperId()))
                 .collect(java.util.stream.Collectors.toList());
 
-        if (workflows.isEmpty()) {
-            return AnnotationsResponse.builder()
-                    .notes(List.of())
-                    .highlights(List.of())
-                    .build();
-        }
-
-        // Collect all notes and highlights from all workflows (paper can be in multiple collections)
+        // Collect notes and highlights directly from Many-to-Many relationships
         List<NoteResponse> allNotes = new java.util.ArrayList<>();
         List<HighlightResponse> allHighlights = new java.util.ArrayList<>();
 
         for (ReadingWorkflow workflow : workflows) {
-            String collectionId = workflow.getId().getCollectionId();
-            allNotes.addAll(noteService.getNotes(collectionId, paperId, userId));
-            allHighlights.addAll(highlightService.getHighlights(collectionId, paperId, userId));
+            if (workflow.getNotes() != null) {
+                allNotes.addAll(workflow.getNotes().stream()
+                        .map(n -> NoteResponse.builder()
+                                .id(com.se1853_jv.readingservice.util.IdEncoder.encode(n.getId()))
+                                .content(n.getContent())
+                                .coordinationX(n.getCoordinationX())
+                                .coordinationY(n.getCoordinationY())
+                                .pageNumber(n.getPageNumber())
+                                .createdAt(n.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList()));
+            }
+            if (workflow.getHighlights() != null) {
+                allHighlights.addAll(workflow.getHighlights().stream()
+                        .map(h -> HighlightResponse.builder()
+                                .id(com.se1853_jv.readingservice.util.IdEncoder.encode(h.getId()))
+                                .color(h.getColor())
+                                .coordinationX(h.getCoordinationX())
+                                .coordinationY(h.getCoordinationY())
+                                .pageNumber(h.getPageNumber())
+                                .createdAt(h.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList()));
+            }
         }
 
         return AnnotationsResponse.builder()

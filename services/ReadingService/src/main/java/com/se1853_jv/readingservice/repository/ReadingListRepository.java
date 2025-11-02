@@ -7,10 +7,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface ReadingListRepository extends JpaRepository<ReadingList, UUID> {
+public interface ReadingListRepository extends JpaRepository<ReadingList, String> {
     
     @Query("SELECT rl FROM ReadingList rl " +
            "WHERE rl.userIdsList LIKE CONCAT('%', :userId, '%')")

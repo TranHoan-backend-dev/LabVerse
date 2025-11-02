@@ -5,11 +5,8 @@ import com.se1853_jv.readingservice.dto.response.HighlightResponse;
 import com.se1853_jv.readingservice.exception.ResourceNotFoundException;
 import com.se1853_jv.readingservice.model.Highlight;
 import com.se1853_jv.readingservice.model.ReadingWorkflow;
-import com.se1853_jv.readingservice.model.ReadingWorkflowHighlight;
-import com.se1853_jv.readingservice.model.ReadingWorkflowHighlightId;
 import com.se1853_jv.readingservice.model.ReadingWorkflowId;
 import com.se1853_jv.readingservice.repository.HighlightRepository;
-import com.se1853_jv.readingservice.repository.ReadingWorkflowHighlightRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.HighlightService;
 import com.se1853_jv.readingservice.util.IdEncoder;
@@ -18,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +24,6 @@ public class HighlightServiceImpl implements HighlightService {
 
     private final HighlightRepository highlightRepository;
     private final ReadingWorkflowRepository readingWorkflowRepository;
-    private final ReadingWorkflowHighlightRepository readingWorkflowHighlightRepository;
 
     @Override
     public HighlightResponse addHighlight(HighlightRequest request) {
@@ -36,22 +31,25 @@ public class HighlightServiceImpl implements HighlightService {
         ReadingWorkflowId workflowId = new ReadingWorkflowId(
                 request.getCollectionId(),
                 request.getPaperId(),
-                request.getUserId()
+                request.getUsersid()
         );
         
-        if (!readingWorkflowRepository.existsById(workflowId)) {
-            // Create workflow if not exists
-            ReadingWorkflow workflow = ReadingWorkflow.builder()
-                    .id(workflowId)
-                    .status("reading")
-                    .lastPage(request.getPageNumber())
-                    .progress(0)
-                    .build();
-            readingWorkflowRepository.save(workflow);
-        }
+        ReadingWorkflow workflow = readingWorkflowRepository.findById(workflowId)
+                .orElseGet(() -> {
+                    // Create workflow if not exists
+                    ReadingWorkflow newWorkflow = ReadingWorkflow.builder()
+                            .id(workflowId)
+                            .status("reading")
+                            .lastPage(request.getPageNumber())
+                            .progress(0)
+                            .build();
+                    return readingWorkflowRepository.save(newWorkflow);
+                });
 
-        // Create highlight (ID will be auto-generated)
+        // Create highlight with UUID
+        String highlightId = java.util.UUID.randomUUID().toString();
         Highlight highlight = Highlight.builder()
+                .id(highlightId)
                 .color(request.getColor())
                 .coordinationX(request.getCoordinationX())
                 .coordinationY(request.getCoordinationY())
@@ -60,41 +58,40 @@ public class HighlightServiceImpl implements HighlightService {
 
         Highlight savedHighlight = highlightRepository.save(highlight);
 
-        // Create mapping
-        ReadingWorkflowHighlightId mappingId = new ReadingWorkflowHighlightId(
-                request.getCollectionId(),
-                request.getPaperId(),
-                request.getUserId(),
-                savedHighlight.getId().toString()
-        );
-
-        ReadingWorkflowHighlight mapping = ReadingWorkflowHighlight.builder()
-                .id(mappingId)
-                .build();
-
-        readingWorkflowHighlightRepository.save(mapping);
+        // Add highlight to workflow's highlights collection (Many-to-Many)
+        if (workflow.getHighlights() == null) {
+            workflow.setHighlights(new java.util.ArrayList<>());
+        }
+        workflow.getHighlights().add(savedHighlight);
+        readingWorkflowRepository.save(workflow);
 
         return toResponse(savedHighlight);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HighlightResponse> getHighlights(String collectionId, String paperId, String userId) {
-        List<Highlight> highlights = highlightRepository.findByCollectionIdAndPaperIdAndUserId(collectionId, paperId, userId);
+    public List<HighlightResponse> getHighlights(String collectionId, String paperId, String usersid) {
+        List<Highlight> highlights = highlightRepository.findByCollectionIdAndPaperIdAndUsersid(collectionId, paperId, usersid);
         return highlights.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteHighlight(UUID highlightId) {
+    public void deleteHighlight(String highlightId) {
         // Check if highlight exists
         if (!highlightRepository.existsById(highlightId)) {
             throw new ResourceNotFoundException("Highlight not found");
         }
         
-        // Delete mappings first
-        readingWorkflowHighlightRepository.deleteById_HighlightId(highlightId.toString());
+        // Remove highlight from all workflows
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findAll();
+        for (ReadingWorkflow workflow : workflows) {
+            if (workflow.getHighlights() != null) {
+                workflow.getHighlights().removeIf(h -> h.getId().equals(highlightId));
+                readingWorkflowRepository.save(workflow);
+            }
+        }
         
         // Delete highlight
         highlightRepository.deleteById(highlightId);

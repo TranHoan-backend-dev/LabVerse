@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,20 +21,18 @@ import java.util.UUID;
 public class ReadingList {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 36, nullable = false, updatable = false)
-    private UUID id;
+    private String id; // varchar(36) - UUID as String
 
-    @NotBlank
     @Size(max = 255)
-    @Column(name = "name", length = 255, nullable = false)
-    private String name;
+    @Column(name = "name", length = 255, nullable = true)
+    private String name; // nullable per ERD
 
-    @Column(name = "user_ids_list", columnDefinition = "NVARCHAR(MAX)")
-    private String userIdsList; // JSON array string: ["user1", "user2"]
+    @Column(name = "user_ids_list", length = 255, nullable = true)
+    private String userIdsList; // varchar(255) nullable - JSON array string: ["user1", "user2"]
 
-    @Column(name = "paper_ids_list", columnDefinition = "NVARCHAR(MAX)")
-    private String paperIdsList; // JSON array string: ["paper1", "paper2"]
+    @Column(name = "paper_ids_list", length = 255, nullable = true)
+    private String paperIdsList; // varchar(255) nullable - JSON array string: ["paper1", "paper2"]
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

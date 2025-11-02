@@ -7,19 +7,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface HighlightRepository extends JpaRepository<Highlight, UUID> {
+public interface HighlightRepository extends JpaRepository<Highlight, String> {
     
-    @Query("SELECT h FROM Highlight h " +
-           "INNER JOIN ReadingWorkflowHighlight rwh ON CAST(h.id AS string) = rwh.id.highlightId " +
-           "WHERE rwh.id.collectionId = :collectionId " +
-           "AND rwh.id.paperId = :paperId " +
-           "AND rwh.id.userId = :userId")
-    List<Highlight> findByCollectionIdAndPaperIdAndUserId(
+    // Query through Many-to-Many relationship via ReadingWorkflow
+    @Query("SELECT DISTINCT h FROM ReadingWorkflow rw " +
+           "JOIN rw.highlights h " +
+           "WHERE rw.id.collectionId = :collectionId " +
+           "AND rw.id.paperId = :paperId " +
+           "AND rw.id.usersid = :usersid")
+    List<Highlight> findByCollectionIdAndPaperIdAndUsersid(
             @Param("collectionId") String collectionId,
             @Param("paperId") String paperId,
-            @Param("userId") String userId);
+            @Param("usersid") String usersid);
 }
 

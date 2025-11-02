@@ -19,10 +19,10 @@ public class ReadingWorkflowStatusRequest {
 
     @NotBlank
     @Size(max = 36)
-    private String userId;
+    private String usersid; // ERD uses "Usersid"
 
     @NotBlank
-    @Size(max = 50)
+    @Size(max = 10)
     private String status; // "unread" | "reading" | "finished"
 }
 

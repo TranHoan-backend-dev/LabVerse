@@ -38,7 +38,7 @@ public class NoteController {
         // Decode IDs from request
         request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
         request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         NoteResponse response = noteService.addNote(request);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
@@ -56,8 +56,8 @@ public class NoteController {
             @Parameter(description = "Encoded User ID", required = true) @RequestParam String userId) {
         String decodedCollectionId = IdEncoder.decodeString(collectionId);
         String decodedPaperId = IdEncoder.decodeString(paperId);
-        String decodedUserId = IdEncoder.decodeString(userId);
-        List<NoteResponse> notes = noteService.getNotes(decodedCollectionId, decodedPaperId, decodedUserId);
+        String decodedUsersid = IdEncoder.decodeString(userId);
+        List<NoteResponse> notes = noteService.getNotes(decodedCollectionId, decodedPaperId, decodedUsersid);
         return ResponseEntity.ok(WrapperApiResponse.success(notes));
     }
 
@@ -74,7 +74,7 @@ public class NoteController {
             @Parameter(description = "Encoded Note ID", required = true) @PathVariable String noteId,
             @Valid @RequestBody NoteUpdateRequest request) {
         java.util.UUID decodedNoteId = IdEncoder.decodeUuid(noteId);
-        NoteResponse response = noteService.updateNote(decodedNoteId, request);
+        NoteResponse response = noteService.updateNote(decodedNoteId.toString(), request);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
 
@@ -88,7 +88,7 @@ public class NoteController {
     })
     public ResponseEntity<WrapperApiResponse<String>> deleteNote(
             @Parameter(description = "Encoded Note ID", required = true) @PathVariable String noteId) {
-        java.util.UUID decodedNoteId = IdEncoder.decodeUuid(noteId);
+        String decodedNoteId = IdEncoder.decodeString(noteId);
         noteService.deleteNote(decodedNoteId);
         return ResponseEntity.ok(WrapperApiResponse.success("Note deleted successfully"));
     }

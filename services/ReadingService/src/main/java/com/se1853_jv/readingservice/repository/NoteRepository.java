@@ -7,19 +7,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface NoteRepository extends JpaRepository<Note, UUID> {
+public interface NoteRepository extends JpaRepository<Note, String> {
     
-    @Query("SELECT n FROM Note n " +
-           "INNER JOIN ReadingWorkflowNote rwn ON CAST(n.id AS string) = rwn.id.noteId " +
-           "WHERE rwn.id.collectionId = :collectionId " +
-           "AND rwn.id.paperId = :paperId " +
-           "AND rwn.id.userId = :userId")
-    List<Note> findByCollectionIdAndPaperIdAndUserId(
+    // Query through Many-to-Many relationship via ReadingWorkflow
+    @Query("SELECT DISTINCT n FROM ReadingWorkflow rw " +
+           "JOIN rw.notes n " +
+           "WHERE rw.id.collectionId = :collectionId " +
+           "AND rw.id.paperId = :paperId " +
+           "AND rw.id.usersid = :usersid")
+    List<Note> findByCollectionIdAndPaperIdAndUsersid(
             @Param("collectionId") String collectionId,
             @Param("paperId") String paperId,
-            @Param("userId") String userId);
+            @Param("usersid") String usersid);
 }
 

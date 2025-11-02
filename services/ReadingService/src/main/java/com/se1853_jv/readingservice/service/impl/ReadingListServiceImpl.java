@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,7 +31,9 @@ public class ReadingListServiceImpl implements ReadingListService {
 
     @Override
     public ReadingListResponse createReadingList(ReadingListCreateRequest request) {
+        String listId = java.util.UUID.randomUUID().toString();
         ReadingList readingList = ReadingList.builder()
+                .id(listId)
                 .name(request.getName())
                 .userIdsList(listToJsonString(request.getUserIdsList()))
                 .paperIdsList(listToJsonString(request.getPaperIdsList()))
@@ -52,7 +53,7 @@ public class ReadingListServiceImpl implements ReadingListService {
     }
 
     @Override
-    public ReadingListResponse updatePapers(UUID listId, ReadingListUpdatePapersRequest request) {
+    public ReadingListResponse updatePapers(String listId, ReadingListUpdatePapersRequest request) {
         ReadingList readingList = readingListRepository.findById(listId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reading list not found"));
 
@@ -78,7 +79,7 @@ public class ReadingListServiceImpl implements ReadingListService {
     }
 
     @Override
-    public ReadingListResponse updateUsers(UUID listId, ReadingListUpdateUsersRequest request) {
+    public ReadingListResponse updateUsers(String listId, ReadingListUpdateUsersRequest request) {
         ReadingList readingList = readingListRepository.findById(listId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reading list not found"));
 
@@ -104,7 +105,7 @@ public class ReadingListServiceImpl implements ReadingListService {
     }
 
     @Override
-    public void deleteReadingList(UUID listId) {
+    public void deleteReadingList(String listId) {
         if (!readingListRepository.existsById(listId)) {
             throw new ResourceNotFoundException("Reading list not found");
         }

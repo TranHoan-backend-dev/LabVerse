@@ -22,7 +22,7 @@ public class ReadingWorkflowId implements Serializable {
     @Column(name = "paper_id", length = 36, nullable = false)
     private String paperId;
 
-    @Column(name = "user_id", length = 36, nullable = false)
-    private String userId;
+    @Column(name = "usersid", length = 36, nullable = false)
+    private String usersid; // Note: ERD uses "Usersid" (lowercase in DB)
 }
 

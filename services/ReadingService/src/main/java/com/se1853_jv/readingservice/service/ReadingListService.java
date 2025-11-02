@@ -6,7 +6,6 @@ import com.se1853_jv.readingservice.dto.request.ReadingListUpdateUsersRequest;
 import com.se1853_jv.readingservice.dto.response.ReadingListResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface ReadingListService {
 
@@ -14,10 +13,10 @@ public interface ReadingListService {
 
     List<ReadingListResponse> getReadingListsByUser(String userId);
 
-    ReadingListResponse updatePapers(UUID listId, ReadingListUpdatePapersRequest request);
+    ReadingListResponse updatePapers(String listId, ReadingListUpdatePapersRequest request);
 
-    ReadingListResponse updateUsers(UUID listId, ReadingListUpdateUsersRequest request);
+    ReadingListResponse updateUsers(String listId, ReadingListUpdateUsersRequest request);
 
-    void deleteReadingList(UUID listId);
+    void deleteReadingList(String listId);
 }
 

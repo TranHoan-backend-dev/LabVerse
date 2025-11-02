@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -23,25 +22,23 @@ import java.util.UUID;
 public class Highlight {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 36, nullable = false, updatable = false)
-    private UUID id;
+    private String id; // varchar(36) - UUID as String
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(name = "color", length = 50, nullable = false)
-    private String color;
+    @Size(max = 10)
+    @Column(name = "color", length = 10, nullable = true)
+    private String color; // nullable per ERD
 
     @NotNull
-    @Column(name = "coordination_x")
+    @Column(name = "coordination_x", columnDefinition = "INTEGER")
     private Integer coordinationX;
 
     @NotNull
-    @Column(name = "coordination_y")
+    @Column(name = "coordination_y", columnDefinition = "INTEGER")
     private Integer coordinationY;
 
     @NotNull
-    @Column(name = "page_number")
+    @Column(name = "page_number", columnDefinition = "INTEGER")
     private Integer pageNumber;
 
     @Column(name = "created_at", nullable = false)

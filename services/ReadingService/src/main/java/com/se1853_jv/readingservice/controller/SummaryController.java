@@ -31,8 +31,8 @@ public class SummaryController {
     })
     public ResponseEntity<WrapperApiResponse<ReadingSummaryResponse>> getReadingSummary(
             @Parameter(description = "Encoded User ID", required = true) @PathVariable String userId) {
-        String decodedUserId = IdEncoder.decodeString(userId);
-        ReadingSummaryResponse response = summaryService.getReadingSummary(decodedUserId);
+        String decodedUsersid = IdEncoder.decodeString(userId);
+        ReadingSummaryResponse response = summaryService.getReadingSummary(decodedUsersid);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
 
@@ -47,8 +47,8 @@ public class SummaryController {
             @Parameter(description = "Encoded Paper ID", required = true) @PathVariable String paperId,
             @Parameter(description = "Encoded User ID", required = true) @PathVariable String userId) {
         String decodedPaperId = IdEncoder.decodeString(paperId);
-        String decodedUserId = IdEncoder.decodeString(userId);
-        AnnotationsResponse response = summaryService.getAnnotations(decodedPaperId, decodedUserId);
+        String decodedUsersid = IdEncoder.decodeString(userId);
+        AnnotationsResponse response = summaryService.getAnnotations(decodedPaperId, decodedUsersid);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
 }

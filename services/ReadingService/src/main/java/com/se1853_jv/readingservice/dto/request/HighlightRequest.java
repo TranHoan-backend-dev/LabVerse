@@ -33,6 +33,6 @@ public class HighlightRequest {
 
     @NotBlank
     @Size(max = 36)
-    private String userId;
+    private String usersid; // ERD uses "Usersid"
 }
 

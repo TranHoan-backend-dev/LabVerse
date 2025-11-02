@@ -44,8 +44,8 @@ public class ReadingWorkflowController {
         if (request.getPaperId() != null) {
             request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
         }
-        if (request.getUserId() != null) {
-            request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        if (request.getUsersid() != null) {
+            request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         }
         ReadingWorkflowResponse response = readingWorkflowService.createWorkflow(request);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
@@ -62,8 +62,8 @@ public class ReadingWorkflowController {
             @Parameter(description = "Encoded User ID", required = true) @PathVariable String userId,
             @Parameter(description = "Filter by status: unread, reading, or finished") 
             @RequestParam(required = false) String status) {
-        String decodedUserId = IdEncoder.decodeString(userId);
-        List<ReadingWorkflowResponse> workflows = readingWorkflowService.getWorkflowsByUser(decodedUserId, status);
+        String decodedUsersid = IdEncoder.decodeString(userId);
+        List<ReadingWorkflowResponse> workflows = readingWorkflowService.getWorkflowsByUser(decodedUsersid, status);
         return ResponseEntity.ok(WrapperApiResponse.success(workflows));
     }
 
@@ -80,7 +80,7 @@ public class ReadingWorkflowController {
         // Decode IDs from request
         request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
         request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         readingWorkflowService.updateProgress(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Progress updated successfully"));
     }
@@ -98,7 +98,7 @@ public class ReadingWorkflowController {
         // Decode IDs from request
         request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
         request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         readingWorkflowService.updateStatus(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Status updated successfully"));
     }
@@ -116,7 +116,7 @@ public class ReadingWorkflowController {
         // Decode IDs from request
         request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
         request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         readingWorkflowService.deleteWorkflow(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Workflow deleted successfully"));
     }

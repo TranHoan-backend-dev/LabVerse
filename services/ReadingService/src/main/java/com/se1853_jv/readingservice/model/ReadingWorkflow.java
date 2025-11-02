@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,16 +26,16 @@ public class ReadingWorkflow {
     @EmbeddedId
     private ReadingWorkflowId id;
 
-    @Size(max = 50)
-    @Column(name = "status", length = 50)
+    @Size(max = 10)
+    @Column(name = "status", length = 10)
     private String status; // "unread" | "reading" | "finished"
 
-    @Column(name = "last_page")
+    @Column(name = "last_page", columnDefinition = "INTEGER")
     private Integer lastPage;
 
     @Min(0)
     @Max(100)
-    @Column(name = "progress")
+    @Column(name = "progress", columnDefinition = "INTEGER")
     private Integer progress;
 
     @Column(name = "created_at", nullable = false)
@@ -66,5 +68,32 @@ public class ReadingWorkflow {
             this.status = "finished";
         }
     }
+
+    // Many-to-Many relationships
+    @Builder.Default
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "reading_workflow_note",
+            joinColumns = {
+                    @JoinColumn(name = "reading_workflow_collection_id", referencedColumnName = "collection_id"),
+                    @JoinColumn(name = "reading_workflow_paper_id", referencedColumnName = "paper_id"),
+                    @JoinColumn(name = "reading_workflow_usersid", referencedColumnName = "usersid")
+            },
+            inverseJoinColumns = @JoinColumn(name = "note_id", referencedColumnName = "id")
+    )
+    private List<Note> notes = new ArrayList<>();
+
+    @Builder.Default
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "reading_workflow_highlight",
+            joinColumns = {
+                    @JoinColumn(name = "reading_workflow_collection_id", referencedColumnName = "collection_id"),
+                    @JoinColumn(name = "reading_workflow_paper_id", referencedColumnName = "paper_id"),
+                    @JoinColumn(name = "reading_workflow_usersid", referencedColumnName = "usersid")
+            },
+            inverseJoinColumns = @JoinColumn(name = "highlightid", referencedColumnName = "id")
+    )
+    private List<Highlight> highlights = new ArrayList<>();
 }
 

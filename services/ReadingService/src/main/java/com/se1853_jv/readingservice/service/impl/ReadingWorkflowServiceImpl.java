@@ -8,8 +8,6 @@ import com.se1853_jv.readingservice.dto.response.ReadingWorkflowResponse;
 import com.se1853_jv.readingservice.exception.ResourceNotFoundException;
 import com.se1853_jv.readingservice.model.ReadingWorkflow;
 import com.se1853_jv.readingservice.model.ReadingWorkflowId;
-import com.se1853_jv.readingservice.repository.ReadingWorkflowHighlightRepository;
-import com.se1853_jv.readingservice.repository.ReadingWorkflowNoteRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.ReadingWorkflowService;
 import com.se1853_jv.readingservice.util.IdEncoder;
@@ -27,18 +25,16 @@ import java.util.stream.Collectors;
 public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
 
     private final ReadingWorkflowRepository readingWorkflowRepository;
-    private final ReadingWorkflowNoteRepository readingWorkflowNoteRepository;
-    private final ReadingWorkflowHighlightRepository readingWorkflowHighlightRepository;
 
     @Override
     public ReadingWorkflowResponse createWorkflow(ReadingWorkflowCreateRequest request) {
         // Check if workflow already exists
-        if (readingWorkflowRepository.existsById_CollectionIdAndId_PaperIdAndId_UserId(
-                request.getCollectionId(), request.getPaperId(), request.getUserId())) {
+        if (readingWorkflowRepository.existsById_CollectionIdAndId_PaperIdAndId_Usersid(
+                request.getCollectionId(), request.getPaperId(), request.getUsersid())) {
             // Return existing workflow
             ReadingWorkflow existing = readingWorkflowRepository
-                    .findById_CollectionIdAndId_PaperIdAndId_UserId(
-                            request.getCollectionId(), request.getPaperId(), request.getUserId())
+                    .findById_CollectionIdAndId_PaperIdAndId_Usersid(
+                            request.getCollectionId(), request.getPaperId(), request.getUsersid())
                     .orElseThrow(() -> new ResourceNotFoundException("Workflow not found"));
             return toResponse(existing);
         }
@@ -47,7 +43,7 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
         ReadingWorkflowId id = new ReadingWorkflowId(
                 request.getCollectionId(),
                 request.getPaperId(),
-                request.getUserId()
+                request.getUsersid()
         );
 
         ReadingWorkflow workflow = ReadingWorkflow.builder()
@@ -63,12 +59,12 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReadingWorkflowResponse> getWorkflowsByUser(String userId, String status) {
+    public List<ReadingWorkflowResponse> getWorkflowsByUser(String usersid, String status) {
         List<ReadingWorkflow> workflows;
         if (status != null && !status.isEmpty()) {
-            workflows = readingWorkflowRepository.findByUserIdAndStatus(userId, status);
+            workflows = readingWorkflowRepository.findByUsersidAndStatus(usersid, status);
         } else {
-            workflows = readingWorkflowRepository.findById_UserId(userId);
+            workflows = readingWorkflowRepository.findById_Usersid(usersid);
         }
         
         return workflows.stream()
@@ -81,7 +77,7 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
         ReadingWorkflowId id = new ReadingWorkflowId(
                 request.getCollectionId(),
                 request.getPaperId(),
-                request.getUserId()
+                request.getUsersid()
         );
 
         ReadingWorkflow workflow = readingWorkflowRepository.findById(id)
@@ -103,7 +99,7 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
         ReadingWorkflowId id = new ReadingWorkflowId(
                 request.getCollectionId(),
                 request.getPaperId(),
-                request.getUserId()
+                request.getUsersid()
         );
 
         ReadingWorkflow workflow = readingWorkflowRepository.findById(id)
@@ -118,26 +114,17 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
         ReadingWorkflowId id = new ReadingWorkflowId(
                 request.getCollectionId(),
                 request.getPaperId(),
-                request.getUserId()
+                request.getUsersid()
         );
 
-        if (!readingWorkflowRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Reading workflow not found");
-        }
+        ReadingWorkflow workflow = readingWorkflowRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reading workflow not found"));
 
-        // Delete all note mappings
-        readingWorkflowNoteRepository.deleteAll(
-                readingWorkflowNoteRepository.findById_CollectionIdAndId_PaperIdAndId_UserId(
-                        request.getCollectionId(), request.getPaperId(), request.getUserId())
-        );
-
-        // Delete all highlight mappings
-        readingWorkflowHighlightRepository.deleteAll(
-                readingWorkflowHighlightRepository.findById_CollectionIdAndId_PaperIdAndId_UserId(
-                        request.getCollectionId(), request.getPaperId(), request.getUserId())
-        );
-
-        // Delete the workflow
+        // Clear notes and highlights relationships (Many-to-Many handles this automatically)
+        workflow.getNotes().clear();
+        workflow.getHighlights().clear();
+        
+        // Delete the workflow (cascade will handle junction table cleanup)
         readingWorkflowRepository.deleteById(id);
     }
 
@@ -145,7 +132,7 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
         return ReadingWorkflowResponse.builder()
                 .collectionId(IdEncoder.encode(workflow.getId().getCollectionId()))
                 .paperId(IdEncoder.encode(workflow.getId().getPaperId()))
-                .userId(IdEncoder.encode(workflow.getId().getUserId()))
+                .usersid(IdEncoder.encode(workflow.getId().getUsersid()))
                 .status(workflow.getStatus())
                 .lastPage(workflow.getLastPage())
                 .progress(workflow.getProgress())

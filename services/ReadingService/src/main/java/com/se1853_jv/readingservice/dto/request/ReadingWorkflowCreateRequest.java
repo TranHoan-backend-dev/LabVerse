@@ -18,7 +18,7 @@ public class ReadingWorkflowCreateRequest {
     private String paperId;
 
     @Size(max = 36)
-    private String userId;
+    private String usersid; // ERD uses "Usersid"
 
     @Size(max = 255)
     private String status;

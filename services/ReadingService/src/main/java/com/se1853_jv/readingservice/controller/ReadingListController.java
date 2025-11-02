@@ -76,7 +76,7 @@ public class ReadingListController {
     public ResponseEntity<WrapperApiResponse<ReadingListResponse>> updatePapers(
             @Parameter(description = "Encoded Reading List ID", required = true) @PathVariable String listId,
             @Valid @RequestBody ReadingListUpdatePapersRequest request) {
-        java.util.UUID decodedListId = IdEncoder.decodeUuid(listId);
+        String decodedListId = IdEncoder.decodeString(listId);
         // Decode paper IDs from request
         if (request.getPaperIds() != null) {
             request.setPaperIds(request.getPaperIds().stream()
@@ -98,7 +98,7 @@ public class ReadingListController {
     public ResponseEntity<WrapperApiResponse<ReadingListResponse>> updateUsers(
             @Parameter(description = "Encoded Reading List ID", required = true) @PathVariable String listId,
             @Valid @RequestBody ReadingListUpdateUsersRequest request) {
-        java.util.UUID decodedListId = IdEncoder.decodeUuid(listId);
+        String decodedListId = IdEncoder.decodeString(listId);
         // Decode user IDs from request
         if (request.getUserIds() != null) {
             request.setUserIds(request.getUserIds().stream()
@@ -119,7 +119,7 @@ public class ReadingListController {
     })
     public ResponseEntity<WrapperApiResponse<String>> deleteReadingList(
             @Parameter(description = "Encoded Reading List ID", required = true) @PathVariable String listId) {
-        java.util.UUID decodedListId = IdEncoder.decodeUuid(listId);
+        String decodedListId = IdEncoder.decodeString(listId);
         readingListService.deleteReadingList(decodedListId);
         return ResponseEntity.ok(WrapperApiResponse.success("Reading list deleted successfully"));
     }

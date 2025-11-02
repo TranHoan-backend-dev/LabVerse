@@ -37,7 +37,7 @@ public class HighlightController {
         // Decode IDs from request
         request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
         request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUserId(IdEncoder.decodeString(request.getUserId()));
+        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
         HighlightResponse response = highlightService.addHighlight(request);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
@@ -55,8 +55,8 @@ public class HighlightController {
             @Parameter(description = "Encoded User ID", required = true) @RequestParam String userId) {
         String decodedCollectionId = IdEncoder.decodeString(collectionId);
         String decodedPaperId = IdEncoder.decodeString(paperId);
-        String decodedUserId = IdEncoder.decodeString(userId);
-        List<HighlightResponse> highlights = highlightService.getHighlights(decodedCollectionId, decodedPaperId, decodedUserId);
+        String decodedUsersid = IdEncoder.decodeString(userId);
+        List<HighlightResponse> highlights = highlightService.getHighlights(decodedCollectionId, decodedPaperId, decodedUsersid);
         return ResponseEntity.ok(WrapperApiResponse.success(highlights));
     }
 
@@ -70,7 +70,7 @@ public class HighlightController {
     })
     public ResponseEntity<WrapperApiResponse<String>> deleteHighlight(
             @Parameter(description = "Encoded Highlight ID", required = true) @PathVariable String highlightId) {
-        java.util.UUID decodedHighlightId = IdEncoder.decodeUuid(highlightId);
+        String decodedHighlightId = IdEncoder.decodeString(highlightId);
         highlightService.deleteHighlight(decodedHighlightId);
         return ResponseEntity.ok(WrapperApiResponse.success("Highlight deleted successfully"));
     }

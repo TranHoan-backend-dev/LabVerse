@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ReadingWorkflowResponse {
     private String collectionId; // Encoded ID
     private String paperId; // Encoded ID
-    private String userId; // Encoded ID
+    private String usersid; // Encoded ID (ERD uses "Usersid")
     private String status;
     private Integer lastPage;
     private Integer progress;
