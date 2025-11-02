@@ -12,6 +12,7 @@ import com.se1853_jv.readingservice.repository.ReadingWorkflowHighlightRepositor
 import com.se1853_jv.readingservice.repository.ReadingWorkflowNoteRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.ReadingWorkflowService;
+import com.se1853_jv.readingservice.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,9 +142,9 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
 
     private ReadingWorkflowResponse toResponse(ReadingWorkflow workflow) {
         return ReadingWorkflowResponse.builder()
-                .collectionId(workflow.getId().getCollectionId())
-                .paperId(workflow.getId().getPaperId())
-                .userId(workflow.getId().getUserId())
+                .collectionId(IdEncoder.encode(workflow.getId().getCollectionId()))
+                .paperId(IdEncoder.encode(workflow.getId().getPaperId()))
+                .userId(IdEncoder.encode(workflow.getId().getUserId()))
                 .status(workflow.getStatus())
                 .lastPage(workflow.getLastPage())
                 .progress(workflow.getProgress())

@@ -5,13 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 public class NoteResponse {
-    private UUID id;
+    private String id; // Encoded UUID
     private String content;
     private Integer coordinationX;
     private Integer coordinationY;

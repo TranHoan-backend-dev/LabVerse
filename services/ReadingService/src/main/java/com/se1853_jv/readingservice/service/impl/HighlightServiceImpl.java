@@ -12,6 +12,7 @@ import com.se1853_jv.readingservice.repository.HighlightRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowHighlightRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.HighlightService;
+import com.se1853_jv.readingservice.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +88,11 @@ public class HighlightServiceImpl implements HighlightService {
 
     @Override
     public void deleteHighlight(UUID highlightId) {
+        // Check if highlight exists
+        if (!highlightRepository.existsById(highlightId)) {
+            throw new ResourceNotFoundException("Highlight not found");
+        }
+        
         // Delete mappings first
         readingWorkflowHighlightRepository.deleteById_HighlightId(highlightId.toString());
         
@@ -96,7 +102,7 @@ public class HighlightServiceImpl implements HighlightService {
 
     private HighlightResponse toResponse(Highlight highlight) {
         return HighlightResponse.builder()
-                .id(highlight.getId())
+                .id(IdEncoder.encode(highlight.getId()))
                 .color(highlight.getColor())
                 .coordinationX(highlight.getCoordinationX())
                 .coordinationY(highlight.getCoordinationY())

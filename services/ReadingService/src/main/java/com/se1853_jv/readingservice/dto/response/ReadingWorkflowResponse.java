@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class ReadingWorkflowResponse {
-    private String collectionId;
-    private String paperId;
-    private String userId;
+    private String collectionId; // Encoded ID
+    private String paperId; // Encoded ID
+    private String userId; // Encoded ID
     private String status;
     private Integer lastPage;
     private Integer progress;

@@ -10,6 +10,7 @@ import com.se1853_jv.readingservice.exception.ResourceNotFoundException;
 import com.se1853_jv.readingservice.model.ReadingList;
 import com.se1853_jv.readingservice.repository.ReadingListRepository;
 import com.se1853_jv.readingservice.service.ReadingListService;
+import com.se1853_jv.readingservice.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -111,11 +112,25 @@ public class ReadingListServiceImpl implements ReadingListService {
     }
 
     private ReadingListResponse toResponse(ReadingList readingList) {
+        List<String> decodedUserIds = jsonStringToList(readingList.getUserIdsList());
+        List<String> decodedPaperIds = jsonStringToList(readingList.getPaperIdsList());
+        
+        // Encode all IDs in the lists
+        List<String> encodedUserIds = decodedUserIds != null ? 
+                decodedUserIds.stream()
+                    .map(IdEncoder::encode)
+                    .collect(Collectors.toList()) : new ArrayList<>();
+        
+        List<String> encodedPaperIds = decodedPaperIds != null ? 
+                decodedPaperIds.stream()
+                    .map(IdEncoder::encode)
+                    .collect(Collectors.toList()) : new ArrayList<>();
+        
         return ReadingListResponse.builder()
-                .id(readingList.getId())
+                .id(IdEncoder.encode(readingList.getId()))
                 .name(readingList.getName())
-                .userIdsList(jsonStringToList(readingList.getUserIdsList()))
-                .paperIdsList(jsonStringToList(readingList.getPaperIdsList()))
+                .userIdsList(encodedUserIds)
+                .paperIdsList(encodedPaperIds)
                 .createdAt(readingList.getCreatedAt())
                 .updatedAt(readingList.getUpdatedAt())
                 .build();

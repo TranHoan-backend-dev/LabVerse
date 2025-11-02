@@ -6,16 +6,15 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 public class ReadingListResponse {
-    private UUID id;
+    private String id; // Encoded UUID
     private String name;
-    private List<String> userIdsList;
-    private List<String> paperIdsList;
+    private List<String> userIdsList; // Encoded user IDs
+    private List<String> paperIdsList; // Encoded paper IDs
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

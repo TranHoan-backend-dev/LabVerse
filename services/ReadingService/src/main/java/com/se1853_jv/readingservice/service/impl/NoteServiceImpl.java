@@ -13,6 +13,7 @@ import com.se1853_jv.readingservice.repository.NoteRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowNoteRepository;
 import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.NoteService;
+import com.se1853_jv.readingservice.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,6 +102,11 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public void deleteNote(UUID noteId) {
+        // Check if note exists
+        if (!noteRepository.existsById(noteId)) {
+            throw new ResourceNotFoundException("Note not found");
+        }
+        
         // Delete mappings first
         readingWorkflowNoteRepository.deleteById_NoteId(noteId.toString());
         
@@ -110,7 +116,7 @@ public class NoteServiceImpl implements NoteService {
 
     private NoteResponse toResponse(Note note) {
         return NoteResponse.builder()
-                .id(note.getId())
+                .id(IdEncoder.encode(note.getId()))
                 .content(note.getContent())
                 .coordinationX(note.getCoordinationX())
                 .coordinationY(note.getCoordinationY())
