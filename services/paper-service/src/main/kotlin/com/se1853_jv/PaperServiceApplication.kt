@@ -3,11 +3,11 @@ package com.se1853_jv
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
-//import org.springframework.cloud.openfeign.EnableFeignClients
+import org.springframework.cloud.openfeign.EnableFeignClients
 
 @SpringBootApplication
-//@EnableFeignClients
 @EnableDiscoveryClient
+@EnableFeignClients
 class PaperServiceApplication
 
 fun main(args: Array<String>) {
