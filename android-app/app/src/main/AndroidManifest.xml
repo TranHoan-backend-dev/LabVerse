@@ -45,7 +45,22 @@
             android:name=".presentation.paper.ImportPaperByBibtexActivity"
             android:exported="true" />
         <activity
+            android:name=".presentation.paper.ImportNewPaperActivity"
+            android:exported="true" />
+        <activity
             android:name=".presentation.feed.FeedActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.profile.ProfileActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamCreateActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamListActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamDetailActivity"
             android:exported="true" />
     </application>
 
