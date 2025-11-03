@@ -179,6 +179,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="@string/continue_to_read"
+                android:textColor="#212121"
+                android:layout_marginBottom="10dp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
             <!-- Paper Card 1 -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
