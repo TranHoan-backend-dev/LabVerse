@@ -3,7 +3,6 @@ package com.se1853_jv.labverse.presentation.feed;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -25,14 +24,14 @@ public class FeedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_common_home);
+        setContentView(R.layout.layout_common_ui_home);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedActivity), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);
             return insets;
         });
-//        getMockData();
+        getMockData();
         setupTabs();
     }
 
@@ -66,16 +65,16 @@ public class FeedActivity extends AppCompatActivity {
         }).attach();
     }
 
-//    private void getMockData() {
-//        List<DiscoveryItem> items = ParseFileUtils.fromJsonAsset(
-//                FeedActivity.this,
-//                "feed/discovery.json",
-//                new TypeToken<List<DiscoveryItem>>() {
-//                }.getType()
-//        );
-//        if (items == null) return;
-//        for (DiscoveryItem item : items) {
-//            Log.d("MockData", item.toString());
-//        }
-//    }
+    private void getMockData() {
+        List<DiscoveryItem> items = ParseFileUtils.fromJsonAsset(
+                FeedActivity.this,
+                "feed/discovery.json",
+                new TypeToken<List<DiscoveryItem>>() {
+                }.getType()
+        );
+        if (items == null) return;
+        for (DiscoveryItem item : items) {
+            Log.d("MockData", item.toString());
+        }
+    }
 }

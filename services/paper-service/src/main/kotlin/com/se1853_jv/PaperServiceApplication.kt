@@ -6,8 +6,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 import org.springframework.cloud.openfeign.EnableFeignClients
 
 @SpringBootApplication
-@EnableFeignClients
 @EnableDiscoveryClient
+@EnableFeignClients
 class PaperServiceApplication
 
 fun main(args: Array<String>) {

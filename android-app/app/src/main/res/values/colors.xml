@@ -26,4 +26,15 @@
     <color name="status_to_read">#757575</color>
     <color name="priority_medium">#1976D2</color>
     <color name="priority_low">#757575</color>
+    <color name="icon_blue_bg">#2196F3</color>
+    <color name="pdf_bg">#E0E0E0</color>
+    <color name="success">#4CAF50</color>
+    <color name="primary">#FF4A4DE8</color>
+
+    <color name="text_primary">#FF1D1D1F</color>
+    <color name="text_secondary">#FF8A8A8E</color>
+
+    <color name="border_color">#FFEBEBEB</color>
+    <color name="cyan">#FF19C4D4</color>
+
 </resources>
