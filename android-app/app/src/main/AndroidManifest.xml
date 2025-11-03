@@ -37,14 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<!--        <activity-->
-<!--            android:name=".presentation.collection.CollectionsActivity"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
+
         <activity
             android:name=".presentation.paper.PaperDetailsActivity"
             android:exported="true"
@@ -73,6 +66,10 @@
         <activity
             android:name=".presentation.collection.CollectionDetailsActivity"
             android:exported="true" />
+        <activity
+            android:name=".presentation.collection.SelectPaperActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.collection.CollectionDetailsActivity" />
         <activity
             android:name=".presentation.collection.CollectionsActivity"
             android:exported="true" />

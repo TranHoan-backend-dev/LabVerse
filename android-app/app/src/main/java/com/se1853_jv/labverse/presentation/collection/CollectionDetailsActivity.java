@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.collection;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,12 +66,9 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         textCollectionName.setText(collection.getName());
 
         buttonAddPaper.setOnClickListener(v -> {
-            SelectPaperBottomSheetDialogFragment dialog = SelectPaperBottomSheetDialogFragment.newInstance(collection);
-            dialog.setOnPaperAddedListener(() -> {
-                // Refresh papers list after adding paper
-                loadPapers();
-            });
-            dialog.show(getSupportFragmentManager(), "SelectPaperBottomSheet");
+            Intent intent = new Intent(CollectionDetailsActivity.this, SelectPaperActivity.class);
+            intent.putExtra("collection", collection);
+            startActivityForResult(intent, 100);
         });
     }
 
@@ -139,6 +137,15 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            // Refresh papers list after adding paper
+            loadPapers();
+        }
     }
 }
 

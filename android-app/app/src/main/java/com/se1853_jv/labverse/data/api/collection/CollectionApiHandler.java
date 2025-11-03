@@ -43,7 +43,7 @@ public class CollectionApiHandler {
                 .build();
 
         var retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL)
+                .baseUrl(Constants.COLLECTION_ENDPOINT_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();

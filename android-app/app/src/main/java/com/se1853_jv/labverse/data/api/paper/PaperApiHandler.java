@@ -1,6 +1,6 @@
 package com.se1853_jv.labverse.data.api.paper;
 
-import static com.se1853_jv.labverse.data.Constants.BASE_URL;
+import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_GATEWAY_URL;
 import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
 
 import android.util.Log;
@@ -99,7 +99,7 @@ public class PaperApiHandler {
     public void getAllPapers(String searchQuery, ApiCallback<List<PaperResearch>> callback) {
         Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
         
-        // Create a separate Retrofit instance with BASE_URL for getAllPapers
+        // Create a separate Retrofit instance with gateway URL for getAllPapers
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
@@ -112,13 +112,13 @@ public class PaperApiHandler {
                 .build();
         
         var retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(PAPER_ENDPOINT_GATEWAY_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
         
-        PaperApi tempApi = retrofit.create(PaperApi.class);
-        Call<BaseJsonResponse<List<PaperResearch>>> call = tempApi.getAllPapers("papers", searchQuery);
+        PaperApi gatewayApi = retrofit.create(PaperApi.class);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = gatewayApi.getAllPapers(searchQuery);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
@@ -128,13 +128,20 @@ public class PaperApiHandler {
                     Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
                 } else {
                     Log.e("Server Error", "Error: " + response.message());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("Server Error", "Error body: " + response.errorBody().string());
+                        } catch (Exception e) {
+                            Log.e("Server Error", "Could not read error body", e);
+                        }
+                    }
                     callback.onError(response.message());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
-                Log.e("API Error", "Error: " + t.getMessage());
+                Log.e("API Error", "Error: " + t.getMessage(), t);
                 callback.onError(t.getMessage());
             }
         });

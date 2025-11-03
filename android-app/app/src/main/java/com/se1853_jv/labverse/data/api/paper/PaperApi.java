@@ -9,7 +9,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 import java.util.List;
 
@@ -18,6 +17,6 @@ public interface PaperApi {
     Call<BaseJsonResponse<PaperResearch>> getPaperDetails(@Query("id") String id);
     @GET("citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
-    @GET()
-    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(@Url String url, @Query("search") String searchQuery);
+    @GET("papers")
+    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(@Query("search") String searchQuery);
 }

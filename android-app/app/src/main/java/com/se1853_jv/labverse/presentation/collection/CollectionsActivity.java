@@ -36,7 +36,7 @@ public class CollectionsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_common_home);
+        setContentView(R.layout.layout_common_ui_home);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedActivity), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
