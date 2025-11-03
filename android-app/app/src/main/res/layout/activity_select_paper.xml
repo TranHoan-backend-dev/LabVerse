@@ -41,7 +41,7 @@
             android:layout_height="20dp"
             android:src="@drawable/ic_search"
             android:contentDescription="Search"
-            android:tint="#9CA3AF" />
+            app:tint="#9CA3AF" />
 
         <!-- Search input -->
         <EditText
@@ -101,4 +101,5 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 

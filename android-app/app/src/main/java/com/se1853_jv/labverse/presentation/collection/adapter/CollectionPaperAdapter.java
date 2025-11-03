@@ -22,7 +22,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     @Override
     public PaperViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_collection_paper, parent, false);
+                .inflate(R.layout.layout_collection_paper_item, parent, false);
         return new PaperViewHolder(view);
     }
 

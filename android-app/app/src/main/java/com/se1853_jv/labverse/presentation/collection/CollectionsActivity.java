@@ -124,7 +124,7 @@ public class CollectionsActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Edit Collection");
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_collection, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_create_collection, null);
         EditText editName = dialogView.findViewById(R.id.edit_collection_name);
         editName.setText(collection.getName());
         
@@ -160,7 +160,7 @@ public class CollectionsActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Create New Collection");
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_collection, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_create_collection, null);
         EditText editName = dialogView.findViewById(R.id.edit_collection_name);
         
         builder.setView(dialogView);
@@ -213,7 +213,7 @@ public class CollectionsActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Invite Team Members");
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_invite_members, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.layout_dialog_invite_members, null);
         EditText editEmail = dialogView.findViewById(R.id.edit_member_email);
         
         builder.setView(dialogView);
@@ -238,7 +238,7 @@ public class CollectionsActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add Paper to Collection");
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_paper, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_add_paper, null);
         EditText editPaperId = dialogView.findViewById(R.id.edit_paper_id);
         Spinner spinnerPriority = dialogView.findViewById(R.id.spinner_priority);
         Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_status);

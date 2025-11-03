@@ -32,7 +32,7 @@ public class SelectPaperAdapter extends RecyclerView.Adapter<SelectPaperAdapter.
     @Override
     public PaperViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_select_paper, parent, false);
+                .inflate(R.layout.layout_select_paper_item, parent, false);
         return new PaperViewHolder(view);
     }
 
