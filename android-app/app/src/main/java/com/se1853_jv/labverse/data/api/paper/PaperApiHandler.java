@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import static com.se1853_jv.labverse.data.Constants.BASE_URL;
 import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
 
 import android.util.Log;
@@ -89,6 +90,50 @@ public class PaperApiHandler {
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<Citation>>> call, @NonNull Throwable t) {
+                Log.e("API Error", "Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getAllPapers(String searchQuery, ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
+        
+        // Create a separate Retrofit instance with BASE_URL for getAllPapers
+        var gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+                .create();
+        
+        var logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        
+        var client = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build();
+        
+        var retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(client)
+                .build();
+        
+        PaperApi tempApi = retrofit.create(PaperApi.class);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = tempApi.getAllPapers("papers", searchQuery);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
+                    Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
+                } else {
+                    Log.e("Server Error", "Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
                 Log.e("API Error", "Error: " + t.getMessage());
                 callback.onError(t.getMessage());
             }

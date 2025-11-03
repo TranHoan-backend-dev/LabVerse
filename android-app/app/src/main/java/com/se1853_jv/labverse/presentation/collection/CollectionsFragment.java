@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.collection;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +29,7 @@ import java.util.List;
 
 public class CollectionsFragment extends Fragment {
     private static final String TAG = "CollectionsFragment";
-    
+
     private CollectionApiHandler apiHandler;
     private RecyclerView recyclerCollections;
     private CollectionAdapter adapter;
@@ -37,7 +38,7 @@ public class CollectionsFragment extends Fragment {
     private TextView textActiveInfo;
     private TextView textActiveTimestamp;
     private TextView textEmptyState;
-    
+
     private CollectionResponse activeCollection;
     private List<CollectionResponse> allCollections = new ArrayList<>();
 
@@ -50,13 +51,13 @@ public class CollectionsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_fragment_collections, container, false);
+        return inflater.inflate(R.layout.fragment_collections, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         initializeViews(view);
         setupRecyclerView();
         setupActiveCollectionCard(view);
@@ -112,7 +113,7 @@ public class CollectionsFragment extends Fragment {
                 ((CollectionsActivity) getActivity()).showCreateCollectionDialog();
             }
         });
-        
+
         view.findViewById(R.id.button_invite_members).setOnClickListener(v -> {
             if (getActivity() instanceof CollectionsActivity) {
                 ((CollectionsActivity) getActivity()).showInviteMembersDialog();
@@ -130,7 +131,7 @@ public class CollectionsFragment extends Fragment {
             @Override
             public void onSuccess(CollectionsPageResponse response) {
                 if (getActivity() == null) return;
-                
+
                 getActivity().runOnUiThread(() -> {
                     allCollections = response.getContent() != null ? response.getContent() : new ArrayList<>();
                     displayCollections();
@@ -140,11 +141,11 @@ public class CollectionsFragment extends Fragment {
             @Override
             public void onError(String error) {
                 if (getActivity() == null) return;
-                
+
                 getActivity().runOnUiThread(() -> {
                     android.util.Log.e(TAG, "Error loading collections: " + error);
-                    Toast.makeText(requireContext(), 
-                            "Failed to load collections: " + error, 
+                    Toast.makeText(requireContext(),
+                            "Failed to load collections: " + error,
                             Toast.LENGTH_SHORT).show();
                 });
             }
@@ -167,8 +168,8 @@ public class CollectionsFragment extends Fragment {
         updateActiveCollectionCard();
 
         // Set remaining collections in RecyclerView
-        List<CollectionResponse> remainingCollections = allCollections.size() > 1 
-                ? allCollections.subList(1, allCollections.size()) 
+        List<CollectionResponse> remainingCollections = allCollections.size() > 1
+                ? allCollections.subList(1, allCollections.size())
                 : new ArrayList<>();
         adapter.setCollections(remainingCollections);
     }
@@ -187,16 +188,13 @@ public class CollectionsFragment extends Fragment {
 
     private void showCollectionOptions(CollectionResponse collection, View anchor) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        popup.getMenu().add("View Details");
         popup.getMenu().add("Manage Members");
         popup.getMenu().add("Edit Collection");
         popup.getMenu().add("Delete Collection");
 
         popup.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
-            if ("View Details".equals(title)) {
-                openCollectionDetails(collection);
-            } else if ("Manage Members".equals(title)) {
+            if ("Manage Members".equals(title)) {
                 if (getActivity() instanceof CollectionsActivity) {
                     ((CollectionsActivity) getActivity()).showInviteMembersDialog();
                 }
@@ -215,13 +213,12 @@ public class CollectionsFragment extends Fragment {
     }
 
     private void openCollectionDetails(CollectionResponse collection) {
-        // TODO: Navigate to collection details screen
-        Toast.makeText(requireContext(), "Opening collection: " + collection.getName(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(requireContext(), CollectionDetailsActivity.class);
+        intent.putExtra("collection", collection);
+        startActivity(intent);
     }
 
     public void refreshCollections() {
         loadCollections();
     }
 }
-
-

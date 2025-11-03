@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CollectionResponse implements Serializable {
-    private String id;
-    private String name;
+public class CollectionPaperResponse {
+    private String collectionId;
+    private String paperId;
+    private String priority;
+    private String status;
+    private String addingDate;
 }
-
 

@@ -7,8 +7,12 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.se1853_jv.labverse.presentation.collection.CollectionsFragment;
 
-public class CollectionsAdapter extends FragmentStateAdapter {
-    public CollectionsAdapter(@NonNull FragmentActivity fragmentActivity) {
+/**
+ * Adapter for ViewPager2 to manage CollectionsFragment pages.
+ * For RecyclerView adapter, see CollectionAdapter.
+ */
+public class CollectionsPagerAdapter extends FragmentStateAdapter {
+    public CollectionsPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
 
@@ -23,5 +27,4 @@ public class CollectionsAdapter extends FragmentStateAdapter {
         return 1;
     }
 }
-
 

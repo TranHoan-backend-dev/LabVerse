@@ -9,9 +9,14 @@ import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
+import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
+import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
+import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionsPageResponse;
+
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -116,6 +121,58 @@ public class CollectionApiHandler {
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<CollectionResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void addPaperToCollection(CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
+        Log.d(TAG, "addPaperToCollection: collectionId=" + request.getCollectionId() + ", paperId=" + request.getPaperId());
+        Call<BaseJsonResponse<CollectionPaperResponse>> call = apiService.addPaperToCollection(request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<CollectionPaperResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<CollectionPaperResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Paper added to collection successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<CollectionPaperResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getPapersInCollection(String collectionId, ApiCallback<List<CollectionPaperDetailResponse>> callback) {
+        Log.d(TAG, "getPapersInCollection: collectionId=" + collectionId);
+        Call<BaseJsonResponse<List<CollectionPaperDetailResponse>>> call = apiService.getPapersInCollection(collectionId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<CollectionPaperDetailResponse>>> call,
+                                   @NonNull Response<BaseJsonResponse<List<CollectionPaperDetailResponse>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Papers in collection fetched: " + (result != null ? result.size() : 0));
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<CollectionPaperDetailResponse>>> call,
                                    @NonNull Throwable t) {
                 Log.e(TAG, "API Error: " + t.getMessage(), t);
                 callback.onError(t.getMessage());

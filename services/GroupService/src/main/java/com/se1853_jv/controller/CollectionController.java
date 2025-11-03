@@ -45,4 +45,9 @@ public class CollectionController {
     public ResponseEntity<WrapperApiResponse> updateStatus(@Valid @RequestBody CollectionPaperRequest request) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.updatePaperStatus(request)));
     }
+
+    @GetMapping("/{id}/papers")
+    public ResponseEntity<WrapperApiResponse> getPapersInCollection(@PathVariable String id) {
+        return ResponseEntity.ok(WrapperApiResponse.success(collectionService.getPapersInCollection(id)));
+    }
 }
