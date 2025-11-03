@@ -1,6 +1,6 @@
 spring:
   application:
-    name: PaperService
+    name: paper-service
   profiles:
     active: dev
   cloud:
@@ -11,8 +11,15 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:9001/eureka/,http://localhost:9002/eureka/
+      defaultZone: http://localhost:9001/eureka/,http://localhost:9002/eureka/,http://localhost:9003/eureka/
 server:
   port: 0
   servlet:
     context-path: /v1/api
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
