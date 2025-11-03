@@ -1,5 +1,5 @@
 ### Get details information of a citation
-@url = http://localhost:8080/v1/api/citations
+@url = http://localhost:8080/paper-service/citations
 @id = ZjkzMjk3YTItZmM4Yi00MWE4LTgxNTgtNjhkNTQ0OWRjYzA4
 
 GET {{url}}/{{id}}
