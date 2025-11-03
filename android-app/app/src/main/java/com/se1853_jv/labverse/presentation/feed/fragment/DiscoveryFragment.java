@@ -52,7 +52,7 @@ public class DiscoveryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_feed, container, false);
+        return inflater.inflate(R.layout.activity_discovery, container, false);
     }
 
     @Override
@@ -207,7 +207,7 @@ public class DiscoveryFragment extends Fragment {
         });
 
         btnNext.setOnClickListener(v -> {
-            int numberOfPage = getNumberOfPage();
+            var numberOfPage = getNumberOfPage();
             if (CURRENT_PAGE < numberOfPage - 1) {
                 CURRENT_PAGE++;
                 displayDiscoveryItemCard(getLayoutInflater(), view);
@@ -219,8 +219,8 @@ public class DiscoveryFragment extends Fragment {
     }
 
     private void updatePageInfo(@NonNull View view) {
-        int numberOfPage = getNumberOfPage();
-        String title = String.format("Page %s of %s", CURRENT_PAGE + 1, numberOfPage);
+        var numberOfPage = getNumberOfPage();
+        var title = String.format("Page %s of %s", CURRENT_PAGE + 1, numberOfPage);
 
         TextView tv = view.findViewById(R.id.tv_page_info);
         tv.setText(title);
