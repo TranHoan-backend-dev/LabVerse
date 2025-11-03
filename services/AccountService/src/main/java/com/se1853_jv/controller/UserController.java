@@ -42,7 +42,7 @@ public class UserController {
         return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserById(decodedId)));
     }
 
-    @PutMapping("/me")
+    @PatchMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<WrapperApiResponse> updateProfile(
             Authentication authentication,
@@ -51,7 +51,7 @@ public class UserController {
         return ResponseEntity.ok(WrapperApiResponse.success(userService.updateProfile(userPrincipal.getId(), request)));
     }
 
-    @PutMapping("/me/password")
+    @PatchMapping("/me/password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<WrapperApiResponse> changePassword(
             Authentication authentication,

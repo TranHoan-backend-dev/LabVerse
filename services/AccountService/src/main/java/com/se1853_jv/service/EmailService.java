@@ -21,28 +21,49 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendNewPassword(String toEmail, String fullName, String newPassword) throws MessagingException {
+    /**
+     * Send email with custom subject and content
+     */
+    public void sendEmail(String toEmail, String fullName, String subject, String content) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setFrom(fromEmail);
         helper.setTo(toEmail);
-        helper.setSubject("LabVerse - Password Reset");
-
-        String htmlContent = buildPasswordResetEmail(fullName, newPassword);
+        helper.setSubject(subject);
+        
+        String htmlContent = buildEmailTemplate(fullName, content);
         helper.setText(htmlContent, true);
 
         mailSender.send(message);
     }
 
-    private String buildPasswordResetEmail(String fullName, String newPassword) {
-       return "Hello " + fullName + ",\n\n"
-                + "Here is your new temporary password: " + newPassword + "\n\n"
-                + "Please change your password immediately after logging in.\n\n"
-                + "Best regards,\n"
-                + "LabVerse Team";
+    /**
+     * Send new password email (backward compatibility)
+     */
+    public void sendNewPassword(String toEmail, String fullName, String newPassword) throws MessagingException {
+        String content = "Here is your new temporary password: <strong>" + newPassword + "</strong><br><br>"
+                + "Please change your password immediately after logging in.";
+        sendEmail(toEmail, fullName, "LabVerse - Password Reset", content);
+    }
+
+    /**
+     * Common email template
+     */
+    private String buildEmailTemplate(String fullName, String content) {
+        return "<!DOCTYPE html>"
+                + "<html>"
+                + "<body style='font-family: Arial, sans-serif; padding: 20px;'>"
+                + "<p>Hello " + fullName + ",</p>"
+                + "<div style='margin: 20px 0;'>" + content + "</div>"
+                + "<br>"
+                + "<p>Best regards,<br>LabVerse Team</p>"
+                + "</body>"
+                + "</html>";
     }
 }
+
+
 
 
 

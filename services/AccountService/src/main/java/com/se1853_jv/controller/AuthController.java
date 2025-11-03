@@ -7,6 +7,8 @@ import com.se1853_jv.dto.request.RegisterRequest;
 import com.se1853_jv.dto.response.WrapperApiResponse;
 import com.se1853_jv.service.AuthService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
 
     @Autowired
@@ -43,9 +46,10 @@ public class AuthController {
         return ResponseEntity.ok(WrapperApiResponse.success("New password has been sent to your email", null));
     }
 
-    @GetMapping("/health")
-    public ResponseEntity<WrapperApiResponse> health() {
-        return ResponseEntity.ok(WrapperApiResponse.success("Account Service is running", null));
+    @RequestMapping(value = "/health", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> health() {
+        logger.info("HEALTHY");
+        return ResponseEntity.ok().build();
     }
 }
 

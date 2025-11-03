@@ -199,7 +199,7 @@ public class AuthService {
     public void forgotPassword(String email) {
         // Find user by email
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new BadRequestException("Email not found in system"));
 
         // Generate new random password
         String newPassword = generateRandomPassword();
