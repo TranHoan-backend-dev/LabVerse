@@ -1,6 +1,6 @@
 spring:
   application:
-    name: paper-service
+    name: PAPER-SERVICE
   profiles:
     active: dev
   cloud:

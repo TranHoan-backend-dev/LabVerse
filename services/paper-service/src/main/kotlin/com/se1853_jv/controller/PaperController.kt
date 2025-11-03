@@ -72,6 +72,19 @@ class PaperController(
         )
     }
 
+    @GetMapping
+    fun getAllPapers(@RequestParam(value = "search", required = false) searchQuery: String?): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getAllPapers with search: $searchQuery" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get all papers successfully",
+                paperService.getAllPapers(searchQuery),
+                LocalDateTime.now()
+            )
+        )
+    }
+
     @RequestMapping(value = ["/health"], method = [RequestMethod.HEAD])
     fun health(): ResponseEntity<Any> {
         logger.info { "HEALTHY" }
