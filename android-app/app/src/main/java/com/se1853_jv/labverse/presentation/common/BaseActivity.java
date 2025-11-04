@@ -23,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public abstract class BaseActivity extends AppCompatActivity {
     AppCompatImageButton homeBtn, searchBtn, readingListBtn, collectionBtn, profileBtn;
+    final String TAG = "BaseActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,10 +31,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected void setupBottomNavbar(@NonNull ViewGroup container, int index) {
-        Log.e("Huhu", "Hehe");
         View parent = container.findViewById(index);
 
-        Log.e("Huhu", parent.toString());
         homeBtn = parent.findViewById(R.id.home_btn);
         searchBtn = parent.findViewById(R.id.search_btn);
         readingListBtn = parent.findViewById(R.id.reading_list_btn);
@@ -48,47 +47,41 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     private void handleNavigatingToHomeScreen() {
-        Log.e("Hehe", "Start here");
         homeBtn.setOnClickListener(v -> {
-            Log.e("Hehe", "handleNavigatingToHomeScreen");
+            Log.e(TAG, "handleNavigatingToHomeScreen");
             if (!(this instanceof FeedActivity)) {
-                Log.e("Hehe", "But not go here");
-                Intent intent = new Intent(this, FeedActivity.class);
+                var intent = new Intent(this, FeedActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }
 
     private void handleNavigatingToReadingListScreen() {
         readingListBtn.setOnClickListener(v -> {
-            Log.e("Hehe", "handleNavigatingToReadingListScreen");
+            Log.e(TAG, "handleNavigatingToReadingListScreen");
             if (!(this instanceof ReadingListActivity)) {
-                Intent intent = new Intent(this, ReadingListActivity.class);
+                var intent = new Intent(this, ReadingListActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }
 
     private void handleNavigatingToCollectionScreen() {
         collectionBtn.setOnClickListener(v -> {
-            Log.e("Hehe", "handleNavigatingToCollectionScreen");
+            Log.e(TAG, "handleNavigatingToCollectionScreen");
             if (!(this instanceof CollectionsActivity)) {
-                Intent intent = new Intent(this, CollectionsActivity.class);
+                var intent = new Intent(this, CollectionsActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }
 
     private void handleNavigatingToProfileScreen() {
         profileBtn.setOnClickListener(v -> {
-            Log.e("Hehe", "handleNavigatingToProfileScreen");
+            Log.e(TAG, "handleNavigatingToProfileScreen");
             if (!(this instanceof ProfileActivity)) {
-                Intent intent = new Intent(this, ProfileActivity.class);
+                var intent = new Intent(this, ProfileActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }

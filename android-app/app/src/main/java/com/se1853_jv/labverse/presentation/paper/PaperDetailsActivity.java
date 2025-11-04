@@ -2,6 +2,8 @@ package com.se1853_jv.labverse.presentation.paper;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -20,11 +22,15 @@ public class PaperDetailsActivity extends BaseActivity {
         setContentView(R.layout.layout_common_ui_details);
         setupBottomNavbar(findViewById(R.id.details), R.id.bottom_navbar);
 
-        TextView header = findViewById(R.id.title);
-        header.setText(ContextCompat.getString(this, R.string.paper_details));
+        TextView headerTv = findViewById(R.id.title);
+        headerTv.setText(ContextCompat.getString(this, R.string.paper_details));
 
         ViewPager2 pager2 = findViewById(R.id.viewPager);
         var adapter = new DetailsAdapter(PaperDetailsActivity.this);
         pager2.setAdapter(adapter);
+
+        View header = findViewById(R.id.title_view);
+        ImageButton backBtn = header.findViewById(R.id.back_btn);
+        backBtn.setOnClickListener(v -> finish());
     }
 }
