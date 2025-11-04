@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:fitsSystemWindows="true"
-    tools:context=".presentation.profile.ProfileActivity">
+    tools:context=".presentation.profile.ProfileActivity" >
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
