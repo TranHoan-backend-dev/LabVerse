@@ -1,0 +1,94 @@
+{
+  "summary": {
+    "recentlyAdded": 247,
+    "recentlyRead": 43,
+    "favorites": 12
+  },
+  "recentActivity": {
+    "type": "like",
+    "time": "2 hours ago",
+    "title": "Machine Learning Applications in Biomedical Research"
+  },
+  "papers": [
+    {
+      "id": 1,
+      "title": "Deep Learning Approaches for Protein Structure Prediction",
+      "authors": "Smith, J., Johnson, A.",
+      "journal": "Nature Methods",
+      "year": 2024,
+      "status": "In Progress"
+    },
+    {
+      "id": 2,
+      "title": "CRISPR-Cas9 Gene Editing: Recent Advances and Applications",
+      "authors": "Chen, L., Williams, M.",
+      "journal": "Cell",
+      "year": 2024,
+      "status": "Read"
+    },
+    {
+      "id": 3,
+      "title": "Quantum Computing Applications in Drug Discovery",
+      "authors": "Rodriguez, P., Kumar, S.",
+      "journal": "Science",
+      "year": 2024,
+      "status": "In Progress"
+    },
+    {
+      "id": 4,
+      "title": "AI-Assisted Protein Folding: Beyond AlphaFold",
+      "authors": "Nguyen, T., Patel, R.",
+      "journal": "Bioinformatics",
+      "year": 2023,
+      "status": "Read"
+    },
+    {
+      "id": 5,
+      "title": "Synthetic Biology and the Future of Therapeutic Design",
+      "authors": "O'Neill, D., Zhang, H.",
+      "journal": "Nature Biotechnology",
+      "year": 2024,
+      "status": "In Progress"
+    },
+    {
+      "id": 6,
+      "title": "Blockchain for Secure Medical Data Exchange",
+      "authors": "Tran, M., Li, Y.",
+      "journal": "IEEE Transactions on Medical Informatics",
+      "year": 2023,
+      "status": "Read"
+    },
+    {
+      "id": 7,
+      "title": "Metaverse in Healthcare: Opportunities and Challenges",
+      "authors": "Singh, R., Morales, C.",
+      "journal": "Frontiers in Digital Health",
+      "year": 2024,
+      "status": "In Progress"
+    },
+    {
+      "id": 8,
+      "title": "Nanorobotics for Targeted Cancer Therapy",
+      "authors": "Kaur, P., Anderson, J.",
+      "journal": "Nature Nanotechnology",
+      "year": 2023,
+      "status": "Read"
+    },
+    {
+      "id": 9,
+      "title": "Wearable Biosensors and Real-Time Health Monitoring",
+      "authors": "Garcia, L., Ito, K.",
+      "journal": "Sensors",
+      "year": 2024,
+      "status": "In Progress"
+    },
+    {
+      "id": 10,
+      "title": "Augmented Reality for Surgical Training and Planning",
+      "authors": "Hernandez, F., Kim, S.",
+      "journal": "JAMA Surgery",
+      "year": 2024,
+      "status": "Read"
+    }
+  ]
+}

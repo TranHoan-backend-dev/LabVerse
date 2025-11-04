@@ -3,51 +3,53 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:padding="8dp">
 
     <!-- Search box -->
     <LinearLayout
         android:id="@+id/search_box"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="12dp"
         android:background="@drawable/bg_search_box"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <!-- Search icon -->
-        <ImageView
+        <ImageButton
             android:id="@+id/icon_search"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/ic_search"
-            android:contentDescription="Search" />
+            android:background="@drawable/ic_search"
+            android:contentDescription="@string/search" />
 
         <!-- Search input -->
         <EditText
             android:id="@+id/input_search"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:hint="Search papers, authors, keywords..."
+            android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:hint="@string/search_papers_authors_keywords"
+            android:inputType="text"
+            android:padding="0dp"
             android:textColor="#000000"
             android:textColorHint="#A0A0A0"
-            android:inputType="text"
-            android:textSize="14sp"
-            android:padding="0dp" />
+            android:textSize="14sp" />
 
         <!-- Filter icon -->
-        <ImageView
+        <ImageButton
             android:id="@+id/btn_filter"
             android:layout_width="22dp"
             android:layout_height="22dp"
-            android:src="@drawable/ic_filter"
-            android:contentDescription="Filter" />
+            android:background="@drawable/ic_filter"
+            android:clickable="true"
+            android:contentDescription="@string/filter"
+            android:focusable="true" />
 
     </LinearLayout>
 
