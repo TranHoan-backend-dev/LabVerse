@@ -10,14 +10,14 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.se1853_jv.labverse.R;
-import com.se1853_jv.labverse.presentation.common.adapter.DetailsAdapter;
+import com.se1853_jv.labverse.presentation.paper.adapter.DetailsAdapter;
 
 @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class PaperDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+        setContentView(R.layout.layout_common_ui_details);
 
         TextView header = findViewById(R.id.title);
         header.setText(ContextCompat.getString(this, R.string.paper_details));

@@ -8,12 +8,7 @@ import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.time.LocalDateTime
@@ -75,5 +70,24 @@ class PaperController(
                 LocalDateTime.now()
             )
         )
+    }
+
+    @GetMapping
+    fun getAllPapers(@RequestParam(value = "search", required = false) searchQuery: String?): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getAllPapers with search: $searchQuery" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get all papers successfully",
+                paperService.getAllPapers(searchQuery),
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @RequestMapping(value = ["/health"], method = [RequestMethod.HEAD])
+    fun health(): ResponseEntity<Any> {
+        logger.info { "HEALTHY" }
+        return ResponseEntity.ok().build()
     }
 }

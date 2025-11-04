@@ -1,5 +1,8 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_GATEWAY_URL;
+import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
+
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -24,9 +27,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PaperApiHandler {
     private final PaperApi apiService;
+    private final PaperApi gatewayApiService;
 
     public PaperApiHandler() {
-        final var BASE_URL = "http://10.0.2.2:8080/v1/api/papers/";
+        // Shared Gson and OkHttpClient để reuse
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
@@ -38,12 +42,21 @@ public class PaperApiHandler {
                 .addInterceptor(logging)
                 .build();
 
+        // Retrofit instance 1 cho PAPER_ENDPOINT_URL
         var retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(PAPER_ENDPOINT_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
         apiService = retrofit.create(PaperApi.class);
+
+        // Retrofit instance 2 cho PAPER_ENDPOINT_GATEWAY_URL (reuse cùng Gson và Client)
+        var gatewayRetrofit = new Retrofit.Builder()
+                .baseUrl(PAPER_ENDPOINT_GATEWAY_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(client)
+                .build();
+        gatewayApiService = gatewayRetrofit.create(PaperApi.class);
     }
 
     public void getPaperDetails(String id, ApiCallback<PaperResearch> callback) {
@@ -89,6 +102,39 @@ public class PaperApiHandler {
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<Citation>>> call, @NonNull Throwable t) {
                 Log.e("API Error", "Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getAllPapers(String searchQuery, ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
+        
+        // Sử dụng gatewayApiService đã được tạo sẵn trong constructor
+        Call<BaseJsonResponse<List<PaperResearch>>> call = gatewayApiService.getAllPapers(searchQuery);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
+                    Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
+                } else {
+                    Log.e("Server Error", "Error: " + response.message());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("Server Error", "Error body: " + response.errorBody().string());
+                        } catch (Exception e) {
+                            Log.e("Server Error", "Could not read error body", e);
+                        }
+                    }
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
+                Log.e("API Error", "Error: " + t.getMessage(), t);
                 callback.onError(t.getMessage());
             }
         });

@@ -21,3 +21,6 @@ Content-Type: application/pdf
 
 < ./Phishing_Emails_Detection_in_Cyber_Security.pdf
 --WebAppBoundary--
+
+###
+HEAD {{url}}/health

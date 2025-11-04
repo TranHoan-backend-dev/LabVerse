@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct
 
 private val logger = KotlinLogging.logger {}
 private const val DATABASE_URL: String = "https://labverse-18297-default-rtdb.asia-southeast1.firebasedatabase.app"
-private const val RESOURCE: String = "/labverse-firebase-adminsdk-sample.json"
+private const val RESOURCE: String = "/labverse-18297-firebase-adminsdk-fbsvc-77278ce38c.json"
 
 @Configuration
 class FirebaseConfig {

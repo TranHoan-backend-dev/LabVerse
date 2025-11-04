@@ -9,41 +9,42 @@
     android:padding="12dp">
 
     <!-- Chip "New" -->
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/tags"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/bg_chip_green"
-        android:paddingHorizontal="6dp"
-        android:paddingVertical="2dp"
-        android:text="@string/new_title"
-        android:textColor="@color/white"
-        android:textSize="12sp" />
+        android:orientation="horizontal">
+
+    </LinearLayout>
+
 
     <!-- Title -->
     <TextView
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="Deep Learning Approaches for Protein Structure Prediction: A Comprehensive Review"
+        android:text="@string/no_data"
         android:textSize="14sp"
         android:textStyle="bold" />
 
     <!-- Description -->
     <TextView
+        android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="6dp"
-        android:text="This paper presents a comprehensive analysis of recent deep learning methodologies."
+        android:text="@string/no_data"
         android:textColor="#666"
         android:textSize="13sp" />
 
     <!-- Meta info -->
     <TextView
+        android:id="@+id/metadata"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="Nature Biotechnology · 2 days ago · 15 citations"
+        android:text="@string/no_data"
         android:textColor="#888"
         android:textSize="12sp" />
 
@@ -63,6 +64,7 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/avt"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="6dp"
@@ -72,6 +74,7 @@
                 android:src="@mipmap/avt_mock_round" />
 
             <TextView
+                android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/user"

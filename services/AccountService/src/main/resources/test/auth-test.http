@@ -1,0 +1,103 @@
+### Health Check
+GET http://localhost:8081/api/auth/health
+
+### Register New User
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "researcher@labverse.com",
+  "password": "password123",
+  "fullName": "John Doe",
+  "username": "johndoe",
+  "roleName": "RESEARCHER"
+}
+
+### Login with Email and Password
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "researcher@labverse.com",
+  "password": "password123"
+}
+
+### Google OAuth2 Login
+POST http://localhost:8081/api/auth/google
+Content-Type: application/json
+
+{
+  "idToken": "YOUR_GOOGLE_ID_TOKEN_HERE"
+}
+
+### Get Current User (Replace YOUR_JWT_TOKEN with actual token from login/register response)
+GET http://localhost:8081/api/users/me
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Register PI (Principal Investigator)
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "pi@labverse.com",
+  "password": "password123",
+  "fullName": "Dr. Jane Smith",
+  "username": "janesmith",
+  "roleName": "PI"
+}
+
+### Register Student
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@labverse.com",
+  "password": "password123",
+  "fullName": "Alice Johnson",
+  "username": "alicejohnson",
+  "roleName": "STUDENT"
+}
+
+### Forgot Password
+POST http://localhost:8081/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "researcher@labverse.com"
+}
+
+### ===== PROFILE MANAGEMENT =====
+
+### Get Current User Profile (Need JWT Token)
+GET http://localhost:8081/api/users/me
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Update Profile
+PUT http://localhost:8081/api/users/me
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "username": "johndoe_updated",
+  "fullName": "John Doe Updated",
+  "avatarUrl": "https://example.com/avatar.jpg"
+}
+
+### Change Password
+PUT http://localhost:8081/api/users/me/password
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "currentPassword": "password123",
+  "newPassword": "newpassword123"
+}
+
+### Delete Account (Soft Delete)
+DELETE http://localhost:8081/api/users/me
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Get User by ID
+GET http://localhost:8081/api/users/USER_ID_HERE
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+

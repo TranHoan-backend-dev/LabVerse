@@ -11,3 +11,6 @@ Content-Type: multipart/form-data
 
 ###
 GET {{url}}
+
+###
+HEAD {{url}}/health
