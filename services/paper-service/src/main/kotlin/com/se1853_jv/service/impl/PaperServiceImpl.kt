@@ -37,7 +37,7 @@ class PaperServiceImpl(
             dataUrl = paper.dataUrl ?: "",
             keywords = paper.keywords,
             title = paper.metadata?.title ?: "",
-            authors = paper.metadata?.title ?: "",
+            authors = paper.metadata?.authors ?: "",
             journal = paper.metadata?.journal ?: "",
             publicationYear = paper.metadata?.publicationYear ?: 0,
             doi = paper.metadata?.doi ?: "",

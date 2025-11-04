@@ -169,7 +169,7 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <include
-            layout="@layout/layout_common_pagination"
+            layout="@layout/layout_common_component_pagination"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />

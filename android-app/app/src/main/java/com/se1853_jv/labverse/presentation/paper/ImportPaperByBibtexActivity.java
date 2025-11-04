@@ -27,20 +27,16 @@ import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+//import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.AccessLevel;
 import lombok.experimental.*;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImportPaperByBibtexActivity extends AppCompatActivity {
-    @NonFinal
     MaterialButton chooseFileBtn;
-    @NonFinal
     MaterialButton importBtn;
-    @NonFinal
     ActivityResultLauncher<Intent> filePickerLauncher;
-    @NonFinal
     List<BibEntry> entries = new ArrayList<>();
 
     @Override
@@ -70,8 +66,6 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
     }
 
     private void handleImportFileEvent() {
-        Log.e("Guess", "Hehe");
-
         chooseFileBtn.setOnClickListener(v -> {
             var intent = new Intent(Intent.ACTION_GET_CONTENT);
 
@@ -176,11 +170,17 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
                 TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics());
         LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(width, height);
         icon.setLayoutParams(iconParams);
+//        icon.setImageResource(R.drawable.ic_file);
         icon.setImageResource(R.drawable.ic_pdf_file);
         icon.setContentDescription(getString(R.string.pdf_file));
         return icon;
     }
 
+    /**
+     * Tạo layout bao ngoài cho các card view
+     *
+     * @return LinearLayout
+     */
     @NonNull
     private LinearLayout buildParentForBibTexContent() {
         var body = new LinearLayout(this);
@@ -193,6 +193,11 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
         return body;
     }
 
+    /**
+     * Tạo card view cho 1 citation
+     *
+     * @return MaterialCardView
+     */
     @NonNull
     private MaterialCardView buildCardView() {
         var card = new MaterialCardView(this);
@@ -207,6 +212,12 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
         return card;
     }
 
+    /**
+     * Tạo nút badge để xóa 1 card
+     *
+     * @param card thẻ card cha
+     * @return 1 view là ImageButton
+     */
     @NonNull
     private ImageButton buildDeleteBadge(@NonNull MaterialCardView card) {
         var btn = new ImageButton(this);
@@ -238,7 +249,7 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
                 Toast.makeText(this, "Chưa có file BibTex nào được chọn", Toast.LENGTH_SHORT).show();
                 return;
             }
-            var count = new AtomicInteger();
+//            var count = new AtomicInteger();
             Executors.newSingleThreadExecutor().execute(() -> {
 //                for (BibEntry e : entries) {
 //                    count.incrementAndGet();

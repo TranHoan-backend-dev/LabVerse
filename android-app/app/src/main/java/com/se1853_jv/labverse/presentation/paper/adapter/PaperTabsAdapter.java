@@ -10,13 +10,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.se1853_jv.labverse.presentation.paper.fragments.CitationFragment;
-import com.se1853_jv.labverse.presentation.paper.fragments.OverviewFragment;
 import com.se1853_jv.labverse.presentation.paper.fragments.ReferenceFragment;
+import com.se1853_jv.labverse.presentation.paper.fragments.OverviewFragment;
+import com.se1853_jv.labverse.presentation.paper.fragments.CitationFragment;
 
 @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class PaperTabsAdapter extends FragmentStateAdapter {
-    private String overviewDescription;
+    private final String overviewDescription;
 
     public PaperTabsAdapter(@NonNull FragmentActivity fragmentActivity, String description) {
         super(fragmentActivity);

@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F9FB"
+    android:background="@color/white"
     android:padding="16dp"
-    tools:context=".presentation.paper.fragments.CitationFragment">
+    tools:context=".presentation.paper.fragments.ReferenceFragment">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"

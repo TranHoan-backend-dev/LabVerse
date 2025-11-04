@@ -12,7 +12,7 @@
 
     <include
         android:id="@+id/header"
-        layout="@layout/layout_common_header"
+        layout="@layout/layout_common_component_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
@@ -23,6 +23,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Nội dung có thể cuộn -->
+
     <ScrollView
         android:id="@+id/feedScrollView"
         android:layout_width="0dp"
@@ -35,9 +36,11 @@
         android:paddingEnd="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.519">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,16 +48,16 @@
             android:layout_marginTop="16dp"
             android:orientation="vertical">
 
-            <include layout="@layout/layout_common_tab_section" />
+            <include layout="@layout/layout_common_tab_component_section" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <include layout="@layout/layout_common_search" />
+            <include layout="@layout/layout_common_component_search" />
 
-            <include layout="@layout/layout_home_content"/>
+            <include layout="@layout/layout_home_content" />
 
         </LinearLayout>
     </ScrollView>
@@ -70,7 +73,7 @@
 
     <include
         android:id="@+id/bottomNav"
-        layout="@layout/layout_common_nav"
+        layout="@layout/layout_common_component_nav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
