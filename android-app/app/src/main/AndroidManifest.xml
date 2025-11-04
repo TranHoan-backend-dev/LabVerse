@@ -37,6 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".presentation.auth.RegisterActivity"
             android:exported="true" />
@@ -51,7 +52,32 @@
             android:name=".presentation.paper.ImportPaperByBibtexActivity"
             android:exported="true" />
         <activity
+            android:name=".presentation.paper.ImportPaperManuallyActivity"
+            android:exported="true" />
+        <activity
             android:name=".presentation.feed.FeedActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.profile.ProfileActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamCreateActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamListActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.team.TeamDetailActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.collection.CollectionDetailsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.collection.SelectPaperActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.collection.CollectionDetailsActivity" />
+        <activity
+            android:name=".presentation.collection.CollectionsActivity"
             android:exported="true" />
     </application>
 

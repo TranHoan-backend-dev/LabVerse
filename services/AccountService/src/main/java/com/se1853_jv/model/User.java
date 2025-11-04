@@ -1,6 +1,7 @@
 package com.se1853_jv.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -12,25 +13,25 @@ public class User {
     @Column(name = "id", length = 36, nullable = false)
     private String id;
 
-    @Column(name = "email", length = 255, nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "username", length = 255)
+    @Column(name = "username")
     private String username;
 
-    @Column(name = "full_name", length = 255)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(name = "avatar_url", length = 255)
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
-    @Column(name = "password", length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "created_date")
+    @Column(name = "created_date", nullable = false)
     private LocalDate createdDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     private LocalDate updatedDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
