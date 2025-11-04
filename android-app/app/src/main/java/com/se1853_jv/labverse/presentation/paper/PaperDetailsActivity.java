@@ -1,7 +1,9 @@
 package com.se1853_jv.labverse.presentation.paper;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -11,6 +13,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.common.adapter.DetailsAdapter;
+import com.se1853_jv.labverse.presentation.feed.FeedActivity;
+import com.se1853_jv.labverse.presentation.user.UserActivity;
 
 @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class PaperDetailsActivity extends AppCompatActivity {
@@ -25,5 +29,30 @@ public class PaperDetailsActivity extends AppCompatActivity {
         ViewPager2 pager2 = findViewById(R.id.viewPager);
         var adapter = new DetailsAdapter(PaperDetailsActivity.this);
         pager2.setAdapter(adapter);
+
+        // Setup bottom navigation
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        // Profile navigation
+        View navProfile = findViewById(R.id.nav_profile);
+        if (navProfile != null) {
+            navProfile.setOnClickListener(v -> {
+                Intent intent = new Intent(PaperDetailsActivity.this, UserActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // Home navigation
+        View navHome = findViewById(R.id.nav_home);
+        if (navHome != null) {
+            navHome.setOnClickListener(v -> {
+                Intent intent = new Intent(PaperDetailsActivity.this, FeedActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            });
+        }
     }
 }
