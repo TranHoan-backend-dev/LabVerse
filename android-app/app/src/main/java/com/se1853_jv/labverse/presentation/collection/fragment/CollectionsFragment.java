@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.presentation.collection;
+package com.se1853_jv.labverse.presentation.collection.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +22,8 @@ import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionsPageResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
+import com.se1853_jv.labverse.presentation.collection.CollectionDetailsActivity;
+import com.se1853_jv.labverse.presentation.collection.CollectionsActivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionAdapter;
 
 import java.util.ArrayList;

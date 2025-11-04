@@ -1,9 +1,9 @@
-package com.se1853_jv.model
+package com.se1853_jv.model.enumerate
 
 enum class Role {
     STUDENT,
     INTERN,
     PI,
-    LAB_HEADER,
+    LAB_HEAD,
     RESEARCHER
 }

@@ -9,8 +9,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
@@ -24,10 +24,12 @@ import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionsPagerAdapter;
+import com.se1853_jv.labverse.presentation.collection.fragment.CollectionsFragment;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
 import com.se1853_jv.labverse.presentation.feed.FeedActivity;
 import com.se1853_jv.labverse.presentation.user.UserActivity;
 
-public class CollectionsActivity extends AppCompatActivity {
+public class CollectionsActivity extends BaseActivity {
     private static final String TAG = "CollectionsActivity";
     
     private CollectionApiHandler apiHandler;
@@ -37,8 +39,9 @@ public class CollectionsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_common_ui_home);
+        setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav); // dùng cái này để tiêm phương thức xử lý navbar
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedActivity), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.ui_home), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);
             return insets;
@@ -49,7 +52,6 @@ public class CollectionsActivity extends AppCompatActivity {
 
         apiHandler = new CollectionApiHandler();
         setupViewPager();
-        setupBottomNavigation();
     }
 
     private void hideSearchBar() {
@@ -94,33 +96,7 @@ public class CollectionsActivity extends AppCompatActivity {
         return fragment;
     }
 
-    private void setupBottomNavigation() {
-        View bottomNav = findViewById(R.id.bottomNav);
-        
-        bottomNav.findViewById(R.id.nav_home).setOnClickListener(v -> {
-            startActivity(new Intent(this, FeedActivity.class));
-            finish();
-        });
-
-        bottomNav.findViewById(R.id.nav_search).setOnClickListener(v -> {
-            // TODO: Implement search activity
-        });
-
-        bottomNav.findViewById(R.id.nav_lists).setOnClickListener(v -> {
-            // TODO: Implement lists activity
-        });
-
-        bottomNav.findViewById(R.id.nav_collections).setOnClickListener(v -> {
-            // Already in CollectionsActivity
-        });
-
-        bottomNav.findViewById(R.id.nav_profile).setOnClickListener(v -> {
-            startActivity(new Intent(this, UserActivity.class));
-            finish();
-        });
-    }
-
-    public void showEditCollectionDialog(CollectionResponse collection) {
+    public void showEditCollectionDialog(@NonNull CollectionResponse collection) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Edit Collection");
 
@@ -140,7 +116,7 @@ public class CollectionsActivity extends AppCompatActivity {
         builder.show();
     }
     
-    public void showDeleteCollectionDialog(CollectionResponse collection) {
+    public void showDeleteCollectionDialog(@NonNull CollectionResponse collection) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Collection")
                 .setMessage("Are you sure you want to delete \"" + collection.getName() + "\"?")

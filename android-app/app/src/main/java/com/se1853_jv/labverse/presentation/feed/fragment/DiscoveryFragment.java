@@ -70,8 +70,11 @@ public class DiscoveryFragment extends Fragment {
         apiHandler.getTheFiveMostPopularTags(new ApiCallback<>() {
             @Override
             public void onSuccess(List<Tag> data) {
+                if (!isAdded()) return;
+
                 if (data != null) {
                     requireActivity().runOnUiThread(() -> {
+                        if (!isAdded()) return;
                         LinearLayout view = requireActivity().findViewById(R.id.tags_view);
                         view.removeAllViews();
 
@@ -100,8 +103,12 @@ public class DiscoveryFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireActivity(), "Error when fetching data", Toast.LENGTH_SHORT).show());
+                if (!isAdded()) return;
+
+                requireActivity().runOnUiThread(() -> {
+                    if (!isAdded()) return;
+                    Toast.makeText(requireActivity(), "Error when fetching data", Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }

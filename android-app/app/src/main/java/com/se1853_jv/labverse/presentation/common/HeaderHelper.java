@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.se1853_jv.labverse.R;
@@ -63,7 +64,7 @@ public class HeaderHelper {
      * Setup avatar click listener to show a dropdown menu
      * @param activity The activity that contains the header
      */
-    public static void setupAvatarClickListener(AppCompatActivity activity) {
+    public static void setupAvatarClickListener(@NonNull AppCompatActivity activity) {
         View headerView = activity.findViewById(R.id.header);
         ImageView avatar = null;
 
@@ -84,7 +85,7 @@ public class HeaderHelper {
      * @param activity The activity
      * @param rootView The root view that contains the header
      */
-    public static void setupAvatarClickListener(AppCompatActivity activity, View rootView) {
+    public static void setupAvatarClickListener(AppCompatActivity activity, @NonNull View rootView) {
         ImageView avatar = rootView.findViewById(R.id.avatar);
         if (avatar != null) {
             // Gọi hàm setupMenu mới
@@ -95,7 +96,7 @@ public class HeaderHelper {
     /**
      * (HÀM MỚI) Tạo và hiển thị PopupMenu khi click avatar
      */
-    private static void setupMenu(AppCompatActivity activity, ImageView avatar) {
+    private static void setupMenu(AppCompatActivity activity, @NonNull ImageView avatar) {
         avatar.setOnClickListener(v -> {
             // Tạo PopupMenu
             PopupMenu popup = new PopupMenu(activity, v); // v là ImageView avatar

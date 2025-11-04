@@ -8,7 +8,6 @@
     android:fitsSystemWindows="true"
     tools:context=".presentation.profile.ProfileActivity">
 
-
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"

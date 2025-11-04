@@ -1,6 +1,6 @@
 package com.se1853_jv.config
 
-import com.se1853_jv.model.Role
+import com.se1853_jv.model.enumerate.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 //import org.springframework.security.config.Customizer
@@ -9,39 +9,38 @@ import org.springframework.context.annotation.Configuration
 //import org.springframework.security.config.annotation.web.configurers.*
 //import org.springframework.security.config.http.SessionCreationPolicy
 //import org.springframework.security.web.SecurityFilterChain
-//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+
+private const val PREFIX: String = "/v1/api"
 
 //@Configuration
 //@EnableWebSecurity
 class SecurityConfig {
-
+//
 //    @Bean
-//    fun filterChainForCitation(http: HttpSecurity): SecurityFilterChain {
-//        http
-//            .csrf { csrf: CsrfConfigurer<HttpSecurity> -> csrf.disable() }
-//            .sessionManagement { session: SessionManagementConfigurer<HttpSecurity?> ->
-//                session.sessionCreationPolicy(
-//                    SessionCreationPolicy.STATELESS
-//                )
-//            }
-//            .authorizeHttpRequests({ auth ->
-//                auth
-//                    .requestMatchers("/api/auth/**").permitAll()
-//                    .requestMatchers("/actuator/**").permitAll()
-//                    .anyRequest().authenticated()
-//            }
-//            )
-//        return http.build()
+//    fun filterChain(http: HttpSecurity): SecurityFilterChain {
 //        return http
 //            .csrf { it.disable() }
 //            .authorizeHttpRequests({ auth ->
 //                auth
-//                    .requestMatchers("/v1/api/papers/citation").hasAnyRole(
+//                    .requestMatchers(
+//                        PREFIX.plus("/citations/health"),
+//                        PREFIX.plus("/papers/health"),
+//                        PREFIX.plus("/tags/health")
+//                    ).permitAll()
+//                    .requestMatchers(
+//                        PREFIX.plus("/tags/**"),
+//                        PREFIX.plus("/papers/**"),
+//                        PREFIX.plus("/citations/**")
+//                    ).hasAnyRole(
 //                        Role.STUDENT.toString(), Role.INTERN.toString(),
-//                        Role.PI.toString(), Role.LAB_HEADER.toString(),
-//                        Role.RESEARCHER.toString(),
+//                        Role.PI.toString(), Role.LAB_HEAD.toString(),
+//                        Role.RESEARCHER.toString()
 //                    )
+//                    .anyRequest().authenticated()
 //            })
+//            .sessionManagement { session: SessionManagementConfigurer<HttpSecurity?> ->
+//                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//            }
 //            .httpBasic(Customizer.withDefaults())
 //            .build()
 //    }
