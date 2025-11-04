@@ -33,7 +33,7 @@ google-services.json
 # Android Profiling
 *.hprof
 
-
+*.vbak
 *.env.*
 
 logs/
