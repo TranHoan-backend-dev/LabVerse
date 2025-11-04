@@ -66,6 +66,10 @@ Content-Type: application/json
   "email": "researcher@labverse.com"
 }
 
+### Logout
+POST http://localhost:8081/api/auth/logout
+Content-Type: application/json
+
 ### ===== PROFILE MANAGEMENT =====
 
 ### Get Current User Profile (Need JWT Token)
