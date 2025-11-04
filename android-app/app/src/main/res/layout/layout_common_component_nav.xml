@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="56dp"
     android:background="@color/white"
+    android:clipChildren="true"
+    android:fitsSystemWindows="true"
     android:gravity="center"
     android:orientation="horizontal"
-    android:paddingTop="8dp">
-
-    <!-- TODO: Chinh lai wrap content -->
+    android:paddingTop="4dp">
 
     <!-- Home -->
     <LinearLayout
@@ -22,14 +22,25 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/home_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:clickable="false"
+            android:contentDescription="@string/home"
+            android:focusable="false"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_home" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:text="@string/home"
             android:textColor="#A0A0A0"
             android:textSize="12sp" />
@@ -48,20 +59,31 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/search_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:clickable="false"
+            android:contentDescription="@string/search"
+            android:focusable="false"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_search" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:text="@string/search"
             android:textColor="#A0A0A0"
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Lists (active) -->
+    <!-- Lists -->
     <LinearLayout
         android:id="@+id/nav_lists"
         android:layout_width="0dp"
@@ -74,20 +96,31 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/reading_list_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:clickable="false"
+            android:contentDescription="@string/lists"
+            android:focusable="false"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_list" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:text="@string/lists"
             android:textColor="#A0A0A0"
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Collections -->
+    <!-- Collections (fixed) -->
     <LinearLayout
         android:id="@+id/nav_collections"
         android:layout_width="0dp"
@@ -100,14 +133,25 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/collections_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:clickable="false"
+            android:contentDescription="@string/collections"
+            android:focusable="false"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_collection" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:text="@string/collections"
             android:textColor="#A0A0A0"
             android:textSize="12sp" />
@@ -126,14 +170,25 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/profile_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:clickable="false"
+            android:contentDescription="@string/profile"
+            android:focusable="false"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_profile" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:text="@string/profile"
             android:textColor="#A0A0A0"
             android:textSize="12sp" />

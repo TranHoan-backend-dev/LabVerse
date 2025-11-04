@@ -26,4 +26,6 @@ public class Tag {
 
     @NonNull
     String name;
+
+    String color;
 }

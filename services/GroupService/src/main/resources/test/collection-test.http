@@ -1,4 +1,4 @@
-@url = http://localhost:8080/v1/api/group/collections
+@url = http://localhost:8080/v1/api/collections
 
 # ===========================================
 # STEP 1: Tạo collections trước (chạy trước)

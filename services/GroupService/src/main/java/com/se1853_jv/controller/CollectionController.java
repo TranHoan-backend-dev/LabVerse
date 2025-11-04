@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/group/collections")
+@RequestMapping("/collections")
 @RequiredArgsConstructor
 public class CollectionController {
 
@@ -44,5 +44,10 @@ public class CollectionController {
     @PutMapping("/papers/status")
     public ResponseEntity<WrapperApiResponse> updateStatus(@Valid @RequestBody CollectionPaperRequest request) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.updatePaperStatus(request)));
+    }
+
+    @GetMapping("/{id}/papers")
+    public ResponseEntity<WrapperApiResponse> getPapersInCollection(@PathVariable String id) {
+        return ResponseEntity.ok(WrapperApiResponse.success(collectionService.getPapersInCollection(id)));
     }
 }

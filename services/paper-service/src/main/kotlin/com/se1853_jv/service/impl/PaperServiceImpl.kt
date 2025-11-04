@@ -45,6 +45,25 @@ class PaperServiceImpl(
         )
     }
 
+    override fun getAllPapers(searchQuery: String?): List<PaperResponse> {
+        logger.info { "Getting all papers with search query: $searchQuery" }
+        val allPapers = repo.findAll()
+        
+        val filteredPapers = if (searchQuery.isNullOrBlank()) {
+            allPapers
+        } else {
+            val query = searchQuery.lowercase()
+            allPapers.filter { paper ->
+                paper.metadata?.title?.lowercase()?.contains(query) == true ||
+                paper.metadata?.authors?.lowercase()?.contains(query) == true ||
+                paper.metadata?.journal?.lowercase()?.contains(query) == true ||
+                paper.keywords?.any { it.lowercase().contains(query) } == true
+            }
+        }
+        
+        return filteredPapers.map { convert(it) }
+    }
+
     private fun storeData(item: PaperResponse): MutableMap<String, Any> {
         val response: MutableMap<String, Any> = HashMap()
         response["id"] = item.id

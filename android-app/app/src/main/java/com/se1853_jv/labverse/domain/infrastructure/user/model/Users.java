@@ -3,6 +3,7 @@ package com.se1853_jv.labverse.domain.infrastructure.user.model;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
@@ -32,16 +33,15 @@ import lombok.experimental.FieldDefaults;
         }
 )
 public class Users {
+
     @PrimaryKey
     @NonNull
     String id;
 
     @NonNull
-    // regex
     String email;
 
     @NonNull
-    // regex
     String password;
 
     @NonNull
@@ -61,4 +61,12 @@ public class Users {
 
     @NonNull
     String roleId;
+
+    // ✅ Room sẽ bỏ qua constructor này
+    @Ignore
+    public Users(String id, String email, String name) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+    }
 }

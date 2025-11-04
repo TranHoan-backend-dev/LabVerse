@@ -29,8 +29,8 @@
     <string name="lists">Lists</string>
     <string name="collections">Collections</string>
     <string name="profile">Profile</string>
-    <string name="discover">Discover</string>
-    <string name="saved">Saved</string>
+    <string name="discovery">Discovery</string>
+    <string name="my_papers">My papers</string>
     <string name="recommended_for_you">Recommended for You</string>
     <string name="view_all">View All</string>
     <string name="teams">Teams</string>
@@ -51,7 +51,23 @@
     <string name="new_title">New</string>
     <string name="recent_activity">Recent Activity</string>
     <string name="recently_added">Recently Added</string>
+    <string name="logout">Logout</string>
     <string name="user">User</string>
     <string name="new_paper_added">New paper added</string>
+    <string name="added_paper">Added papers</string>
+    <string name="read_paper">Read papers</string>
+    <!-- Team -->
+    <string name="team_logo">Team Logo</string>
+    <string name="team_name">Team Name</string>
+    <string name="team_description">Team Description</string>
+    <string name="view_details">View Details</string>
     <string name="go_back">Go back</string>
+    <string name="recently_read">Recently Read</string>
+    <string name="favorites">Favorites</string>
+    <string name="heart">❤️</string>
+    <string name="in_progress">In Progress</string>
+    <string name="continue_to_read">Continue to read</string>
+    <string name="papers">Papers</string>
+    <string name="search_papers_authors_keywords">Search papers, authors, keywords...</string>
+    <string name="filter">Filter</string>
 </resources>

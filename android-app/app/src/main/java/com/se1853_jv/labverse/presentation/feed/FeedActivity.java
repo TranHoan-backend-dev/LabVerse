@@ -1,29 +1,74 @@
 package com.se1853_jv.labverse.presentation.feed;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
-import com.se1853_jv.labverse.presentation.feed.adapter.FeedAdapter;
+import com.se1853_jv.labverse.data.utils.ParseFileUtils;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
+import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
 
-public class FeedActivity extends AppCompatActivity {
+import java.util.List;
+
+public class FeedActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_common_home);
+        setContentView(R.layout.layout_common_ui_home);
 
-        ViewPager2 pager2 = findViewById(R.id.viewPager1);
-        FeedAdapter adapter = new FeedAdapter(FeedActivity.this);
-        pager2.setAdapter(adapter);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedActivity), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.ui_home), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);
             return insets;
         });
+
+        setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav);
+        setupTabs();
+        getMockData();
+    }
+
+    private void setupTabs() {
+        ViewPager2 pager = findViewById(R.id.viewPager);
+        TabLayout tabLayout = findViewById(R.id.tabLayoutPaper);
+
+        var adapter = new TabAdapter(FeedActivity.this);
+        pager.setAdapter(adapter);
+
+        new TabLayoutMediator(tabLayout, pager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText(ContextCompat.getString(FeedActivity.this, R.string.discovery));
+                    break;
+                case 1:
+                    tab.setText(ContextCompat.getString(FeedActivity.this, R.string.my_papers));
+                    break;
+                case 2:
+                    tab.setText(ContextCompat.getString(FeedActivity.this, R.string.teams));
+                    break;
+            }
+        }).attach();
+    }
+
+    private void getMockData() {
+        List<DiscoveryItem> items = ParseFileUtils.fromJsonAsset(
+                FeedActivity.this,
+                "feed/discovery.json",
+                new TypeToken<List<DiscoveryItem>>() {
+                }.getType()
+        );
     }
 }
