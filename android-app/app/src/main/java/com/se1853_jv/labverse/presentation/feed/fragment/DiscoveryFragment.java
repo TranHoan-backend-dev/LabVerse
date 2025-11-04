@@ -3,9 +3,11 @@ package com.se1853_jv.labverse.presentation.feed.fragment;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,8 +70,11 @@ public class DiscoveryFragment extends Fragment {
         apiHandler.getTheFiveMostPopularTags(new ApiCallback<>() {
             @Override
             public void onSuccess(List<Tag> data) {
+                if (!isAdded()) return;
+
                 if (data != null) {
                     requireActivity().runOnUiThread(() -> {
+                        if (!isAdded()) return;
                         LinearLayout view = requireActivity().findViewById(R.id.tags_view);
                         view.removeAllViews();
 
@@ -98,8 +103,12 @@ public class DiscoveryFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireActivity(), "Error when fetching data", Toast.LENGTH_SHORT).show());
+                if (!isAdded()) return;
+
+                requireActivity().runOnUiThread(() -> {
+                    if (!isAdded()) return;
+                    Toast.makeText(requireActivity(), "Error when fetching data", Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -185,11 +194,14 @@ public class DiscoveryFragment extends Fragment {
         TextView tv = parent.findViewById(R.id.username);
         tv.setText(username == null ? ContextCompat.getString(parent.getContext(), R.string.user) : username);
 
+        System.out.println(imageUrl);
+
         ImageView iv = parent.findViewById(R.id.avt);
         iv.setImageResource(R.mipmap.avt_mock_round);
     }
     // </editor-fold>
 
+    // <editor-fold> desc="pagination handling"
     private void buildPagination(@NonNull View view) {
         updatePageInfo(view);
 
@@ -230,4 +242,5 @@ public class DiscoveryFragment extends Fragment {
         if (list == null || list.isEmpty()) return 1;
         return (int) Math.ceil((double) list.size() / PAGE_SIZE);
     }
+    // </editor-fold>
 }

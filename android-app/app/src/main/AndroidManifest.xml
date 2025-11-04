@@ -46,7 +46,7 @@
             android:name=".presentation.paper.ImportPaperByBibtexActivity"
             android:exported="true" />
         <activity
-            android:name=".presentation.paper.ImportNewPaperActivity"
+            android:name=".presentation.paper.ImportPaperManuallyActivity"
             android:exported="true" />
         <activity
             android:name=".presentation.feed.FeedActivity"

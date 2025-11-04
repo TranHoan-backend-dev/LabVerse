@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F4F6FA"
     android:fitsSystemWindows="true"
-    tools:context=".presentation.paper.ImportNewPaperActivity">
+    tools:context=".presentation.paper.ImportPaperManuallyActivity">
 
     <!-- Top app bar -->
     <androidx.appcompat.widget.Toolbar

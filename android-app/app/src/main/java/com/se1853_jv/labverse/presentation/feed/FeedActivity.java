@@ -1,10 +1,13 @@
 package com.se1853_jv.labverse.presentation.feed;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -15,37 +18,32 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
 
 import java.util.List;
 
-public class FeedActivity extends AppCompatActivity {
+public class FeedActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_common_ui_home);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedActivity), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.ui_home), (v, insets) -> {
             var statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);
             return insets;
         });
-        getMockData();
+
+        setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav);
         setupTabs();
+        getMockData();
     }
 
     private void setupTabs() {
         ViewPager2 pager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayoutPaper);
-
-        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                Log.d("TabSelected", "Tab được chọn: " + position);
-            }
-        });
 
         var adapter = new TabAdapter(FeedActivity.this);
         pager.setAdapter(adapter);
@@ -72,9 +70,5 @@ public class FeedActivity extends AppCompatActivity {
                 new TypeToken<List<DiscoveryItem>>() {
                 }.getType()
         );
-        if (items == null) return;
-        for (DiscoveryItem item : items) {
-            Log.d("MockData", item.toString());
-        }
     }
 }

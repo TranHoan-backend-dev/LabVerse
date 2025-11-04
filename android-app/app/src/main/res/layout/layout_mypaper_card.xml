@@ -58,27 +58,27 @@
                     android:orientation="horizontal">
 
                     <include
-                        layout="@layout/layout_main_status_continue"
+                        layout="@layout/layout_common_status_continue"
                         android:layout_width="wrap_content"
                         android:layout_height="41dp"
                         android:layout_marginEnd="8dp" />
 
                     <include
                         android:id="@+id/in_progress"
-                        layout="@layout/layout_main_status_in_progress"
+                        layout="@layout/layout_common_status_in_progress"
                         android:visibility="gone"
                         android:layout_width="wrap_content"
                         android:layout_height="34dp" />
                     <include
                         android:id="@+id/read"
                         android:visibility="gone"
-                        layout="@layout/layout_main_status_read"
+                        layout="@layout/layout_common_status_read"
                         android:layout_width="wrap_content"
                         android:layout_height="34dp" />
                     <include
                         android:id="@+id/status_continue"
                         android:visibility="gone"
-                        layout="@layout/layout_main_status_continue"
+                        layout="@layout/layout_common_status_continue"
                         android:layout_width="wrap_content"
                         android:layout_height="34dp" />
 

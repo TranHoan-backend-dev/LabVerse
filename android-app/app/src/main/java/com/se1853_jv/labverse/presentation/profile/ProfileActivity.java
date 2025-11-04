@@ -13,8 +13,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
 
     private TextInputEditText etFullName;
     private TextInputEditText etEmail;

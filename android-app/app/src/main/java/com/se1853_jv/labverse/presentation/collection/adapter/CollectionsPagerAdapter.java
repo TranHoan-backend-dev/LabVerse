@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.se1853_jv.labverse.presentation.collection.CollectionsFragment;
+import com.se1853_jv.labverse.presentation.collection.fragment.CollectionsFragment;
 
 /**
  * Adapter for ViewPager2 to manage CollectionsFragment pages.

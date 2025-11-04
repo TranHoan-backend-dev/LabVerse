@@ -68,4 +68,6 @@
     <string name="in_progress">In Progress</string>
     <string name="continue_to_read">Continue to read</string>
     <string name="papers">Papers</string>
+    <string name="search_papers_authors_keywords">Search papers, authors, keywords...</string>
+    <string name="filter">Filter</string>
 </resources>
