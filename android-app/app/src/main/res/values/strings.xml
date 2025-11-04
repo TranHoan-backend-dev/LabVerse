@@ -51,6 +51,7 @@
     <string name="new_title">New</string>
     <string name="recent_activity">Recent Activity</string>
     <string name="recently_added">Recently Added</string>
+    <string name="logout">Logout</string>
     <string name="user">User</string>
     <string name="new_paper_added">New paper added</string>
     <string name="added_paper">Added papers</string>
