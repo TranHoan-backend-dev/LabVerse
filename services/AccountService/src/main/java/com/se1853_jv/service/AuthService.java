@@ -227,5 +227,10 @@ public class AuthService {
         
         return password.toString();
     }
+
+    public void logout() {
+        // Clear the security context
+        SecurityContextHolder.clearContext();
+    }
 }
 
