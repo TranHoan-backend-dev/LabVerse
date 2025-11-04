@@ -275,10 +275,14 @@
                         android:paddingVertical="12dp">
 
                         <LinearLayout
+                            android:id="@+id/layoutChangePassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground">
 
                             <FrameLayout
                                 android:layout_width="40dp"
@@ -752,6 +756,22 @@
                     android:textStyle="bold"
                     android:backgroundTint="@color/primary"
                     app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:paddingVertical="16dp"
+                    android:text="Logout"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="@android:color/transparent"
+                    android:textColor="@color/error"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/error"
+                    app:strokeWidth="1dp" />
 
             </LinearLayout>
 

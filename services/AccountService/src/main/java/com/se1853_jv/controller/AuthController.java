@@ -46,6 +46,12 @@ public class AuthController {
         return ResponseEntity.ok(WrapperApiResponse.success("New password has been sent to your email", null));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<WrapperApiResponse> logout() {
+        authService.logout();
+        return ResponseEntity.ok(WrapperApiResponse.success("Logout successful", null));
+    }
+
     @RequestMapping(value = "/health", method = RequestMethod.HEAD)
     public ResponseEntity<Void> health() {
         logger.info("HEALTHY");

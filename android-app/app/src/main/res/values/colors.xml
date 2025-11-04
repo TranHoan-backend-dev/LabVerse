@@ -38,5 +38,6 @@
 
     <color name="border_color">#FFEBEBEB</color>
     <color name="cyan">#FF19C4D4</color>
+    <color name="error">#F44336</color>
 
 </resources>
