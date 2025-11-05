@@ -89,7 +89,7 @@ public class DiscoveryFragment extends Fragment {
                             tv.setPaddingRelative(10, 4, 10, 4);
                             tv.setBackgroundTintMode(PorterDuff.Mode.SRC_IN);
 
-                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            var params = new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.WRAP_CONTENT,
                                     LinearLayout.LayoutParams.WRAP_CONTENT
                             );
@@ -136,7 +136,7 @@ public class DiscoveryFragment extends Fragment {
             tagsContainer.removeAllViews();
             if (item.getTags() != null && !item.getTags().isEmpty()) {
                 for (int i = 0; i < item.getTags().size(); i++) {
-                    Tag tag = item.getTags().get(i);
+                    var tag = item.getTags().get(i);
                     tagsContainer.addView(buildChip(cardView.getContext(), tag.getName(), i));
                 }
             }
@@ -157,7 +157,7 @@ public class DiscoveryFragment extends Fragment {
         var tv = new TextView(context);
         tv.setId(View.generateViewId());
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+        var params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );

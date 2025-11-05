@@ -129,9 +129,9 @@ public class PaperDetailsFragment extends Fragment {
 
     @NonNull
     private TextView createNoDataTitle(@NonNull View view) {
-        TextView tv = new TextView(view.getContext());
+        var tv = new TextView(view.getContext());
         tv.setText(ContextCompat.getString(view.getContext(), R.string.no_data));
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+        var params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
@@ -242,7 +242,7 @@ public class PaperDetailsFragment extends Fragment {
                         tv.setText(tag.getName());
                         tv.setBackground(ContextCompat.getDrawable(requireActivity(), bg[position]));
 
-                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        var params = new LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.WRAP_CONTENT,
                                 LinearLayout.LayoutParams.WRAP_CONTENT
                         );

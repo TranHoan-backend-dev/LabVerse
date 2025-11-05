@@ -186,8 +186,7 @@ public class ImportBibtexFragment extends Fragment {
                 TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics());
         var height = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics());
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(width, height);
-        icon.setLayoutParams(iconParams);
+        icon.setLayoutParams(new LinearLayout.LayoutParams(width, height));
 //        icon.setImageResource(R.drawable.ic_file);
         icon.setImageResource(R.drawable.ic_pdf_file);
         icon.setContentDescription(getString(R.string.pdf_file));
@@ -222,11 +221,10 @@ public class ImportBibtexFragment extends Fragment {
         card.setId(View.generateViewId());
         card.setContentPadding(16, 16, 16, 16);
         card.setUseCompatPadding(true);
-        ConstraintLayout.LayoutParams cardParams = new ConstraintLayout.LayoutParams(
+        card.setLayoutParams(new ConstraintLayout.LayoutParams(
                 ConstraintLayout.LayoutParams.MATCH_PARENT,
                 ConstraintLayout.LayoutParams.WRAP_CONTENT
-        );
-        card.setLayoutParams(cardParams);
+        ));
         return card;
     }
 
@@ -242,7 +240,7 @@ public class ImportBibtexFragment extends Fragment {
         btn.setImageResource(R.drawable.ic_close_24);
         btn.setBackgroundResource(R.color.white);
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+        var params = new FrameLayout.LayoutParams(
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()),
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics())
         );

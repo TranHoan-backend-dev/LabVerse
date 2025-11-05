@@ -32,5 +32,5 @@ public class OverviewFragment extends Fragment {
             }
         }
     }
-
+    // TODO: xu ly khau chuyen tiep sang read pdf file
 }
