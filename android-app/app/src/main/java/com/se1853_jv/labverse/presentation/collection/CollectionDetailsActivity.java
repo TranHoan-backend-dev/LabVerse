@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,16 +15,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
+import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
+import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionPaperAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CollectionDetailsActivity extends AppCompatActivity {
@@ -84,8 +90,91 @@ public class CollectionDetailsActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         adapter = new CollectionPaperAdapter();
+        adapter.setOnStatusClickListener(paper -> showStatusPriorityBottomSheet(paper));
         recyclerPapers.setLayoutManager(new LinearLayoutManager(this));
         recyclerPapers.setAdapter(adapter);
+    }
+
+    private void showStatusPriorityBottomSheet(CollectionPaperDetailResponse paper) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_paper_status, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        Spinner spinnerStatus = bottomSheetView.findViewById(R.id.spinner_status);
+        Spinner spinnerPriority = bottomSheetView.findViewById(R.id.spinner_priority);
+        MaterialButton buttonSave = bottomSheetView.findViewById(R.id.button_save);
+
+        // Setup Status spinner
+        String[] statuses = {"ToRead", "Reading", "Finished"};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerStatus.setAdapter(statusAdapter);
+        
+        // Set current status
+        String currentStatus = paper.getStatus() != null ? paper.getStatus() : "ToRead";
+        int statusPosition = Arrays.asList(statuses).indexOf(currentStatus);
+        if (statusPosition >= 0) {
+            spinnerStatus.setSelection(statusPosition);
+        }
+
+        // Setup Priority spinner
+        String[] priorities = {"HIGH", "MEDIUM", "LOW"};
+        ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, priorities);
+        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPriority.setAdapter(priorityAdapter);
+        
+        // Set current priority
+        String currentPriority = paper.getPriority() != null ? paper.getPriority() : "MEDIUM";
+        int priorityPosition = Arrays.asList(priorities).indexOf(currentPriority);
+        if (priorityPosition >= 0) {
+            spinnerPriority.setSelection(priorityPosition);
+        }
+
+        buttonSave.setOnClickListener(v -> {
+            String newStatus = (String) spinnerStatus.getSelectedItem();
+            String newPriority = (String) spinnerPriority.getSelectedItem();
+            
+            updatePaperStatus(paper, newStatus, newPriority);
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
+    }
+
+    private void updatePaperStatus(CollectionPaperDetailResponse paper, String status, String priority) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CollectionPaperRequest request = new CollectionPaperRequest();
+        request.setCollectionId(collection.getId());
+        request.setPaperId(paper.getPaperId());
+        request.setStatus(status);
+        request.setPriority(priority);
+
+        apiHandler.updatePaperStatus(request, new ApiCallback<CollectionPaperResponse>() {
+            @Override
+            public void onSuccess(CollectionPaperResponse response) {
+                runOnUiThread(() -> {
+                    Toast.makeText(CollectionDetailsActivity.this,
+                            "Paper status updated successfully",
+                            Toast.LENGTH_SHORT).show();
+                    // Refresh papers list
+                    loadPapers();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    android.util.Log.e(TAG, "Error updating paper status: " + error);
+                    Toast.makeText(CollectionDetailsActivity.this,
+                            "Failed to update status: " + error,
+                            Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
     private void loadPapers() {

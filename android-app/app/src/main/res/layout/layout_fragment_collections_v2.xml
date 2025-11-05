@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- My Collections Section -->
+        <TextView
+            android:id="@+id/text_my_collections_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="My Collections"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="?attr/colorOnSurface"
+            android:padding="16dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_my_collections"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:minHeight="100dp"
+            app:layout_constraintTop_toBottomOf="@id/text_my_collections_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Shared Collections Section -->
+        <TextView
+            android:id="@+id/text_shared_collections_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Shared Collections"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="?attr/colorOnSurface"
+            android:padding="16dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/recycler_my_collections"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_shared_collections"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:minHeight="100dp"
+            app:layout_constraintTop_toBottomOf="@id/text_shared_collections_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Empty State for My Collections -->
+        <TextView
+            android:id="@+id/text_empty_my_collections"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No collections created yet. Create your first collection!"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/text_my_collections_header"
+            app:layout_constraintBottom_toTopOf="@id/text_shared_collections_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Empty State for Shared Collections -->
+        <TextView
+            android:id="@+id/text_empty_shared_collections"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No shared collections yet."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/text_shared_collections_header"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Create Collection Button (only for PI) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_create_collection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Create New Collection"
+            app:iconGravity="textStart"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.Material3.Button"
+            app:backgroundTint="#5780D9"
+            app:layout_constraintTop_toBottomOf="@id/recycler_shared_collections"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Invite Team Members Button (only for PI) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_invite_members"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Invite Team Members"
+            app:icon="@drawable/ic_people_24"
+            app:iconGravity="textStart"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            app:layout_constraintTop_toBottomOf="@id/button_create_collection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>
+

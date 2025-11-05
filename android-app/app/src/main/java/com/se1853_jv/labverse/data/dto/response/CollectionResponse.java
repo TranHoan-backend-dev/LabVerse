@@ -12,6 +12,8 @@ import java.io.Serializable;
 public class CollectionResponse implements Serializable {
     private String id;
     private String name;
+    private Long paperCount;
+    private Long memberCount;
 }
 
 

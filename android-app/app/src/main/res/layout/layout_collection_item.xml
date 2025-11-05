@@ -27,21 +27,6 @@
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/chip_collection_role" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_collection_role"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Owner"
-            style="@style/Widget.Material3.Chip.Assist"
-            app:chipBackgroundColor="#7CCA97"
-            android:textColor="@color/fourth_green"
-            app:chipMinHeight="24dp"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@id/text_collection_title"
-            app:layout_constraintStart_toEndOf="@id/text_collection_title"
             app:layout_constraintEnd_toStartOf="@id/button_collection_options" />
 
         <ImageView
