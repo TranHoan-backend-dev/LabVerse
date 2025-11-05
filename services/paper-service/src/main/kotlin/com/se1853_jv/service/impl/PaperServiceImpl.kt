@@ -68,6 +68,12 @@ class PaperServiceImpl(
         return filteredPapers.map { convert(it) }
     }
 
+    override fun deleteById(id: String) {
+        logger.info { "Deleting paper with id: $id" }
+        repo.findById(id).orElseThrow { IllegalArgumentException("Paper not found") }
+        repo.deleteById(id)
+    }
+
     private fun storeData(item: PaperResponse): MutableMap<String, Any> {
         val response: MutableMap<String, Any> = HashMap()
         response["id"] = item.id
