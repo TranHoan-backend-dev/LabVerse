@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "citations")
-data class Citation(
+data class Reference(
     @Id
     val id: String,
     val paperIds: List<String> = emptyList(),

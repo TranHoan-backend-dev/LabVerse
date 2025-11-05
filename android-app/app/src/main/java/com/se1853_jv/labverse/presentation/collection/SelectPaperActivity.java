@@ -72,7 +72,8 @@ public class SelectPaperActivity extends AppCompatActivity {
         setupToolbar();
         setupRecyclerView();
         setupSearch();
-        loadPapers();
+        // TODO: xu ly phan trang
+        loadPapers(0, 0);
     }
 
     private void initializeViews() {
@@ -100,6 +101,9 @@ public class SelectPaperActivity extends AppCompatActivity {
     }
 
     private void setupSearch() {
+        // TODO: xu ly phan trang
+        int currentPage = 0;
+        int pageSize = 0;
         editSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -112,7 +116,7 @@ public class SelectPaperActivity extends AppCompatActivity {
                 }
                 
                 // Schedule new search with debounce
-                searchRunnable = () -> performSearch(s.toString());
+                searchRunnable = () -> performSearch(s.toString(), currentPage, pageSize);
                 searchHandler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY);
             }
 
@@ -121,7 +125,7 @@ public class SelectPaperActivity extends AppCompatActivity {
         });
     }
 
-    private void performSearch(String query) {
+    private void performSearch(String query, int currentPage, int pageSize) {
         if (query == null || query.trim().isEmpty()) {
             // Show all papers if search is empty
             filterPapers("");
@@ -130,7 +134,7 @@ public class SelectPaperActivity extends AppCompatActivity {
             filterPapers(query);
             
             // Then search on server
-            searchPapersOnServer(query);
+            searchPapersOnServer(query, currentPage, pageSize);
         }
     }
 
@@ -153,14 +157,14 @@ public class SelectPaperActivity extends AppCompatActivity {
         updateEmptyState();
     }
 
-    private void searchPapersOnServer(String query) {
+    private void searchPapersOnServer(String query, int currentPage, int pageSize) {
         if (!Connectivity.isInternetAvailable(this)) {
             return;
         }
 
         showLoading(true);
         
-        paperApiHandler.getAllPapers(query, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(query, currentPage, pageSize, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -197,7 +201,7 @@ public class SelectPaperActivity extends AppCompatActivity {
         return false;
     }
 
-    private void loadPapers() {
+    private void loadPapers(int currentPage, int pageSize) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             updateEmptyState();
@@ -206,7 +210,7 @@ public class SelectPaperActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        paperApiHandler.getAllPapers(null, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(null, currentPage, pageSize, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {

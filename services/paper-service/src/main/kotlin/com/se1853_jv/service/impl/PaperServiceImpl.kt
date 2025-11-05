@@ -8,10 +8,13 @@ import com.se1853_jv.repository.PaperRepository
 import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 private const val COLLECTION_NAME: String = "paper"
+private const val PAGE_SIZE: Int = 5
 
 @Service
 class PaperServiceImpl(
@@ -45,22 +48,23 @@ class PaperServiceImpl(
         )
     }
 
-    override fun getAllPapers(searchQuery: String?): List<PaperResponse> {
+    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
         logger.info { "Getting all papers with search query: $searchQuery" }
-        val allPapers = repo.findAll()
-        
+        val allPapers: Page<Paper> = repo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
+        val data = allPapers.content
+
         val filteredPapers = if (searchQuery.isNullOrBlank()) {
-            allPapers
+            data
         } else {
             val query = searchQuery.lowercase()
-            allPapers.filter { paper ->
+            data.filter { paper ->
                 paper.metadata?.title?.lowercase()?.contains(query) == true ||
-                paper.metadata?.authors?.lowercase()?.contains(query) == true ||
-                paper.metadata?.journal?.lowercase()?.contains(query) == true ||
-                paper.keywords?.any { it.lowercase().contains(query) } == true
+                        paper.metadata?.authors?.lowercase()?.contains(query) == true ||
+                        paper.metadata?.journal?.lowercase()?.contains(query) == true ||
+                        paper.keywords?.any { it.lowercase().contains(query) } == true
             }
         }
-        
+
         return filteredPapers.map { convert(it) }
     }
 

@@ -18,5 +18,9 @@ public interface PaperApi {
     @GET("citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
     @GET("papers")
-    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(@Query("search") String searchQuery);
+    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(
+            @Query("search") String searchQuery,
+            @Query("index") int currentPage,
+            @Query("size") int pageSize
+    );
 }

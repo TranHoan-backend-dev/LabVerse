@@ -3,7 +3,7 @@ package com.se1853_jv.controller
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.GrobidService
-import com.se1853_jv.service.boundary.CitationService
+import com.se1853_jv.service.boundary.ReferenceService
 import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("papers")
 class PaperController(
     private val paperService: PaperService,
-    private val citationService: CitationService,
+    private val referenceService: ReferenceService,
     private val encoder: EncoderService,
     private val grobid: GrobidService
 ) {
@@ -38,16 +38,16 @@ class PaperController(
         )
     }
 
-    @GetMapping("/citation")
-    fun getCitationsOfPaperResearch(@RequestParam("id") paperId: String): ResponseEntity<WrapperApiResponse> {
+    @GetMapping("/references")
+    fun getReferencesOfPaperResearch(@RequestParam("id") paperId: String): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to getCitationsOfPaperResearch controller. id: ${encoder.decode(paperId)}" }
         val id = encoder.decode(paperId)
 
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
-                "Get citations of a paper successfully",
-                citationService.getCitationsByPaperId(id),
+                "Get references of a paper successfully",
+                referenceService.getReferencesByPaperId(id),
                 LocalDateTime.now()
             )
         )
@@ -73,13 +73,17 @@ class PaperController(
     }
 
     @GetMapping
-    fun getAllPapers(@RequestParam(value = "search", required = false) searchQuery: String?): ResponseEntity<WrapperApiResponse> {
+    fun getAllPapers(
+        @RequestParam(value = "search", required = false) searchQuery: String?,
+        @RequestParam index: Int,
+        @RequestParam(value = "size", required = false) pageSize: Int
+    ): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to getAllPapers with search: $searchQuery" }
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
-                paperService.getAllPapers(searchQuery),
+                paperService.getAllPapers(searchQuery, index, pageSize),
                 LocalDateTime.now()
             )
         )

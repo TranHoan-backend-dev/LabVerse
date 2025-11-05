@@ -1,6 +1,6 @@
 package com.se1853_jv.dto.response
 
-class CitationResponse(
+class ReferenceResponse(
     val id: String,
     val title: String,
     val authors: String,

@@ -2,7 +2,7 @@ package com.se1853_jv.controller
 
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
-import com.se1853_jv.service.boundary.CitationService
+import com.se1853_jv.service.boundary.ReferenceService
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,9 +12,9 @@ import java.time.LocalDateTime
 private val logger = KotlinLogging.logger {}
 
 @RestController
-@RequestMapping("citations")
-class CitationController(
-    private val service: CitationService,
+@RequestMapping("references")
+class ReferenceController(
+    private val service: ReferenceService,
     private val encoder: EncoderService
 ) {
 
@@ -23,8 +23,8 @@ class CitationController(
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
-                "Get citations of a paper successfully",
-                service.getCitationById(encoder.decode(id)),
+                "Get references of a paper successfully",
+                service.getReferenceById(encoder.decode(id)),
                 LocalDateTime.now()
             )
         )

@@ -1,6 +1,5 @@
 package com.se1853_jv.labverse.data.api.paper;
 
-import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_GATEWAY_URL;
 import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
 
 import android.util.Log;
@@ -27,7 +26,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PaperApiHandler {
     private final PaperApi apiService;
-    private final PaperApi gatewayApiService;
 
     public PaperApiHandler() {
         // Shared Gson and OkHttpClient để reuse
@@ -44,19 +42,11 @@ public class PaperApiHandler {
 
         // Retrofit instance 1 cho PAPER_ENDPOINT_URL
         var retrofit = new Retrofit.Builder()
-                .baseUrl(PAPER_ENDPOINT_URL)
+                .baseUrl(PAPER_ENDPOINT_URL.concat("/papers"))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
         apiService = retrofit.create(PaperApi.class);
-
-        // Retrofit instance 2 cho PAPER_ENDPOINT_GATEWAY_URL (reuse cùng Gson và Client)
-        var gatewayRetrofit = new Retrofit.Builder()
-                .baseUrl(PAPER_ENDPOINT_GATEWAY_URL)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .client(client)
-                .build();
-        gatewayApiService = gatewayRetrofit.create(PaperApi.class);
     }
 
     public void getPaperDetails(String id, ApiCallback<PaperResearch> callback) {
@@ -107,11 +97,10 @@ public class PaperApiHandler {
         });
     }
 
-    public void getAllPapers(String searchQuery, ApiCallback<List<PaperResearch>> callback) {
+    public void getAllPapers(String searchQuery, int currentPage, int pageSize, ApiCallback<List<PaperResearch>> callback) {
         Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
         
-        // Sử dụng gatewayApiService đã được tạo sẵn trong constructor
-        Call<BaseJsonResponse<List<PaperResearch>>> call = gatewayApiService.getAllPapers(searchQuery);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(searchQuery, currentPage, pageSize);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {

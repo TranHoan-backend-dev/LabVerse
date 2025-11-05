@@ -26,7 +26,7 @@ public class CollectionController {
     }
 
     @GetMapping
-    public ResponseEntity<WrapperApiResponse> getAll(
+    public ResponseEntity<WrapperApiResponse> getAll (
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
