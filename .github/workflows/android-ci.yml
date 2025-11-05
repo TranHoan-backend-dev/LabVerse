@@ -106,36 +106,36 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-        cache: 'npm'
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run typescheck
-      run: npm run typescheck
+      - name: Run typescheck
+        run: npm run typescheck
 
-    - name: Run lint
-      run: npm run lint
+      - name: Run lint
+        run: npm run lint
 
-    - name: Run unit tests
-      run: npm run test
+      - name: Run unit tests
+        run: npm run test
 
-    - name: Build
-      run: npm run build
+      - name: Build
+        run: npm run build
 
-    - name: Upload production build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist
+      - name: Upload production build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
 
   qodana-analysis:
     runs-on: ubuntu-latest
