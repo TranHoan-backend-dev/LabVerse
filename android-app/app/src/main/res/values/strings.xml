@@ -70,4 +70,40 @@
     <string name="papers">Papers</string>
     <string name="search_papers_authors_keywords">Search papers, authors, keywords...</string>
     <string name="filter">Filter</string>
+
+    <!-- Login Screen -->
+    <string name="tagline">Access your personal and team libraries securely</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email_address">Email Address</string>
+    <string name="enter_your_email">Enter your email</string>
+    <string name="password">Password</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="or_continue_with">or continue with</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="create_one_here">Create one here</string>
+
+    <!-- Register Screen -->
+    <string name="full_name">Full Name</string>
+    <string name="enter_your_full_name">Enter your full name</string>
+    <string name="username">Username</string>
+    <string name="enter_your_username">Enter your username</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="confirm_your_password">Confirm your password</string>
+    <string name="role">Role</string>
+    <string name="select_your_role">Select your role</string>
+    <string name="agree_terms">I agree to the Terms and Conditions</string>
+    <string name="create_account">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="login_here">Login here</string>
+
+    <!-- Roles -->
+    <string name="role_principal_investigator">Principal Investigator (PI)</string>
+    <string name="role_lab_head">Lab Head</string>
+    <string name="role_researcher">Researcher (Postdoc/PhD)</string>
+    <string name="role_intern">Intern (Student)</string>
 </resources>

@@ -29,7 +29,7 @@
         </provider>
 
         <activity
-            android:name=".presentation.user.UserActivity"
+            android:name=".presentation.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +38,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".presentation.auth.RegisterActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.user.UserActivity"
+            android:exported="true" />
         <activity
             android:name=".presentation.paper.PaperDetailsActivity"
             android:exported="true"

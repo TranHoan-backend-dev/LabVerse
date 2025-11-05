@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Role options for registration -->
+    <string-array name="roles">
+        <item>@string/role_principal_investigator</item>
+        <item>@string/role_lab_head</item>
+        <item>@string/role_researcher</item>
+        <item>@string/role_intern</item>
+    </string-array>
+</resources>
+
