@@ -10,7 +10,6 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "clean": "rimraf dist .turbo .cache",
-    "install": "ci",
     "typescheck": "tsc --noEmit",
     "test": "vitest run"
   },
