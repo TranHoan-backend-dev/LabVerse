@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CollectionRequest {
-    private String name;
-    private String userId; // User ID who creates the collection (PI only)
+public class CollectionUserRequest {
+    private String collectionId;
+    private String memberId;
+    private Boolean isAuthor;
 }
-
 

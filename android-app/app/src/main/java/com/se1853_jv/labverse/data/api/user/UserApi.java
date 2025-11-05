@@ -15,6 +15,9 @@ public interface UserApi {
     @GET("me")
     Call<BaseJsonResponse<UserResponse>> getCurrentUser();
     
+    @GET("email/{email}")
+    Call<BaseJsonResponse<UserResponse>> getUserByEmail(@retrofit2.http.Path("email") String email);
+    
     @PATCH("me")
     Call<BaseJsonResponse<UserResponse>> updateProfile(@Body UpdateProfileRequest request);
     

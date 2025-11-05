@@ -15,13 +15,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.button.MaterialButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionsPageResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.presentation.collection.CollectionDetailsActivity;
 import com.se1853_jv.labverse.presentation.collection.CollectionsActivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionAdapter;
@@ -33,27 +34,36 @@ public class CollectionsFragment extends Fragment {
     private static final String TAG = "CollectionsFragment";
 
     private CollectionApiHandler apiHandler;
-    private RecyclerView recyclerCollections;
-    private CollectionAdapter adapter;
-    private MaterialCardView cardActiveCollection;
-    private TextView textActiveTitle;
-    private TextView textActiveInfo;
-    private TextView textActiveTimestamp;
-    private TextView textEmptyState;
-
-    private CollectionResponse activeCollection;
-    private List<CollectionResponse> allCollections = new ArrayList<>();
+    private SessionManager sessionManager;
+    
+    // My Collections section
+    private RecyclerView recyclerMyCollections;
+    private CollectionAdapter adapterMyCollections;
+    private TextView textEmptyMyCollections;
+    
+    // Shared Collections section
+    private RecyclerView recyclerSharedCollections;
+    private CollectionAdapter adapterSharedCollections;
+    private TextView textEmptySharedCollections;
+    
+    // Buttons (only for PI)
+    private MaterialButton buttonCreateCollection;
+    private MaterialButton buttonInviteMembers;
+    
+    private List<CollectionResponse> myCollections = new ArrayList<>();
+    private List<CollectionResponse> sharedCollections = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         apiHandler = new CollectionApiHandler();
+        sessionManager = new SessionManager(requireContext());
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_fragment_collections, container, false);
+        return inflater.inflate(R.layout.layout_fragment_collections_v2, container, false);
     }
 
     @Override
@@ -61,24 +71,25 @@ public class CollectionsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initializeViews(view);
-        setupRecyclerView();
-        setupActiveCollectionCard(view);
+        setupRecyclerViews();
         setupButtons(view);
+        checkUserRole();
         loadCollections();
     }
 
     private void initializeViews(View view) {
-        recyclerCollections = view.findViewById(R.id.recycler_collections);
-        cardActiveCollection = view.findViewById(R.id.card_active_collection);
-        textActiveTitle = view.findViewById(R.id.text_active_title);
-        textActiveInfo = view.findViewById(R.id.text_active_info);
-        textActiveTimestamp = view.findViewById(R.id.text_active_timestamp);
-        textEmptyState = view.findViewById(R.id.text_empty_state);
+        recyclerMyCollections = view.findViewById(R.id.recycler_my_collections);
+        recyclerSharedCollections = view.findViewById(R.id.recycler_shared_collections);
+        textEmptyMyCollections = view.findViewById(R.id.text_empty_my_collections);
+        textEmptySharedCollections = view.findViewById(R.id.text_empty_shared_collections);
+        buttonCreateCollection = view.findViewById(R.id.button_create_collection);
+        buttonInviteMembers = view.findViewById(R.id.button_invite_members);
     }
 
-    private void setupRecyclerView() {
-        adapter = new CollectionAdapter();
-        adapter.setOnCollectionClickListener(new CollectionAdapter.OnCollectionClickListener() {
+    private void setupRecyclerViews() {
+        // Setup My Collections RecyclerView
+        adapterMyCollections = new CollectionAdapter();
+        adapterMyCollections.setOnCollectionClickListener(new CollectionAdapter.OnCollectionClickListener() {
             @Override
             public void onCollectionClick(CollectionResponse collection) {
                 openCollectionDetails(collection);
@@ -86,41 +97,61 @@ public class CollectionsFragment extends Fragment {
 
             @Override
             public void onOptionsClick(CollectionResponse collection, View anchor) {
-                showCollectionOptions(collection, anchor);
+                showCollectionOptions(collection, anchor, true);
             }
         });
+        recyclerMyCollections.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerMyCollections.setAdapter(adapterMyCollections);
 
-        recyclerCollections.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerCollections.setAdapter(adapter);
-    }
+        // Setup Shared Collections RecyclerView
+        adapterSharedCollections = new CollectionAdapter();
+        adapterSharedCollections.setOnCollectionClickListener(new CollectionAdapter.OnCollectionClickListener() {
+            @Override
+            public void onCollectionClick(CollectionResponse collection) {
+                openCollectionDetails(collection);
+            }
 
-    private void setupActiveCollectionCard(View view) {
-        cardActiveCollection.setOnClickListener(v -> {
-            if (activeCollection != null) {
-                openCollectionDetails(activeCollection);
+            @Override
+            public void onOptionsClick(CollectionResponse collection, View anchor) {
+                showCollectionOptions(collection, anchor, false);
             }
         });
-
-        view.findViewById(R.id.button_active_options)
-                .setOnClickListener(v -> {
-                    if (activeCollection != null) {
-                        showCollectionOptions(activeCollection, v);
-                    }
-                });
+        recyclerSharedCollections.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerSharedCollections.setAdapter(adapterSharedCollections);
     }
 
     private void setupButtons(View view) {
-        view.findViewById(R.id.button_create_collection).setOnClickListener(v -> {
+        buttonCreateCollection.setOnClickListener(v -> {
             if (getActivity() instanceof CollectionsActivity) {
                 ((CollectionsActivity) getActivity()).showCreateCollectionDialog();
             }
         });
 
-        view.findViewById(R.id.button_invite_members).setOnClickListener(v -> {
+        buttonInviteMembers.setOnClickListener(v -> {
             if (getActivity() instanceof CollectionsActivity) {
                 ((CollectionsActivity) getActivity()).showInviteMembersDialog();
             }
         });
+    }
+
+    private void checkUserRole() {
+        String role = sessionManager.getRole();
+        boolean isPI = "PI".equals(role);
+        
+        // Only PI can create collections and invite members
+        if (!isPI) {
+            buttonCreateCollection.setVisibility(View.GONE);
+            buttonInviteMembers.setVisibility(View.GONE);
+            
+            // Hide "My Collections" section header for non-PI users
+            View view = getView();
+            if (view != null) {
+                TextView textMyCollectionsHeader = view.findViewById(R.id.text_my_collections_header);
+                if (textMyCollectionsHeader != null) {
+                    textMyCollectionsHeader.setVisibility(View.GONE);
+                }
+            }
+        }
     }
 
     private void loadCollections() {
@@ -129,14 +160,32 @@ public class CollectionsFragment extends Fragment {
             return;
         }
 
-        apiHandler.getCollections(0, 100, new ApiCallback<CollectionsPageResponse>() {
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Encode userId before sending to API (if not already encoded)
+        // Note: userId from session might already be encoded from AuthResponse
+        String encodedUserId = userId; // Use as-is for now, adjust if needed based on backend response format
+        
+        // Load My Collections (collections where user is author)
+        loadMyCollections(encodedUserId);
+        
+        // Load Shared Collections (collections where user is not author)
+        loadSharedCollections(encodedUserId);
+    }
+
+    private void loadMyCollections(String userId) {
+        apiHandler.getMyCollections(userId, new ApiCallback<CollectionsPageResponse>() {
             @Override
             public void onSuccess(CollectionsPageResponse response) {
                 if (getActivity() == null) return;
 
                 getActivity().runOnUiThread(() -> {
-                    allCollections = response.getContent() != null ? response.getContent() : new ArrayList<>();
-                    displayCollections();
+                    myCollections = response.getContent() != null ? response.getContent() : new ArrayList<>();
+                    displayMyCollections();
                 });
             }
 
@@ -145,60 +194,83 @@ public class CollectionsFragment extends Fragment {
                 if (getActivity() == null) return;
 
                 getActivity().runOnUiThread(() -> {
-                    android.util.Log.e(TAG, "Error loading collections: " + error);
+                    android.util.Log.e(TAG, "Error loading my collections: " + error);
                     Toast.makeText(requireContext(),
-                            "Failed to load collections: " + error,
+                            "Failed to load my collections: " + error,
                             Toast.LENGTH_SHORT).show();
+                    displayMyCollections(); // Show empty state
                 });
             }
         });
     }
 
-    private void displayCollections() {
-        if (allCollections.isEmpty()) {
-            textEmptyState.setVisibility(View.VISIBLE);
-            recyclerCollections.setVisibility(View.GONE);
-            cardActiveCollection.setVisibility(View.GONE);
-            return;
-        }
+    private void loadSharedCollections(String userId) {
+        apiHandler.getSharedCollections(userId, new ApiCallback<CollectionsPageResponse>() {
+            @Override
+            public void onSuccess(CollectionsPageResponse response) {
+                if (getActivity() == null) return;
 
-        textEmptyState.setVisibility(View.GONE);
-        recyclerCollections.setVisibility(View.VISIBLE);
+                getActivity().runOnUiThread(() -> {
+                    sharedCollections = response.getContent() != null ? response.getContent() : new ArrayList<>();
+                    displaySharedCollections();
+                });
+            }
 
-        // Set first collection as active
-        activeCollection = allCollections.get(0);
-        updateActiveCollectionCard();
+            @Override
+            public void onError(String error) {
+                if (getActivity() == null) return;
 
-        // Set remaining collections in RecyclerView
-        List<CollectionResponse> remainingCollections = allCollections.size() > 1
-                ? allCollections.subList(1, allCollections.size())
-                : new ArrayList<>();
-        adapter.setCollections(remainingCollections);
+                getActivity().runOnUiThread(() -> {
+                    android.util.Log.e(TAG, "Error loading shared collections: " + error);
+                    Toast.makeText(requireContext(),
+                            "Failed to load shared collections: " + error,
+                            Toast.LENGTH_SHORT).show();
+                    displaySharedCollections(); // Show empty state
+                });
+            }
+        });
     }
 
-    private void updateActiveCollectionCard() {
-        if (activeCollection == null) {
-            cardActiveCollection.setVisibility(View.GONE);
-            return;
+    private void displayMyCollections() {
+        if (myCollections.isEmpty()) {
+            textEmptyMyCollections.setVisibility(View.VISIBLE);
+            recyclerMyCollections.setVisibility(View.GONE);
+        } else {
+            textEmptyMyCollections.setVisibility(View.GONE);
+            recyclerMyCollections.setVisibility(View.VISIBLE);
+            adapterMyCollections.setCollections(myCollections);
         }
-
-        cardActiveCollection.setVisibility(View.VISIBLE);
-        textActiveTitle.setText(activeCollection.getName());
-        textActiveInfo.setText("0 papers • 0 members"); // TODO: Get actual counts
-        textActiveTimestamp.setText("Recently updated");
     }
 
-    private void showCollectionOptions(CollectionResponse collection, View anchor) {
+    private void displaySharedCollections() {
+        if (sharedCollections.isEmpty()) {
+            textEmptySharedCollections.setVisibility(View.VISIBLE);
+            recyclerSharedCollections.setVisibility(View.GONE);
+        } else {
+            textEmptySharedCollections.setVisibility(View.GONE);
+            recyclerSharedCollections.setVisibility(View.VISIBLE);
+            adapterSharedCollections.setCollections(sharedCollections);
+        }
+    }
+
+    private void showCollectionOptions(CollectionResponse collection, View anchor, boolean isMyCollection) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        popup.getMenu().add("Manage Members");
-        popup.getMenu().add("Edit Collection");
-        popup.getMenu().add("Delete Collection");
+        
+        if (isMyCollection) {
+            // Only PI can manage their own collections
+            popup.getMenu().add("Manage Members");
+            popup.getMenu().add("Edit Collection");
+            popup.getMenu().add("Delete Collection");
+        } else {
+            // Shared collections - users can only view
+            popup.getMenu().add("View Details");
+        }
 
         popup.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Manage Members".equals(title)) {
                 if (getActivity() instanceof CollectionsActivity) {
-                    ((CollectionsActivity) getActivity()).showInviteMembersDialog();
+                    ((CollectionsActivity) getActivity()).showInviteMembersDialog(collection);
                 }
             } else if ("Edit Collection".equals(title)) {
                 if (getActivity() instanceof CollectionsActivity) {
@@ -222,5 +294,13 @@ public class CollectionsFragment extends Fragment {
 
     public void refreshCollections() {
         loadCollections();
+    }
+
+    public List<CollectionResponse> getMyCollections() {
+        return myCollections;
+    }
+
+    public List<CollectionResponse> getSharedCollections() {
+        return sharedCollections;
     }
 }

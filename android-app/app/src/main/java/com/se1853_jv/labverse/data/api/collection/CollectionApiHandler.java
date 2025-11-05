@@ -10,6 +10,7 @@ import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
+import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -50,9 +51,9 @@ public class CollectionApiHandler {
         apiService = retrofit.create(CollectionApi.class);
     }
 
-    public void getCollections(int page, int size, ApiCallback<CollectionsPageResponse> callback) {
-        Log.d(TAG, "getCollections: page=" + page + ", size=" + size);
-        Call<BaseJsonResponse<CollectionsPageResponse>> call = apiService.getCollections(page, size);
+    public void getMyCollections(String encodedUserId, ApiCallback<CollectionsPageResponse> callback) {
+        Log.d(TAG, "getMyCollections: userId=" + encodedUserId);
+        Call<BaseJsonResponse<CollectionsPageResponse>> call = apiService.getMyCollections(encodedUserId);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<CollectionsPageResponse>> call,
@@ -60,7 +61,33 @@ public class CollectionApiHandler {
                 if (response.isSuccessful() && response.body() != null) {
                     var result = response.body().getData();
                     callback.onSuccess(result);
-                    Log.d(TAG, "Collections fetched: " + (result != null && result.getContent() != null ? result.getContent().size() : 0));
+                    Log.d(TAG, "My collections fetched: " + (result != null && result.getContent() != null ? result.getContent().size() : 0));
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<CollectionsPageResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getSharedCollections(String encodedUserId, ApiCallback<CollectionsPageResponse> callback) {
+        Log.d(TAG, "getSharedCollections: userId=" + encodedUserId);
+        Call<BaseJsonResponse<CollectionsPageResponse>> call = apiService.getSharedCollections(encodedUserId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<CollectionsPageResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<CollectionsPageResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Shared collections fetched: " + (result != null && result.getContent() != null ? result.getContent().size() : 0));
                 } else {
                     Log.e(TAG, "Server Error: " + response.message());
                     callback.onError(response.message());
@@ -173,6 +200,58 @@ public class CollectionApiHandler {
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<CollectionPaperDetailResponse>>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void updatePaperStatus(CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
+        Log.d(TAG, "updatePaperStatus: collectionId=" + request.getCollectionId() + ", paperId=" + request.getPaperId());
+        Call<BaseJsonResponse<CollectionPaperResponse>> call = apiService.updatePaperStatus(request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<CollectionPaperResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<CollectionPaperResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Paper status updated successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<CollectionPaperResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void addMemberToCollection(CollectionUserRequest request, ApiCallback<Object> callback) {
+        Log.d(TAG, "addMemberToCollection: collectionId=" + request.getCollectionId() + ", memberId=" + request.getMemberId());
+        Call<BaseJsonResponse<Object>> call = apiService.addMemberToCollection(request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Member added to collection successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call,
                                    @NonNull Throwable t) {
                 Log.e(TAG, "API Error: " + t.getMessage(), t);
                 callback.onError(t.getMessage());

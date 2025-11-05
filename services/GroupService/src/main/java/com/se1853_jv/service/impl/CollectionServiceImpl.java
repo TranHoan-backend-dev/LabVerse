@@ -16,13 +16,12 @@ import com.se1853_jv.util.IdEncoder;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -32,6 +31,7 @@ public class CollectionServiceImpl implements CollectionService {
 
     private final CollectionRepository collectionRepository;
     private final CollectionPaperRepository collectionPaperRepository;
+    private final CollectionUserRepository collectionUserRepository;
     private final PaperServiceClient paperServiceClient;
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "collections";
@@ -41,6 +41,10 @@ public class CollectionServiceImpl implements CollectionService {
         try {
             if (request.getName() == null || request.getName().isBlank()) {
                 throw new IllegalArgumentException("Collection name must not be blank");
+            }
+            
+            if (request.getUserId() == null || request.getUserId().isBlank()) {
+                throw new IllegalArgumentException("User ID is required to create collection");
             }
 
             // Kiểm tra trùng tên, nếu trùng thì thêm (1), (2)
@@ -59,7 +63,25 @@ public class CollectionServiceImpl implements CollectionService {
                     .build();
 
             Collection saved = collectionRepository.save(entity);
-            CollectionResponse response = CollectionResponse.fromEntity(saved);
+            
+            // Automatically add creator as author (isAuthor = true)
+            String userId = IdEncoder.decode(request.getUserId());
+            CollectionUserId compositeId = new CollectionUserId();
+            compositeId.setCollectionId(saved.getId());
+            compositeId.setMemberId(userId);
+            
+            CollectionUser collectionUser = CollectionUser.builder()
+                    .id(compositeId)
+                    .collection(saved)
+                    .isAuthor(true) // Creator is always author
+                    .build();
+            collectionUserRepository.save(collectionUser);
+            
+            // Get counts
+            long paperCount = collectionPaperRepository.findByIdCollectionId(saved.getId()).size();
+            long memberCount = collectionUserRepository.findByIdCollectionId(saved.getId()).size();
+            
+            CollectionResponse response = CollectionResponse.fromEntity(saved, paperCount, memberCount);
             storeToFirestore(response);
             return response;
 
@@ -95,7 +117,14 @@ public class CollectionServiceImpl implements CollectionService {
 
         List<CollectionResponse> pageContent = all.subList(fromIndex, toIndex)
                 .stream()
-                .map(CollectionResponse::fromEntity)
+                .map(entity -> {
+                    String collectionId = entity.getId();
+                    // Count papers
+                    long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
+                    // Count members
+                    long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
+                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                })
                 .toList();
 
         return Map.of(
@@ -104,6 +133,52 @@ public class CollectionServiceImpl implements CollectionService {
                 "size", size,
                 "totalElements", all.size(),
                 "totalPages", (int) Math.ceil((double) all.size() / size)
+        );
+    }
+
+    @Override
+    public Map<String, Object> getMyCollections(String encodedUserId) {
+        String userId = IdEncoder.decode(encodedUserId);
+        
+        // Get collections where user is author (isAuthor = true)
+        List<CollectionUser> myCollectionUsers = collectionUserRepository.findByIdMemberIdAndIsAuthor(userId, true);
+        
+        List<CollectionResponse> myCollections = myCollectionUsers.stream()
+                .map(cu -> {
+                    Collection entity = cu.getCollection();
+                    String collectionId = entity.getId();
+                    long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
+                    long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
+                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                })
+                .toList();
+        
+        return Map.of(
+                "content", myCollections,
+                "totalElements", myCollections.size()
+        );
+    }
+
+    @Override
+    public Map<String, Object> getSharedCollections(String encodedUserId) {
+        String userId = IdEncoder.decode(encodedUserId);
+        
+        // Get collections where user is not author (isAuthor = false)
+        List<CollectionUser> sharedCollectionUsers = collectionUserRepository.findByIdMemberIdAndIsAuthor(userId, false);
+        
+        List<CollectionResponse> sharedCollections = sharedCollectionUsers.stream()
+                .map(cu -> {
+                    Collection entity = cu.getCollection();
+                    String collectionId = entity.getId();
+                    long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
+                    long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
+                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                })
+                .toList();
+        
+        return Map.of(
+                "content", sharedCollections,
+                "totalElements", sharedCollections.size()
         );
     }
 
@@ -184,29 +259,65 @@ public class CollectionServiceImpl implements CollectionService {
             // Get paper details from paper-service
             try {
                 String encodedPaperId = IdEncoder.encode(paperId);
-                var paperResponse = paperServiceClient.getPaperDetails(encodedPaperId);
-                if (paperResponse != null && paperResponse.getData() != null) {
-                    PaperResponse paper = (PaperResponse) paperResponse.getData();
-                    return CollectionPaperDetailResponse.builder()
-                            .paperId(IdEncoder.encode(paperId))
-                            .title(paper.getTitle())
-                            .authors(paper.getAuthors())
-                            .journal(paper.getJournal())
-                            .publicationYear(paper.getPublicationYear())
-                            .priority(cp.getPriority())
-                            .status(cp.getStatus())
-                            .addingDate(cp.getAddingDate())
-                            .build();
+                var wrapperResponse = paperServiceClient.getPaperDetails(encodedPaperId);
+                if (wrapperResponse != null && wrapperResponse.getData() != null) {
+                    Object data = wrapperResponse.getData();
+                    PaperResponse paper;
+                    
+                    // Handle different response types
+                    if (data instanceof PaperResponse) {
+                        paper = (PaperResponse) data;
+                    } else if (data instanceof Map) {
+                        // Convert Map to PaperResponse
+                        Map<String, Object> paperMap = (Map<String, Object>) data;
+                        paper = new PaperResponse();
+                        paper.setId((String) paperMap.get("id"));
+                        paper.setTitle((String) paperMap.get("title"));
+                        paper.setAuthors((String) paperMap.get("authors"));
+                        paper.setJournal((String) paperMap.get("journal"));
+                        if (paperMap.get("publicationYear") != null) {
+                            if (paperMap.get("publicationYear") instanceof Integer) {
+                                paper.setPublicationYear((Integer) paperMap.get("publicationYear"));
+                            } else if (paperMap.get("publicationYear") instanceof Number) {
+                                paper.setPublicationYear(((Number) paperMap.get("publicationYear")).intValue());
+                            }
+                        }
+                        paper.setDataUrl((String) paperMap.get("dataUrl"));
+                        paper.setDoi((String) paperMap.get("doi"));
+                        paper.setDescription((String) paperMap.get("description"));
+                        @SuppressWarnings("unchecked")
+                        List<String> keywords = (List<String>) paperMap.get("keywords");
+                        paper.setKeywords(keywords);
+                    } else {
+                        log.warn("Unexpected data type for paper ID {}: {}", paperId, data.getClass().getName());
+                        paper = null;
+                    }
+                    
+                    if (paper != null && paper.getTitle() != null && !paper.getTitle().isEmpty()) {
+                        return CollectionPaperDetailResponse.builder()
+                                .paperId(IdEncoder.encode(paperId))
+                                .title(paper.getTitle())
+                                .authors(paper.getAuthors() != null ? paper.getAuthors() : "")
+                                .journal(paper.getJournal() != null ? paper.getJournal() : "")
+                                .publicationYear(paper.getPublicationYear() != null ? paper.getPublicationYear() : 0)
+                                .priority(cp.getPriority())
+                                .status(cp.getStatus())
+                                .addingDate(cp.getAddingDate())
+                                .build();
+                    }
                 }
+            } catch (FeignException.NotFound e) {
+                log.warn("Paper not found in paper-service for ID {}: {}", paperId, e.getMessage());
             } catch (Exception e) {
-                log.error("Error fetching paper details for ID {}: {}", paperId, e.getMessage());
+                log.error("Error fetching paper details for ID {}: {}", paperId, e.getMessage(), e);
             }
-            // Fallback if paper not found
+            
+            // Fallback if paper not found or error
             return CollectionPaperDetailResponse.builder()
                     .paperId(IdEncoder.encode(paperId))
                     .title("Unknown Paper")
-                    .authors("")
-                    .journal("")
+                    .authors("Unknown Authors")
+                    .journal("Unknown")
                     .publicationYear(0)
                     .priority(cp.getPriority())
                     .status(cp.getStatus())

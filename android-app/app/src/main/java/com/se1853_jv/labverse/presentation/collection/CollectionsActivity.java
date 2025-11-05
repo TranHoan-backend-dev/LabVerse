@@ -1,6 +1,5 @@
 package com.se1853_jv.labverse.presentation.collection;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,21 +17,25 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
+import com.se1853_jv.labverse.data.api.user.UserApiHandler;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
+import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
+import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionsPagerAdapter;
 import com.se1853_jv.labverse.presentation.collection.fragment.CollectionsFragment;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
-import com.se1853_jv.labverse.presentation.feed.FeedActivity;
-import com.se1853_jv.labverse.presentation.user.UserActivity;
+
+import java.util.List;
 
 public class CollectionsActivity extends BaseActivity {
     private static final String TAG = "CollectionsActivity";
 
     private CollectionApiHandler apiHandler;
+    private UserApiHandler userApiHandler;
     private CollectionsFragment fragment;
 
     @Override
@@ -51,6 +54,7 @@ public class CollectionsActivity extends BaseActivity {
         hideSearchBar();
 
         apiHandler = new CollectionApiHandler();
+        userApiHandler = new UserApiHandler(this);
         setupViewPager();
     }
 
@@ -158,8 +162,19 @@ public class CollectionsActivity extends BaseActivity {
             return;
         }
 
-        CollectionRequest request = new CollectionRequest(name);
-        apiHandler.createCollection(request, new ApiCallback<>() {
+        // Get userId from session
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Note: userId from session should be used as-is (backend will decode it)
+        CollectionRequest request = new CollectionRequest(name, userId);
+        apiHandler.createCollection(request, new ApiCallback<CollectionResponse>() {
             @Override
             public void onSuccess(CollectionResponse response) {
                 runOnUiThread(() -> {
@@ -185,9 +200,14 @@ public class CollectionsActivity extends BaseActivity {
         });
     }
 
-    public void showInviteMembersDialog() {
+    public void showInviteMembersDialog(CollectionResponse collection) {
+        if (collection == null) {
+            Toast.makeText(this, "Please select a collection first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Invite Team Members");
+        builder.setTitle("Invite Team Members to " + collection.getName());
 
         View dialogView = getLayoutInflater().inflate(R.layout.layout_dialog_invite_members, null);
         EditText editEmail = dialogView.findViewById(R.id.edit_member_email);
@@ -196,7 +216,7 @@ public class CollectionsActivity extends BaseActivity {
         builder.setPositiveButton("Send Invite", (dialog, which) -> {
             String email = editEmail.getText().toString().trim();
             if (!email.isEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                inviteMember(email);
+                inviteMember(email, collection);
             } else {
                 Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }
@@ -205,9 +225,76 @@ public class CollectionsActivity extends BaseActivity {
         builder.show();
     }
 
-    private void inviteMember(String email) {
-        // TODO: Implement API call to invite member
-        Toast.makeText(this, "Invite functionality will be implemented soon", Toast.LENGTH_SHORT).show();
+    public void showInviteMembersDialog() {
+        // Show dialog to select collection from My Collections
+        CollectionsFragment frag = getFragment();
+        if (frag != null) {
+            // Get first collection from My Collections (PI can only invite to their own collections)
+            List<CollectionResponse> myCollections = frag.getMyCollections();
+            if (myCollections != null && !myCollections.isEmpty()) {
+                // For now, use the first collection. In the future, can add a selection dialog
+                showInviteMembersDialog(myCollections.get(0));
+            } else {
+                Toast.makeText(this, "Please create a collection first", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Please select a collection first", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void inviteMember(String email, CollectionResponse collection) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Step 1: Find user by email
+        userApiHandler.getUserByEmail(email, new ApiCallback<UserResponse>() {
+            @Override
+            public void onSuccess(UserResponse userResponse) {
+                // Step 2: Add user to collection
+                CollectionUserRequest request = new CollectionUserRequest();
+                request.setCollectionId(collection.getId());
+                request.setMemberId(userResponse.getId());
+                request.setIsAuthor(false); // Default to non-author, can be changed later
+
+                apiHandler.addMemberToCollection(request, new ApiCallback<Object>() {
+                    @Override
+                    public void onSuccess(Object response) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(CollectionsActivity.this,
+                                    "Member invited successfully to " + collection.getName(),
+                                    Toast.LENGTH_SHORT).show();
+                            // Refresh collections to show updated member count
+                            CollectionsFragment frag = getFragment();
+                            if (frag != null) {
+                                frag.refreshCollections();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            Log.e(TAG, "Error inviting member: " + error);
+                            Toast.makeText(CollectionsActivity.this,
+                                    "Failed to invite member: " + error,
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Log.e(TAG, "Error finding user: " + error);
+                    Toast.makeText(CollectionsActivity.this,
+                            "User not found with email: " + email + ". Please make sure the user has registered.",
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     public void showAddPaperDialog(CollectionResponse collection) {
@@ -260,7 +347,7 @@ public class CollectionsActivity extends BaseActivity {
         request.setPriority(priority);
         request.setStatus(status);
 
-        apiHandler.addPaperToCollection(request, new ApiCallback<>() {
+        apiHandler.addPaperToCollection(request, new ApiCallback<CollectionPaperResponse>() {
             @Override
             public void onSuccess(CollectionPaperResponse response) {
                 runOnUiThread(() -> {
