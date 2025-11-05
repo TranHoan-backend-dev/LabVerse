@@ -108,7 +108,6 @@ public class MyPaperFragment extends Fragment {
     }
 
     private void handleSwitchTabs(@NonNull View view) {
-
         switchToRecentlyAdded(view);
         switchToRecentlyRead(view);
         switchToFavorites(view);

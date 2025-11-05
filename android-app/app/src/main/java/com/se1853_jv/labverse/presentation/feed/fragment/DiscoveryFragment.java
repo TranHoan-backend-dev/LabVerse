@@ -1,13 +1,13 @@
 package com.se1853_jv.labverse.presentation.feed.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,6 +26,7 @@ import com.se1853_jv.labverse.data.api.tag.TagApiHandler;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.domain.infrastructure.tag.model.Tag;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
+import com.se1853_jv.labverse.presentation.paper.PaperDetailsActivity;
 
 import java.util.List;
 
@@ -144,6 +145,8 @@ public class DiscoveryFragment extends Fragment {
             buildDescription(item.getSummary(), cardView);
             buildMetadata(item.getJournal() + " · " + item.getTimeAgo() + " · " + item.getCitations(), cardView);
             buildFooter(item.getAuthor().getAvatarUrl(), item.getAuthor().getName(), cardView);
+            navigateToDetailsScreen(cardView, item.getId());
+            handleReadButtonEvent(cardView, item.getId());
 
             container.addView(cardView);
         }
@@ -198,6 +201,24 @@ public class DiscoveryFragment extends Fragment {
 
         ImageView iv = parent.findViewById(R.id.avt);
         iv.setImageResource(R.mipmap.avt_mock_round);
+    }
+
+    private void navigateToDetailsScreen(@NonNull View cardView, String id) {
+        cardView.setOnClickListener(v -> {
+            var intent = new Intent(requireContext(), PaperDetailsActivity.class);
+            intent.putExtra("id", id);
+            startActivity(intent);
+        });
+    }
+
+    private void handleReadButtonEvent(@NonNull View parent, String id) {
+        Button btn = parent.findViewById(R.id.read_btn);
+        btn.setOnClickListener(v -> {
+            // TODO: wait for reading pdf screen implementing
+//            var intent = new Intent(requireContext(), PaperDetailsActivity.class);
+//            intent.putExtra("id", id);
+//            startActivity(intent);
+        });
     }
     // </editor-fold>
 

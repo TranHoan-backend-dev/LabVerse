@@ -7,10 +7,7 @@ import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
-
-import java.util.List;
+import retrofit2.http.*;
 
 public interface PaperApi {
     @GET("details")
@@ -23,4 +20,7 @@ public interface PaperApi {
             @Query("index") int currentPage,
             @Query("size") int pageSize
     );
+
+    @HTTP(method = "DELETE", path = "{id}")
+    Call<BaseJsonResponse<String>> deletePaper(@Path("id") String id);
 }

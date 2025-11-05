@@ -44,7 +44,7 @@ public class CollectionApiHandler {
                 .build();
 
         var retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.COLLECTION_ENDPOINT_URL)
+                .baseUrl(Constants.GROUP_ENDPOINT_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
@@ -129,7 +129,7 @@ public class CollectionApiHandler {
         });
     }
 
-    public void createCollection(CollectionRequest request, ApiCallback<CollectionResponse> callback) {
+    public void createCollection(@NonNull CollectionRequest request, ApiCallback<CollectionResponse> callback) {
         Log.d(TAG, "createCollection: " + request.getName());
         Call<BaseJsonResponse<CollectionResponse>> call = apiService.createCollection(request);
         call.enqueue(new Callback<>() {
@@ -155,7 +155,7 @@ public class CollectionApiHandler {
         });
     }
 
-    public void addPaperToCollection(CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
+    public void addPaperToCollection(@NonNull CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
         Log.d(TAG, "addPaperToCollection: collectionId=" + request.getCollectionId() + ", paperId=" + request.getPaperId());
         Call<BaseJsonResponse<CollectionPaperResponse>> call = apiService.addPaperToCollection(request);
         call.enqueue(new Callback<>() {
@@ -207,7 +207,7 @@ public class CollectionApiHandler {
         });
     }
 
-    public void updatePaperStatus(CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
+    public void updatePaperStatus(@NonNull CollectionPaperRequest request, ApiCallback<CollectionPaperResponse> callback) {
         Log.d(TAG, "updatePaperStatus: collectionId=" + request.getCollectionId() + ", paperId=" + request.getPaperId());
         Call<BaseJsonResponse<CollectionPaperResponse>> call = apiService.updatePaperStatus(request);
         call.enqueue(new Callback<>() {
@@ -233,7 +233,7 @@ public class CollectionApiHandler {
         });
     }
 
-    public void addMemberToCollection(CollectionUserRequest request, ApiCallback<Object> callback) {
+    public void addMemberToCollection(@NonNull CollectionUserRequest request, ApiCallback<Object> callback) {
         Log.d(TAG, "addMemberToCollection: collectionId=" + request.getCollectionId() + ", memberId=" + request.getMemberId());
         Call<BaseJsonResponse<Object>> call = apiService.addMemberToCollection(request);
         call.enqueue(new Callback<>() {

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class DiscoveryItem {
-    private int id;
+    private String id;
     private List<Tag> tags;
     private String title;
     private String summary;

@@ -89,6 +89,19 @@ class PaperController(
         )
     }
 
+    @DeleteMapping("/{id}")
+    fun deletePaper(@PathVariable("id") paperId: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to deletePaper with id: $paperId" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Delete paper successfully",
+                paperService.deleteById(paperId),
+                LocalDateTime.now()
+            )
+        )
+    }
+
     @RequestMapping(value = ["/health"], method = [RequestMethod.HEAD])
     fun health(): ResponseEntity<Any> {
         logger.info { "HEALTHY" }

@@ -42,7 +42,7 @@ public class PaperApiHandler {
 
         // Retrofit instance 1 cho PAPER_ENDPOINT_URL
         var retrofit = new Retrofit.Builder()
-                .baseUrl(PAPER_ENDPOINT_URL.concat("/papers"))
+                .baseUrl(PAPER_ENDPOINT_URL.concat("papers/"))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();

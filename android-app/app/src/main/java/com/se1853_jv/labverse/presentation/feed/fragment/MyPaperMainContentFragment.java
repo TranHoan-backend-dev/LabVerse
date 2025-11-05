@@ -1,10 +1,12 @@
 package com.se1853_jv.labverse.presentation.feed.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.feed.entity.Paper;
+import com.se1853_jv.labverse.presentation.paper.PaperDetailsActivity;
 
 import java.util.List;
 
@@ -50,8 +53,6 @@ public class MyPaperMainContentFragment extends Fragment {
 
         if (papers.isEmpty()) return;
 
-        // TODO: xu ly lai phan xoa
-
         for (var paper : papers.subList(CURRENT_PAGE, CURRENT_PAGE + PAGE_SIZE)) {
             View card = inflater.inflate(R.layout.layout_mypaper_card, layout, false);
 
@@ -72,6 +73,8 @@ public class MyPaperMainContentFragment extends Fragment {
                 status.setVisibility(View.VISIBLE);
             }
             deleteCard(card, layout);
+            navigateToReadPdfScreen(card, paper.getId());
+
             layout.addView(card);
         }
     }
@@ -80,6 +83,7 @@ public class MyPaperMainContentFragment extends Fragment {
         ImageButton btn = view.findViewById(R.id.delete_btn);
         btn.setOnClickListener(v -> {
             parent.removeView(view);
+            // TODO: them goi api xoa that trong server
         });
     }
 
@@ -122,5 +126,15 @@ public class MyPaperMainContentFragment extends Fragment {
     private int getNumberOfPage() {
         if (papers == null || papers.isEmpty()) return 1;
         return (int) Math.ceil((double) papers.size() / PAGE_SIZE);
+    }
+
+    private void navigateToReadPdfScreen(@NonNull View parent, String id) {
+        Button btn = parent.findViewById(R.id.continue_to_read_btn);
+        btn.setOnClickListener(v -> {
+            // TODO: wait for reading pdf activity
+//            var intent = new Intent(requireContext(), PaperDetailsActivity.class);
+//            intent.putExtra("id", id);
+//            startActivity(intent);
+        });
     }
 }
