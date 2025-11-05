@@ -32,6 +32,18 @@ public class UserService {
         return mapToUserResponse(user);
     }
 
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        
+        // Check if user is active (default to true if null)
+        if (user.getIsActive() == null || !user.getIsActive()) {
+            throw new BadRequestException("User account is inactive");
+        }
+
+        return mapToUserResponse(user);
+    }
+
     @Transactional
     public UserResponse updateProfile(String userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)

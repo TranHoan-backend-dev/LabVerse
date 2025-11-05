@@ -141,6 +141,42 @@ public class UserApiHandler {
     }
 
     /**
+     * Tìm user bằng email (để invite vào collection)
+     */
+    public void getUserByEmail(String email, ApiCallback<UserResponse> callback) {
+        Log.d(TAG, "getUserByEmail: " + email);
+        Call<BaseJsonResponse<UserResponse>> call = userApi.getUserByEmail(email);
+        call.enqueue(new Callback<BaseJsonResponse<UserResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<UserResponse>> call, 
+                                 @NonNull Response<BaseJsonResponse<UserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Get user by email successful: " + result.getEmail());
+                } else {
+                    String errorMessage = "User not found with email: " + email;
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
+                        }
+                    }
+                    Log.e(TAG, "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<UserResponse>> call, @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
      * Đổi mật khẩu
      */
     public void changePassword(ChangePasswordRequest request, ApiCallback<String> callback) {

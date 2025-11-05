@@ -57,7 +57,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         private final TextView textTitle;
         private final TextView textInfo;
         private final TextView textTimestamp;
-        private final Chip chipRole;
         private final ImageView buttonOptions;
 
         public CollectionViewHolder(@NonNull View itemView) {
@@ -65,17 +64,18 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             textTitle = itemView.findViewById(R.id.text_collection_title);
             textInfo = itemView.findViewById(R.id.text_collection_info);
             textTimestamp = itemView.findViewById(R.id.text_collection_timestamp);
-            chipRole = itemView.findViewById(R.id.chip_collection_role);
             buttonOptions = itemView.findViewById(R.id.button_collection_options);
         }
 
         public void bind(CollectionResponse collection, OnCollectionClickListener listener) {
             textTitle.setText(collection.getName());
-            textInfo.setText("0 papers • 0 members"); // TODO: Get actual counts
-            textTimestamp.setText("Recently updated");
             
-            // TODO: Set role based on user's role in collection
-            chipRole.setText("Owner");
+            // Display actual counts from API response
+            long paperCount = collection.getPaperCount() != null ? collection.getPaperCount() : 0;
+            long memberCount = collection.getMemberCount() != null ? collection.getMemberCount() : 0;
+            textInfo.setText(paperCount + " papers • " + memberCount + " members");
+            
+            textTimestamp.setText("Recently updated");
             
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

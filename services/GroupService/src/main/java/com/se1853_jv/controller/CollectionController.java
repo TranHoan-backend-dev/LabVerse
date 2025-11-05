@@ -4,7 +4,6 @@ import com.se1853_jv.dto.request.*;
 import com.se1853_jv.dto.response.*;
 import com.se1853_jv.service.CollectionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -33,6 +32,22 @@ public class CollectionController {
 
         return ResponseEntity.ok(
                 WrapperApiResponse.success(collectionService.getCollectionsManual(page, size))
+        );
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<WrapperApiResponse> getMyCollections(
+            @RequestParam("userId") String encodedUserId) {
+        return ResponseEntity.ok(
+                WrapperApiResponse.success(collectionService.getMyCollections(encodedUserId))
+        );
+    }
+
+    @GetMapping("/shared")
+    public ResponseEntity<WrapperApiResponse> getSharedCollections(
+            @RequestParam("userId") String encodedUserId) {
+        return ResponseEntity.ok(
+                WrapperApiResponse.success(collectionService.getSharedCollections(encodedUserId))
         );
     }
 

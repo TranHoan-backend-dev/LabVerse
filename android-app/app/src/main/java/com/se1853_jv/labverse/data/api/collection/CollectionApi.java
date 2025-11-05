@@ -2,6 +2,7 @@ package com.se1853_jv.labverse.data.api.collection;
 
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
+import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -18,10 +19,14 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface CollectionApi {
-    @GET("collections")
-    Call<BaseJsonResponse<CollectionsPageResponse>> getCollections(
-            @Query("page") int page,
-            @Query("size") int size
+    @GET("collections/my")
+    Call<BaseJsonResponse<CollectionsPageResponse>> getMyCollections(
+            @Query("userId") String encodedUserId
+    );
+
+    @GET("collections/shared")
+    Call<BaseJsonResponse<CollectionsPageResponse>> getSharedCollections(
+            @Query("userId") String encodedUserId
     );
 
     @GET("collections/{id}")
@@ -35,6 +40,12 @@ public interface CollectionApi {
 
     @GET("collections/{id}/papers")
     Call<BaseJsonResponse<List<CollectionPaperDetailResponse>>> getPapersInCollection(@Path("id") String id);
+
+    @retrofit2.http.PUT("collections/papers/status")
+    Call<BaseJsonResponse<CollectionPaperResponse>> updatePaperStatus(@Body CollectionPaperRequest request);
+
+    @POST("collections/members")
+    Call<BaseJsonResponse<Object>> addMemberToCollection(@Body CollectionUserRequest request);
 }
 
 

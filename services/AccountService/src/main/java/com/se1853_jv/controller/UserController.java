@@ -42,6 +42,15 @@ public class UserController {
         return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserById(decodedId)));
     }
 
+    @GetMapping("/email/{email}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<WrapperApiResponse> getUserByEmail(@PathVariable String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new BadRequestException("Email cannot be empty");
+        }
+        return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserByEmail(email.trim())));
+    }
+
     @PatchMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<WrapperApiResponse> updateProfile(

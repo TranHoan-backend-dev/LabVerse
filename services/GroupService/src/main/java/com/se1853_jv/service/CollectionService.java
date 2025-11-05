@@ -12,6 +12,8 @@ public interface CollectionService {
     CollectionResponse createCollection(CollectionRequest request);
     CollectionResponse getCollectionById(String encodedId);
     Map<String, Object> getCollectionsManual(int page, int size);
+    Map<String, Object> getMyCollections(String encodedUserId);
+    Map<String, Object> getSharedCollections(String encodedUserId);
     CollectionPaperResponse addPaperToCollection(CollectionPaperRequest request);
     CollectionPaperResponse updatePaperStatus(CollectionPaperRequest request);
     List<CollectionPaperDetailResponse> getPapersInCollection(String encodedCollectionId);

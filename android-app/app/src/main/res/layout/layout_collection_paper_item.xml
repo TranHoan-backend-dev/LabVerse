@@ -64,13 +64,14 @@
             app:layout_constraintTop_toBottomOf="@id/text_paper_authors"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/text_paper_priority"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_paper_priority"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HIGH"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            style="@style/Widget.Material3.Chip.Assist"
+            app:chipMinHeight="24dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
             app:layout_constraintTop_toBottomOf="@id/text_paper_authors"
             app:layout_constraintEnd_toEndOf="parent" />
 
