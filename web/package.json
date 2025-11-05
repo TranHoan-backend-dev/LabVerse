@@ -8,7 +8,11 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rimraf dist .turbo .cache",
+    "install": "npm ci",
+    "typescheck": "tsc --noEmit",
+    "test": "vitest run",
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
