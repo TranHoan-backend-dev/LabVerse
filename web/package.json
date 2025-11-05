@@ -10,9 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "clean": "rimraf dist .turbo .cache",
-    "install": "npm ci",
+    "install": "ci",
     "typescheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

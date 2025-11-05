@@ -118,18 +118,23 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: ./web
 
       - name: Run typescheck
         run: npm run typescheck
+        working-directory: ./web
 
       - name: Run lint
         run: npm run lint
+        working-directory: ./web
 
       - name: Run unit tests
         run: npm run test
+        working-directory: ./web
 
       - name: Build
         run: npm run build
+        working-directory: ./web
 
       - name: Upload production build artifact
         uses: actions/upload-artifact@v4
