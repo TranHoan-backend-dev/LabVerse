@@ -115,6 +115,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: ./web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -140,7 +141,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist
+          path: .web/dist
 
   qodana-analysis:
     runs-on: ubuntu-latest
