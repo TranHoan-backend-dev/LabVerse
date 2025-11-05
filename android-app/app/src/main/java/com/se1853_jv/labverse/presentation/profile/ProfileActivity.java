@@ -1,17 +1,17 @@
 package com.se1853_jv.labverse.presentation.profile;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
+
 import android.content.Intent;
 
 import com.se1853_jv.labverse.data.api.ApiCallback;
@@ -31,24 +32,18 @@ import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.presentation.auth.LoginActivity;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
-import com.se1853_jv.labverse.presentation.user.ChangePasswordDialog;
+import com.se1853_jv.labverse.presentation.user.fragment.ChangePasswordDialogFragment;
 
 public class ProfileActivity extends BaseActivity {
 
-    private static final String TAG = "ProfileActivity";
+    private final String TAG = "ProfileActivity";
 
-    private TextInputEditText etFullName;
-    private TextInputEditText etEmail;
-    private TextInputEditText etAffiliation;
-    private android.widget.AutoCompleteTextView spinnerResearchField;
-    private SwitchMaterial switchPushNotifications;
-    private SwitchMaterial switchEmailUpdates;
-    private SwitchMaterial switchCollaboration;
-    private MaterialButton btnSaveChanges;
-    private MaterialButton btnLogout;
+    private TextInputEditText etFullName, etEmail, etAffiliation;
+    private AutoCompleteTextView spinnerResearchField;
+    private SwitchMaterial switchPushNotifications, switchEmailUpdates, switchCollaboration;
+    private MaterialButton btnSaveChanges, btnLogout;
     private ImageView ivProfileAvatar;
-    private TextView tvProfileName;
-    private TextView tvProfileTitle;
+    private TextView tvProfileName, tvProfileTitle;
     private LinearLayout layoutChangePassword;
 
     private UserApiHandler userApiHandler;
@@ -120,14 +115,14 @@ public class ProfileActivity extends BaseActivity {
 
     private void loadUserData() {
         if (isLoading) return;
-        
+
         isLoading = true;
         Log.d(TAG, "Loading user data...");
-        
+
         // Show loading state (you can add a progress bar if needed)
         setLoadingState(true);
-        
-        userApiHandler.getCurrentUser(new ApiCallback<UserResponse>() {
+
+        userApiHandler.getCurrentUser(new ApiCallback<>() {
             @Override
             public void onSuccess(UserResponse user) {
                 isLoading = false;
@@ -146,7 +141,7 @@ public class ProfileActivity extends BaseActivity {
             }
         });
     }
-    
+
     private void setLoadingState(boolean loading) {
         // Disable/enable fields during loading
         etFullName.setEnabled(!loading);
@@ -155,6 +150,7 @@ public class ProfileActivity extends BaseActivity {
         btnSaveChanges.setEnabled(!loading);
     }
 
+    @SuppressLint("SetTextI18n")
     private void displayUserData(UserResponse user) {
         // Display full name
         if (!TextUtils.isEmpty(user.getFullName())) {
@@ -202,9 +198,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void handleEvents() {
-        btnSaveChanges.setOnClickListener(v -> {
-            saveProfile();
-        });
+        btnSaveChanges.setOnClickListener(v -> saveProfile());
 
         // Avatar change listeners
         ivProfileAvatar.setOnClickListener(v -> {
@@ -221,19 +215,15 @@ public class ProfileActivity extends BaseActivity {
 
         // Change Password click listener
         if (layoutChangePassword != null) {
-            layoutChangePassword.setOnClickListener(v -> {
-                showChangePasswordDialog();
-            });
+            layoutChangePassword.setOnClickListener(v -> showChangePasswordDialog());
         }
 
         // Logout button click listener
-        btnLogout.setOnClickListener(v -> {
-            handleLogout();
-        });
+        btnLogout.setOnClickListener(v -> handleLogout());
     }
-    
+
     private void showChangePasswordDialog() {
-        ChangePasswordDialog dialog = new ChangePasswordDialog();
+        ChangePasswordDialogFragment dialog = new ChangePasswordDialogFragment();
         dialog.show(getSupportFragmentManager(), "ChangePasswordDialog");
     }
 
@@ -242,31 +232,30 @@ public class ProfileActivity extends BaseActivity {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
-                .setPositiveButton("Logout", (dialog, which) -> {
-                    performLogout();
-                })
+                .setPositiveButton("Logout", (dialog, which) -> performLogout())
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
+    @SuppressLint("SetTextI18n")
     private void performLogout() {
         // Disable button and show loading
         btnLogout.setEnabled(false);
         btnLogout.setText("Logging out...");
 
         // Call logout API
-        authApiHandler.logout(new ApiCallback<String>() {
+        authApiHandler.logout(new ApiCallback<>() {
             @Override
             public void onSuccess(String message) {
                 runOnUiThread(() -> {
                     // Clear session data
                     sessionManager.logout();
-                    
+
                     // Show success message
-                    Toast.makeText(ProfileActivity.this, 
-                            message != null ? message : "Logged out successfully", 
+                    Toast.makeText(ProfileActivity.this,
+                            message != null ? message : "Logged out successfully",
                             Toast.LENGTH_SHORT).show();
-                    
+
                     // Navigate to login screen
                     navigateToLogin();
                 });
@@ -277,9 +266,9 @@ public class ProfileActivity extends BaseActivity {
                 runOnUiThread(() -> {
                     // Even if API fails, clear session and logout locally
                     sessionManager.logout();
-                    
+
                     Log.w(TAG, "Logout API error but proceeding with local logout: " + error);
-                    
+
                     // Navigate to login screen
                     navigateToLogin();
                 });
@@ -294,6 +283,7 @@ public class ProfileActivity extends BaseActivity {
         finish();
     }
 
+    @SuppressLint("SetTextI18n")
     private void saveProfile() {
         // Validate and save profile data
         String fullName = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
@@ -307,7 +297,7 @@ public class ProfileActivity extends BaseActivity {
         // Create update request
         UpdateProfileRequest request = new UpdateProfileRequest();
         request.setFullName(fullName);
-        
+
         // Only update username if it's different from current
         // Note: Username update is optional and requires validation on backend
         if (currentUser != null && !TextUtils.isEmpty(currentUser.getUsername())) {
@@ -324,7 +314,7 @@ public class ProfileActivity extends BaseActivity {
         btnSaveChanges.setText("Saving...");
 
         // Call API
-        userApiHandler.updateProfile(request, new ApiCallback<UserResponse>() {
+        userApiHandler.updateProfile(request, new ApiCallback<>() {
             @Override
             public void onSuccess(UserResponse updatedUser) {
                 currentUser = updatedUser;

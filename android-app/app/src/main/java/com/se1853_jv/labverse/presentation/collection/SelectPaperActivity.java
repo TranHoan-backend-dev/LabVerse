@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.collection;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -47,9 +48,9 @@ public class SelectPaperActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SelectPaperAdapter adapter;
     
-    private List<PaperResearch> allPapers = new ArrayList<>();
-    private List<PaperResearch> filteredPapers = new ArrayList<>();
-    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private final List<PaperResearch> allPapers = new ArrayList<>();
+    private final List<PaperResearch> filteredPapers = new ArrayList<>();
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
 
     @Override
@@ -93,9 +94,7 @@ public class SelectPaperActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        adapter = new SelectPaperAdapter(new ArrayList<>(), paper -> {
-            addPaperToCollection(paper);
-        });
+        adapter = new SelectPaperAdapter(new ArrayList<>(), this::addPaperToCollection);
         recyclerPapers.setLayoutManager(new LinearLayoutManager(this));
         recyclerPapers.setAdapter(adapter);
     }
@@ -161,7 +160,7 @@ public class SelectPaperActivity extends AppCompatActivity {
 
         showLoading(true);
         
-        paperApiHandler.getAllPapers(query, new ApiCallback<List<PaperResearch>>() {
+        paperApiHandler.getAllPapers(query, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -207,7 +206,7 @@ public class SelectPaperActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        paperApiHandler.getAllPapers(null, new ApiCallback<List<PaperResearch>>() {
+        paperApiHandler.getAllPapers(null, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -248,7 +247,7 @@ public class SelectPaperActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        collectionApiHandler.addPaperToCollection(request, new ApiCallback<CollectionPaperResponse>() {
+        collectionApiHandler.addPaperToCollection(request, new ApiCallback<>() {
             @Override
             public void onSuccess(CollectionPaperResponse response) {
                 runOnUiThread(() -> {
@@ -279,6 +278,7 @@ public class SelectPaperActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateEmptyState() {
         if (filteredPapers.isEmpty()) {
             textEmptyState.setVisibility(View.VISIBLE);

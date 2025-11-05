@@ -33,16 +33,16 @@ import java.util.List;
 
 public class CollectionDetailsActivity extends AppCompatActivity {
     private static final String TAG = "CollectionDetailsActivity";
-    
+
     private CollectionApiHandler apiHandler;
     private RecyclerView recyclerPapers;
     private TextView textCollectionName;
     private TextView textEmptyState;
     private MaterialButton buttonAddPaper;
     private CollectionPaperAdapter adapter;
-    
+
     private CollectionResponse collection;
-    private List<CollectionPaperDetailResponse> papers = new ArrayList<>();
+    private final List<CollectionPaperDetailResponse> papers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

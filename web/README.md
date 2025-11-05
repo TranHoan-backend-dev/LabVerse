@@ -1,53 +1,73 @@
-# Next.js & HeroUI Template
+# Welcome to your Lovable project
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+## Project info
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+**URL**: https://lovable.dev/projects/886b0fcf-4cae-43c0-a277-39971115d01a
 
-## Technologies Used
+## How can I edit this code?
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+There are several ways of editing your application.
 
-## How to Use
+**Use Lovable**
 
-### Use the template with create-next-app
+Simply visit the [Lovable Project](https://lovable.dev/projects/886b0fcf-4cae-43c0-a277-39971115d01a) and start prompting.
 
-To create a new project based on this template using `create-next-app`, run the following command:
+Changes made via Lovable will be committed automatically to this repo.
 
-```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
-```
+**Use your preferred IDE**
 
-### Install dependencies
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-```bash
-npm install
-```
+Follow these steps:
 
-### Run the development server
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-```bash
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
-### Setup pnpm (optional)
+**Edit a file directly in GitHub**
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
+**Use GitHub Codespaces**
 
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## License
+## What technologies are used for this project?
 
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/886b0fcf-4cae-43c0-a277-39971115d01a) and click on Share -> Publish.
+
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

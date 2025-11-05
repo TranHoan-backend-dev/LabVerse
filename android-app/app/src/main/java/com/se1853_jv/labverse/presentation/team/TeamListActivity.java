@@ -2,6 +2,7 @@ package com.se1853_jv.labverse.presentation.team;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -38,7 +39,7 @@ public class TeamListActivity extends AppCompatActivity {
         bindViews();
         handleEvents();
         setupTeamCards();
-        
+
         // Setup avatar and profile navigation click listeners
         HeaderHelper.setupProfileClickListeners(this);
         // Setup Lists navigation click listener (navigate to this screen)
@@ -79,38 +80,38 @@ public class TeamListActivity extends AppCompatActivity {
 
     private void setupTeamCards() {
         // Setup click listeners and populate data for all team cards
-        
+
         // Team Card 1
-        setupTeamCard(R.id.teamCard1, "team_1", 
-            "LabVerse – Research Paper Management", 
-            "Lead: Dr. Nguyen Van Minh",
-            "AI-powered research workflow platform connecting multi-disciplinary teams.",
-            "8 Members", "3 Departments", "2 Locations");
+        setupTeamCard(R.id.teamCard1, "team_1",
+                "LabVerse – Research Paper Management",
+                "Lead: Dr. Nguyen Van Minh",
+                "AI-powered research workflow platform connecting multi-disciplinary teams.",
+                "8 Members", "3 Departments", "2 Locations");
 
         // Team Card 2
         setupTeamCard(R.id.teamCard2, "team_2",
-            "AI Research Lab",
-            "Lead: Prof. Tran Thi Mai",
-            "Advanced machine learning and deep learning research team working on computer vision.",
-            "12 Members", "2 Departments", "1 Location");
+                "AI Research Lab",
+                "Lead: Prof. Tran Thi Mai",
+                "Advanced machine learning and deep learning research team working on computer vision.",
+                "12 Members", "2 Departments", "1 Location");
 
         // Team Card 3
         setupTeamCard(R.id.teamCard3, "team_3",
-            "Biomedical Innovation Group",
-            "Lead: Dr. Le Van Duc",
-            "Medical research team focusing on biotechnology and pharmaceutical development.",
-            "15 Members", "4 Departments", "3 Locations");
+                "Biomedical Innovation Group",
+                "Lead: Dr. Le Van Duc",
+                "Medical research team focusing on biotechnology and pharmaceutical development.",
+                "15 Members", "4 Departments", "3 Locations");
 
         // Team Card 4 (Recommended)
         setupTeamCard(R.id.teamCard4, "team_4",
-            "Environmental Science Team",
-            "Lead: Assoc. Prof. Pham Thi Lan",
-            "Environmental research and sustainable development projects across multiple institutions.",
-            "10 Members", "3 Departments", "2 Locations");
+                "Environmental Science Team",
+                "Lead: Assoc. Prof. Pham Thi Lan",
+                "Environmental research and sustainable development projects across multiple institutions.",
+                "10 Members", "3 Departments", "2 Locations");
     }
 
-    private void setupTeamCard(int cardViewId, String teamId, String teamName, 
-                               String teamLead, String description, 
+    private void setupTeamCard(int cardViewId, String teamId, String teamName,
+                               String teamLead, String description,
                                String members, String departments, String locations) {
         // Find the include view first
         View includeView = findViewById(cardViewId);
@@ -118,7 +119,7 @@ public class TeamListActivity extends AppCompatActivity {
             Toast.makeText(this, "Cannot find team card view", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         // Find MaterialCardView with id teamCard - it's the root of the included layout
         MaterialCardView teamCard = includeView.findViewById(R.id.teamCard);
         if (teamCard == null) {
@@ -130,18 +131,18 @@ public class TeamListActivity extends AppCompatActivity {
                 return;
             }
         }
-        
+
         // Store teamId in tag for later retrieval
         teamCard.setTag(teamId);
-        
+
         // Set click listener directly on the card
         // MaterialCardView already has clickable and foreground set in XML
         teamCard.setClickable(true);
         teamCard.setFocusable(true);
-        
+
         // Store teamId in a final variable for lambda
         final String finalTeamId = teamId;
-        
+
         teamCard.setOnClickListener(v -> {
             try {
                 Intent intent = new Intent(TeamListActivity.this, TeamDetailActivity.class);
@@ -149,14 +150,14 @@ public class TeamListActivity extends AppCompatActivity {
                 startActivity(intent);
             } catch (Exception e) {
                 // Log error and show toast
-                e.printStackTrace();
+                Log.e("TeamListActivity", "Error in team card click: " + e.getMessage());
                 String errorMsg = e.getClass().getSimpleName();
                 if (e.getMessage() != null) {
                     errorMsg += ": " + e.getMessage();
                 }
-                Toast.makeText(TeamListActivity.this, 
-                    "Error: " + errorMsg, 
-                    Toast.LENGTH_LONG).show();
+                Toast.makeText(TeamListActivity.this,
+                        "Error: " + errorMsg,
+                        Toast.LENGTH_LONG).show();
             }
         });
 

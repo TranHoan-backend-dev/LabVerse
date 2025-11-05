@@ -33,7 +33,7 @@ import java.util.List;
 
 public class CollectionsActivity extends BaseActivity {
     private static final String TAG = "CollectionsActivity";
-    
+
     private CollectionApiHandler apiHandler;
     private UserApiHandler userApiHandler;
     private CollectionsFragment fragment;
@@ -69,7 +69,7 @@ public class CollectionsActivity extends BaseActivity {
         ViewPager2 viewPager = findViewById(R.id.viewPager);
         var adapter = new CollectionsPagerAdapter(this);
         viewPager.setAdapter(adapter);
-        
+
         // Get fragment after adapter is set and fragment is created
         viewPager.post(() -> {
             fragment = (CollectionsFragment) getSupportFragmentManager()
@@ -86,7 +86,7 @@ public class CollectionsActivity extends BaseActivity {
             }
         });
     }
-    
+
     private CollectionsFragment getFragment() {
         if (fragment == null) {
             var fragments = getSupportFragmentManager().getFragments();
@@ -107,7 +107,7 @@ public class CollectionsActivity extends BaseActivity {
         View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_create_collection, null);
         EditText editName = dialogView.findViewById(R.id.edit_collection_name);
         editName.setText(collection.getName());
-        
+
         builder.setView(dialogView);
         builder.setPositiveButton("Save", (dialog, which) -> {
             String name = editName.getText().toString().trim();
@@ -119,7 +119,7 @@ public class CollectionsActivity extends BaseActivity {
         builder.setNegativeButton("Cancel", null);
         builder.show();
     }
-    
+
     public void showDeleteCollectionDialog(@NonNull CollectionResponse collection) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Collection")
@@ -142,7 +142,7 @@ public class CollectionsActivity extends BaseActivity {
 
         View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_create_collection, null);
         EditText editName = dialogView.findViewById(R.id.edit_collection_name);
-        
+
         builder.setView(dialogView);
         builder.setPositiveButton("Create", (dialog, which) -> {
             String name = editName.getText().toString().trim();
@@ -163,10 +163,10 @@ public class CollectionsActivity extends BaseActivity {
         }
 
         // Get userId from session
-        com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
-            new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
         String userId = sessionManager.getUserId();
-        
+
         if (userId == null || userId.isEmpty()) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             return;
@@ -178,8 +178,8 @@ public class CollectionsActivity extends BaseActivity {
             @Override
             public void onSuccess(CollectionResponse response) {
                 runOnUiThread(() -> {
-                    Toast.makeText(CollectionsActivity.this, 
-                            "Collection created successfully", 
+                    Toast.makeText(CollectionsActivity.this,
+                            "Collection created successfully",
                             Toast.LENGTH_SHORT).show();
                     CollectionsFragment frag = getFragment();
                     if (frag != null) {
@@ -192,8 +192,8 @@ public class CollectionsActivity extends BaseActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     Log.e(TAG, "Error creating collection: " + error);
-                    Toast.makeText(CollectionsActivity.this, 
-                            "Failed to create collection: " + error, 
+                    Toast.makeText(CollectionsActivity.this,
+                            "Failed to create collection: " + error,
                             Toast.LENGTH_SHORT).show();
                 });
             }
@@ -211,7 +211,7 @@ public class CollectionsActivity extends BaseActivity {
 
         View dialogView = getLayoutInflater().inflate(R.layout.layout_dialog_invite_members, null);
         EditText editEmail = dialogView.findViewById(R.id.edit_member_email);
-        
+
         builder.setView(dialogView);
         builder.setPositiveButton("Send Invite", (dialog, which) -> {
             String email = editEmail.getText().toString().trim();
