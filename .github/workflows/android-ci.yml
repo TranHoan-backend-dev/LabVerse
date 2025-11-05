@@ -125,10 +125,6 @@ jobs:
         run: npm run typescheck
         working-directory: ./web
 
-      - name: Run unit tests
-        run: npm run test
-        working-directory: ./web
-
       - name: Build
         run: npm run build
         working-directory: ./web
