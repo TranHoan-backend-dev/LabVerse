@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "clean": "rimraf dist .turbo .cache",
-    "typescheck": "tsc --noEmit",
+    "typescheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
