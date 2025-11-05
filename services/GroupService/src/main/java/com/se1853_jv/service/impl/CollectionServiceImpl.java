@@ -5,13 +5,13 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.se1853_jv.dto.request.*;
 import com.se1853_jv.dto.response.*;
-import com.se1853_jv.client.PaperServiceClient;
 import com.se1853_jv.dto.response.PaperResponse;
 import com.se1853_jv.exception.*;
 import com.se1853_jv.model.*;
 import com.se1853_jv.model.Collection;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.service.CollectionService;
+import com.se1853_jv.service.PaperService;
 import com.se1853_jv.util.IdEncoder;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final CollectionRepository collectionRepository;
     private final CollectionPaperRepository collectionPaperRepository;
     private final CollectionUserRepository collectionUserRepository;
-    private final PaperServiceClient paperServiceClient;
+    private final PaperService paperServiceClient;
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "collections";
 
@@ -42,7 +42,7 @@ public class CollectionServiceImpl implements CollectionService {
             if (request.getName() == null || request.getName().isBlank()) {
                 throw new IllegalArgumentException("Collection name must not be blank");
             }
-            
+
             if (request.getUserId() == null || request.getUserId().isBlank()) {
                 throw new IllegalArgumentException("User ID is required to create collection");
             }
@@ -63,24 +63,24 @@ public class CollectionServiceImpl implements CollectionService {
                     .build();
 
             Collection saved = collectionRepository.save(entity);
-            
+
             // Automatically add creator as author (isAuthor = true)
             String userId = IdEncoder.decode(request.getUserId());
             CollectionUserId compositeId = new CollectionUserId();
             compositeId.setCollectionId(saved.getId());
             compositeId.setMemberId(userId);
-            
+
             CollectionUser collectionUser = CollectionUser.builder()
                     .id(compositeId)
                     .collection(saved)
                     .isAuthor(true) // Creator is always author
                     .build();
             collectionUserRepository.save(collectionUser);
-            
+
             // Get counts
             long paperCount = collectionPaperRepository.findByIdCollectionId(saved.getId()).size();
             long memberCount = collectionUserRepository.findByIdCollectionId(saved.getId()).size();
-            
+
             CollectionResponse response = CollectionResponse.fromEntity(saved, paperCount, memberCount);
             storeToFirestore(response);
             return response;
@@ -139,10 +139,10 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public Map<String, Object> getMyCollections(String encodedUserId) {
         String userId = IdEncoder.decode(encodedUserId);
-        
+
         // Get collections where user is author (isAuthor = true)
         List<CollectionUser> myCollectionUsers = collectionUserRepository.findByIdMemberIdAndIsAuthor(userId, true);
-        
+
         List<CollectionResponse> myCollections = myCollectionUsers.stream()
                 .map(cu -> {
                     Collection entity = cu.getCollection();
@@ -152,7 +152,7 @@ public class CollectionServiceImpl implements CollectionService {
                     return CollectionResponse.fromEntity(entity, paperCount, memberCount);
                 })
                 .toList();
-        
+
         return Map.of(
                 "content", myCollections,
                 "totalElements", myCollections.size()
@@ -162,10 +162,10 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public Map<String, Object> getSharedCollections(String encodedUserId) {
         String userId = IdEncoder.decode(encodedUserId);
-        
+
         // Get collections where user is not author (isAuthor = false)
         List<CollectionUser> sharedCollectionUsers = collectionUserRepository.findByIdMemberIdAndIsAuthor(userId, false);
-        
+
         List<CollectionResponse> sharedCollections = sharedCollectionUsers.stream()
                 .map(cu -> {
                     Collection entity = cu.getCollection();
@@ -175,7 +175,7 @@ public class CollectionServiceImpl implements CollectionService {
                     return CollectionResponse.fromEntity(entity, paperCount, memberCount);
                 })
                 .toList();
-        
+
         return Map.of(
                 "content", sharedCollections,
                 "totalElements", sharedCollections.size()
@@ -214,7 +214,7 @@ public class CollectionServiceImpl implements CollectionService {
 
         // Kiểm tra tồn tại trong collection
         if (collectionPaperRepository.existsById(compositeId)) {
-            throw new DatabaseException("Paper already exists in this collection",null);
+            throw new DatabaseException("Paper already exists in this collection", null);
         }
 
         CollectionPaper entity = CollectionPaper.builder()
@@ -247,13 +247,13 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public List<CollectionPaperDetailResponse> getPapersInCollection(String encodedCollectionId) {
         String collectionId = IdEncoder.decode(encodedCollectionId);
-        
+
         // Verify collection exists
         collectionRepository.findById(collectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + encodedCollectionId));
-        
+
         List<CollectionPaper> collectionPapers = collectionPaperRepository.findByIdCollectionId(collectionId);
-        
+
         return collectionPapers.stream().map(cp -> {
             String paperId = cp.getId().getPaperId();
             // Get paper details from paper-service
@@ -263,7 +263,7 @@ public class CollectionServiceImpl implements CollectionService {
                 if (wrapperResponse != null && wrapperResponse.getData() != null) {
                     Object data = wrapperResponse.getData();
                     PaperResponse paper;
-                    
+
                     // Handle different response types
                     if (data instanceof PaperResponse) {
                         paper = (PaperResponse) data;
@@ -292,7 +292,7 @@ public class CollectionServiceImpl implements CollectionService {
                         log.warn("Unexpected data type for paper ID {}: {}", paperId, data.getClass().getName());
                         paper = null;
                     }
-                    
+
                     if (paper != null && paper.getTitle() != null && !paper.getTitle().isEmpty()) {
                         return CollectionPaperDetailResponse.builder()
                                 .paperId(IdEncoder.encode(paperId))
@@ -311,7 +311,7 @@ public class CollectionServiceImpl implements CollectionService {
             } catch (Exception e) {
                 log.error("Error fetching paper details for ID {}: {}", paperId, e.getMessage(), e);
             }
-            
+
             // Fallback if paper not found or error
             return CollectionPaperDetailResponse.builder()
                     .paperId(IdEncoder.encode(paperId))

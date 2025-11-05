@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface CollectionUserService {
     CollectionUserResponse addMember(CollectionUserRequest request);
+
     void removeMember(String encodedCollectionId, String encodedMemberId);
+
     List<CollectionUserResponse> getMembers(String encodedCollectionId);
 }
