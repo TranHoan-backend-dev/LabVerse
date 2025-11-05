@@ -34,7 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
     private MaterialButton btnCreateAccount, btnGoogleSignIn;
     private TextView btnLogin, btnRegister, tvLoginHere;
     private View loginIndicator, registerIndicator;
-    
+
     private Map<String, Role> roleMap;
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
@@ -57,7 +57,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Set click listeners
         setupClickListeners();
-        
+
         // Setup progress dialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Creating account...");
@@ -88,7 +88,7 @@ public class RegisterActivity extends AppCompatActivity {
         String labHeadRole = getString(R.string.role_lab_head);
         String researcherRole = getString(R.string.role_researcher);
         String internRole = getString(R.string.role_intern);
-        
+
         roleMap.put(piRole, Role.PRINCIPAL_INVESTIGATOR);
         roleMap.put(labHeadRole, Role.LAB_HEAD);
         roleMap.put(researcherRole, Role.RESEARCHER);
@@ -227,20 +227,20 @@ public class RegisterActivity extends AppCompatActivity {
         performRegistration(fullName, username, email, password, selectedRole);
     }
 
-    private void performRegistration(String fullName, String username, String email, 
+    private void performRegistration(String fullName, String username, String email,
                                      String password, Role role) {
         // Show loading
         progressDialog.show();
         btnCreateAccount.setEnabled(false);
-        
+
         // Map Role enum to backend role name
         String roleName = mapRoleToBackendName(role);
-        
+
         // Create register request
-        com.se1853_jv.labverse.data.dto.request.RegisterRequest registerRequest = 
+        com.se1853_jv.labverse.data.dto.request.RegisterRequest registerRequest =
                 new com.se1853_jv.labverse.data.dto.request.RegisterRequest(
                         email, password, fullName, username, roleName);
-        
+
         // Call API
         authApiHandler.register(registerRequest, new ApiCallback<AuthResponse>() {
             @Override
@@ -248,15 +248,15 @@ public class RegisterActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     btnCreateAccount.setEnabled(true);
-                    
+
                     // Save user session
                     sessionManager.saveAuthResponse(response);
-                    
+
                     // Show success message
-                    Toast.makeText(RegisterActivity.this, 
-                            "Welcome to LabVerse, " + response.getFullName() + "!", 
+                    Toast.makeText(RegisterActivity.this,
+                            "Welcome to LabVerse, " + response.getFullName() + "!",
                             Toast.LENGTH_SHORT).show();
-                    
+
                     // Navigate to main screen
                     navigateToFeed();
                 });
@@ -266,8 +266,8 @@ public class RegisterActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-            btnCreateAccount.setEnabled(true);
-            
+                    btnCreateAccount.setEnabled(true);
+
                     // Show error message
                     String errorMessage = "Registration failed. Please try again.";
                     if (error != null && error.contains("Email")) {
@@ -282,7 +282,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     /**
      * Map Role enum to backend role name
      */
@@ -300,12 +300,12 @@ public class RegisterActivity extends AppCompatActivity {
                 return "RESEARCHER"; // Default role
         }
     }
-    
+
     private void navigateToFeed() {
-            Intent intent = new Intent(RegisterActivity.this, FeedActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+        Intent intent = new Intent(RegisterActivity.this, FeedActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void handleGoogleRegister() {

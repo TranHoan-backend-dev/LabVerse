@@ -25,18 +25,15 @@ import com.se1853_jv.labverse.R;
 
 public class TeamCreateActivity extends AppCompatActivity {
 
-    private ImageView ivTeamIcon;
-    private ImageView ivCameraIcon;
-    private EditText etTeamName;
-    private EditText etDescription;
+    private ImageView ivTeamIcon, ivCameraIcon;
+    private EditText etTeamName, etDescription;
     private Spinner spinnerResearchField;
     private RadioGroup rgPrivacy;
-    private RadioButton rbPublic;
-    private RadioButton rbPrivate;
+    private RadioButton rbPublic, rbPrivate;
     private Button btnCreateTeam;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
-    private String[] researchFields = {
+    private final String[] researchFields = {
             "Computer Science",
             "Artificial Intelligence",
             "Machine Learning",
@@ -103,10 +100,10 @@ public class TeamCreateActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                researchFields
-        ) {
+                researchFields) {
+            @NonNull
             @Override
-            public View getView(int position, View convertView, android.view.ViewGroup parent) {
+            public View getView(int position, View convertView, @NonNull android.view.ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView textView = (TextView) view;
                 textView.setTextColor(getResources().getColor(R.color.text_primary, null));
@@ -115,7 +112,7 @@ public class TeamCreateActivity extends AppCompatActivity {
             }
 
             @Override
-            public View getDropDownView(int position, View convertView, android.view.ViewGroup parent) {
+            public View getDropDownView(int position, View convertView, @NonNull android.view.ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView textView = (TextView) view;
                 textView.setTextColor(getResources().getColor(R.color.text_primary, null));

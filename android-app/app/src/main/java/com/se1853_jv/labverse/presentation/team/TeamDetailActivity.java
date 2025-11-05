@@ -1,10 +1,12 @@
 package com.se1853_jv.labverse.presentation.team;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -16,11 +18,9 @@ import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 
 public class TeamDetailActivity extends AppCompatActivity {
 
-    private TextView tvProjectName;
-    private TextView tvProjectStart;
+    private TextView tvProjectName, tvProjectStart, btnAddMember;
     private TextView tvProjectMembers;
     private ChipGroup chipGroupMembers;
-    private TextView btnAddMember;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +60,8 @@ public class TeamDetailActivity extends AppCompatActivity {
         btnAddMember = findViewById(R.id.btnAddMember);
     }
 
-    private void loadTeamDetails(String teamId) {
+    @SuppressLint("SetTextI18n")
+    private void loadTeamDetails(@NonNull String teamId) {
         // Load team details from API or database
         // For now, using mock data based on teamId
         

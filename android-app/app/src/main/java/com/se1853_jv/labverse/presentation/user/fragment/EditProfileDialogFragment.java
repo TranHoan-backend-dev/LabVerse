@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.presentation.user;
+package com.se1853_jv.labverse.presentation.user.fragment;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -17,7 +17,7 @@ import com.se1853_jv.labverse.data.api.user.UserApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UpdateProfileRequest;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
 
-public class EditProfileDialog extends DialogFragment {
+public class EditProfileDialogFragment extends DialogFragment {
     
     private TextInputEditText etFullName, etUsername, etAvatarUrl;
     private MaterialButton btnSave, btnCancel;
@@ -30,8 +30,8 @@ public class EditProfileDialog extends DialogFragment {
         void onProfileUpdated(UserResponse updatedUser);
     }
 
-    public static EditProfileDialog newInstance(UserResponse user) {
-        EditProfileDialog dialog = new EditProfileDialog();
+    public static EditProfileDialogFragment newInstance(UserResponse user) {
+        EditProfileDialogFragment dialog = new EditProfileDialogFragment();
         Bundle args = new Bundle();
         // Pass user data as individual strings
         if (user != null) {

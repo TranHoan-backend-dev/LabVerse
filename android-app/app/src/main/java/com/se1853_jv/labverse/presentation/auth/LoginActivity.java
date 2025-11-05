@@ -29,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnSignIn, btnGoogleSignIn;
     private TextView btnLogin, btnRegister, tvForgotPassword, tvCreateAccount;
     private View loginIndicator, registerIndicator;
-    
+
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
     private ProgressDialog progressDialog;
@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         // Initialize API handler and session manager
         authApiHandler = new AuthApiHandler();
         sessionManager = new SessionManager(this);
-        
+
         // Check if user is already logged in
         if (sessionManager.isLoggedIn()) {
             navigateToFeed();
@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Set click listeners
         setupClickListeners();
-        
+
         // Setup progress dialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Logging in...");
@@ -113,7 +113,7 @@ public class LoginActivity extends AppCompatActivity {
             btnLogin.setTextColor(getResources().getColor(R.color.blue, null));
             btnLogin.setTypeface(null, android.graphics.Typeface.BOLD);
             loginIndicator.setBackgroundResource(R.drawable.tab_indicator_selected);
-            
+
             btnRegister.setTextColor(getResources().getColor(android.R.color.darker_gray, null));
             btnRegister.setTypeface(null, android.graphics.Typeface.NORMAL);
             registerIndicator.setBackgroundResource(R.drawable.tab_indicator_unselected);
@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
             btnRegister.setTextColor(getResources().getColor(R.color.blue, null));
             btnRegister.setTypeface(null, android.graphics.Typeface.BOLD);
             registerIndicator.setBackgroundResource(R.drawable.tab_indicator_selected);
-            
+
             btnLogin.setTextColor(getResources().getColor(android.R.color.darker_gray, null));
             btnLogin.setTypeface(null, android.graphics.Typeface.NORMAL);
             loginIndicator.setBackgroundResource(R.drawable.tab_indicator_unselected);
@@ -166,27 +166,27 @@ public class LoginActivity extends AppCompatActivity {
         // Show loading
         progressDialog.show();
         btnSignIn.setEnabled(false);
-        
+
         // Create login request
         LoginRequest loginRequest = new LoginRequest(email, password);
-        
+
         // Call API
         authApiHandler.login(loginRequest, new ApiCallback<AuthResponse>() {
             @Override
             public void onSuccess(AuthResponse response) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-            btnSignIn.setEnabled(true);
-            
+                    btnSignIn.setEnabled(true);
+
                     // Save user session
                     sessionManager.saveAuthResponse(response);
-                    
+
                     // Show success message
-                    Toast.makeText(LoginActivity.this, 
-                            "Welcome back, " + response.getFullName() + "!", 
+                    Toast.makeText(LoginActivity.this,
+                            "Welcome back, " + response.getFullName() + "!",
                             Toast.LENGTH_SHORT).show();
-                    
-            // Navigate to main screen
+
+                    // Navigate to main screen
                     navigateToFeed();
                 });
             }
@@ -196,7 +196,7 @@ public class LoginActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     btnSignIn.setEnabled(true);
-                    
+
                     // Show error message
                     String errorMessage = "Login failed. Please check your credentials.";
                     if (error != null && !error.isEmpty()) {
@@ -207,12 +207,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     private void navigateToFeed() {
-            Intent intent = new Intent(LoginActivity.this, FeedActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+        Intent intent = new Intent(LoginActivity.this, FeedActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void handleGoogleLogin() {
@@ -284,7 +284,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else if (error != null && !error.isEmpty()) {
                         errorMessage = error;
                     }
-                    
+
                     new androidx.appcompat.app.AlertDialog.Builder(LoginActivity.this)
                             .setTitle("Error")
                             .setMessage(errorMessage)

@@ -28,7 +28,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
     private MaterialButton chooseFileBtn;
     private ActivityResultLauncher<Intent> filePickerLauncher;
     private LinearLayout recentUploadsContainer;
-    private List<RecentUploadItem> recentUploads = new ArrayList<>();
+    private final List<RecentUploadItem> recentUploads = new ArrayList<>();
 
     // Mock data for recent uploads
     static class RecentUploadItem {
@@ -100,8 +100,9 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @NonNull
-    private MaterialCardView createRecentUploadCard(RecentUploadItem item) {
+    private MaterialCardView createRecentUploadCard(@NonNull RecentUploadItem item) {
         MaterialCardView card = new MaterialCardView(this);
         card.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -201,8 +202,9 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         });
     }
 
+    @NonNull
     @SuppressLint("Range")
-    private String getFileName(Uri uri) {
+    private String getFileName(@NonNull Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
             try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
