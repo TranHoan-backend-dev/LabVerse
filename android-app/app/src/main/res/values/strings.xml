@@ -103,7 +103,6 @@
 
     <!-- Roles -->
     <string name="role_principal_investigator">Principal Investigator (PI)</string>
-    <string name="role_lab_head">Lab Head</string>
     <string name="role_researcher">Researcher (Postdoc/PhD)</string>
-    <string name="role_intern">Intern (Student)</string>
+    <string name="role_student">Student</string>
 </resources>
