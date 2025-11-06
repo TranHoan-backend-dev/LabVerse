@@ -72,7 +72,7 @@ class PaperController(
         )
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,
