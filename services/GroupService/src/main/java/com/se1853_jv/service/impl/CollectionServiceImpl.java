@@ -12,6 +12,7 @@ import com.se1853_jv.model.Collection;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.service.CollectionService;
 import com.se1853_jv.service.PaperService;
+import com.se1853_jv.service.UserServiceClient;
 import com.se1853_jv.util.IdEncoder;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final CollectionPaperRepository collectionPaperRepository;
     private final CollectionUserRepository collectionUserRepository;
     private final PaperService paperServiceClient;
+    private final UserServiceClient userServiceClient;
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "collections";
 
@@ -123,7 +125,9 @@ public class CollectionServiceImpl implements CollectionService {
                     long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
                     // Count members
                     long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
-                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    setCreatorInfo(response, collectionId);
+                    return response;
                 })
                 .toList();
 
@@ -149,7 +153,13 @@ public class CollectionServiceImpl implements CollectionService {
                     String collectionId = entity.getId();
                     long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
                     long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
-                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    
+                    // Get creator info (user with isAuthor = true)
+                    CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    setCreatorInfo(response, collectionId);
+                    // User is creator for their own collections
+                    response.setIsCreator(true);
+                    return response;
                 })
                 .toList();
 
@@ -172,7 +182,13 @@ public class CollectionServiceImpl implements CollectionService {
                     String collectionId = entity.getId();
                     long paperCount = collectionPaperRepository.findByIdCollectionId(collectionId).size();
                     long memberCount = collectionUserRepository.findByIdCollectionId(collectionId).size();
-                    return CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    
+                    // Get creator info (user with isAuthor = true)
+                    CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
+                    setCreatorInfo(response, collectionId);
+                    // User is not creator for shared collections
+                    response.setIsCreator(false);
+                    return response;
                 })
                 .toList();
 
@@ -186,9 +202,23 @@ public class CollectionServiceImpl implements CollectionService {
     public CollectionPaperResponse addPaperToCollection(CollectionPaperRequest request) {
         String collectionId = IdEncoder.decode(request.getCollectionId());
         String paperId = IdEncoder.decode(request.getPaperId());
+        String userId = request.getUserId() != null ? IdEncoder.decode(request.getUserId()) : null;
 
         Collection collection = collectionRepository.findById(collectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + collectionId));
+
+        // Check if user is the creator (isAuthor = true)
+        if (userId != null) {
+            CollectionUserId userCompositeId = new CollectionUserId();
+            userCompositeId.setCollectionId(collectionId);
+            userCompositeId.setMemberId(userId);
+            CollectionUser collectionUser = collectionUserRepository.findById(userCompositeId)
+                    .orElse(null);
+            
+            if (collectionUser == null || !Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
+                throw new BadRequestException("Only the collection creator can add papers to this collection");
+            }
+        }
 
         // Validate paper exists in paper-service
         try {
@@ -233,10 +263,24 @@ public class CollectionServiceImpl implements CollectionService {
     public CollectionPaperResponse updatePaperStatus(CollectionPaperRequest request) {
         String collectionId = IdEncoder.decode(request.getCollectionId());
         String paperId = IdEncoder.decode(request.getPaperId());
+        String userId = request.getUserId() != null ? IdEncoder.decode(request.getUserId()) : null;
 
         CollectionPaperId id = new CollectionPaperId(paperId, collectionId);
         CollectionPaper entity = collectionPaperRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paper not found in collection"));
+
+        // Check if user is the creator (isAuthor = true)
+        if (userId != null) {
+            CollectionUserId userCompositeId = new CollectionUserId();
+            userCompositeId.setCollectionId(collectionId);
+            userCompositeId.setMemberId(userId);
+            CollectionUser collectionUser = collectionUserRepository.findById(userCompositeId)
+                    .orElse(null);
+            
+            if (collectionUser == null || !Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
+                throw new BadRequestException("Only the collection creator can update paper status");
+            }
+        }
 
         entity.setPriority(request.getPriority());
         entity.setStatus(request.getStatus());
@@ -324,6 +368,65 @@ public class CollectionServiceImpl implements CollectionService {
                     .addingDate(cp.getAddingDate())
                     .build();
         }).toList();
+    }
+
+    /**
+     * Set creator information (name and avatar) for a collection response
+     * Finds the user with isAuthor = true for the collection
+     */
+    private void setCreatorInfo(CollectionResponse response, String collectionId) {
+        try {
+            // Find creator (user with isAuthor = true)
+            List<CollectionUser> collectionUsers = collectionUserRepository.findByIdCollectionId(collectionId);
+            CollectionUser creator = collectionUsers.stream()
+                    .filter(cu -> Boolean.TRUE.equals(cu.getIsAuthor()))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (creator != null) {
+                String creatorId = creator.getId().getMemberId();
+                try {
+                    // Call UserService to get creator name and avatarUrl
+                    String encodedCreatorId = IdEncoder.encode(creatorId);
+                    var userResponse = userServiceClient.getUserById(encodedCreatorId);
+                    
+                    if (userResponse != null && userResponse.getData() != null) {
+                        Object data = userResponse.getData();
+                        // Handle different response types
+                        if (data instanceof Map) {
+                            Map<String, Object> userMap = (Map<String, Object>) data;
+                            String fullName = (String) userMap.get("fullName");
+                            String avatarUrl = (String) userMap.get("avatarUrl");
+                            response.setCreatorName(fullName != null ? fullName : null);
+                            response.setCreatorAvatarUrl(avatarUrl != null ? avatarUrl : null);
+                        } else {
+                            // Try to use reflection or handle as UserResponse object
+                            log.warn("Unexpected user data type for creator ID {}: {}", creatorId, data.getClass().getName());
+                            response.setCreatorName(null);
+                            response.setCreatorAvatarUrl(null);
+                        }
+                    } else {
+                        response.setCreatorName(null);
+                        response.setCreatorAvatarUrl(null);
+                    }
+                } catch (FeignException.NotFound e) {
+                    log.warn("User not found for creator ID {}: {}", creatorId, e.getMessage());
+                    response.setCreatorName(null);
+                    response.setCreatorAvatarUrl(null);
+                } catch (Exception e) {
+                    log.warn("Error fetching user info for creator ID {}: {}", creatorId, e.getMessage());
+                    response.setCreatorName(null);
+                    response.setCreatorAvatarUrl(null);
+                }
+            } else {
+                response.setCreatorName(null);
+                response.setCreatorAvatarUrl(null);
+            }
+        } catch (Exception e) {
+            log.warn("Error setting creator info for collection {}: {}", collectionId, e.getMessage());
+            response.setCreatorName(null);
+            response.setCreatorAvatarUrl(null);
+        }
     }
 
     private void storeToFirestore(CollectionResponse response) {
