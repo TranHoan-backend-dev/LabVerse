@@ -297,43 +297,6 @@ public class CollectionsActivity extends BaseActivity {
         });
     }
 
-    public void showAddPaperDialog(CollectionResponse collection) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Add Paper to Collection");
-
-        View dialogView = getLayoutInflater().inflate(R.layout.layout_collection_dialog_add_paper, null);
-        EditText editPaperId = dialogView.findViewById(R.id.edit_paper_id);
-        Spinner spinnerPriority = dialogView.findViewById(R.id.spinner_priority);
-        Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_status);
-
-        // Setup Priority spinner
-        String[] priorities = {"HIGH", "MEDIUM", "LOW"};
-        ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, priorities);
-        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerPriority.setAdapter(priorityAdapter);
-        spinnerPriority.setSelection(1); // Default to MEDIUM
-
-        // Setup Status spinner
-        String[] statuses = {"ToRead", "Reading", "Finished"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerStatus.setAdapter(statusAdapter);
-        spinnerStatus.setSelection(0); // Default to ToRead
-
-        builder.setView(dialogView);
-        builder.setPositiveButton("Add", (dialog, which) -> {
-            String paperId = editPaperId.getText().toString().trim();
-            if (!paperId.isEmpty()) {
-                String priority = (String) spinnerPriority.getSelectedItem();
-                String status = (String) spinnerStatus.getSelectedItem();
-                addPaperToCollection(collection, paperId, priority, status);
-            } else {
-                Toast.makeText(this, "Paper ID cannot be empty", Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
 
     private void addPaperToCollection(CollectionResponse collection, String paperId, String priority, String status) {
         if (!Connectivity.isInternetAvailable(this)) {
@@ -341,9 +304,19 @@ public class CollectionsActivity extends BaseActivity {
             return;
         }
 
+        // Get userId from session
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         CollectionPaperRequest request = new CollectionPaperRequest();
         request.setCollectionId(collection.getId());
         request.setPaperId(paperId);
+        request.setUserId(userId);
         request.setPriority(priority);
         request.setStatus(status);
 

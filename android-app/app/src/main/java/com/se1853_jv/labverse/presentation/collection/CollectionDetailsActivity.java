@@ -71,11 +71,18 @@ public class CollectionDetailsActivity extends AppCompatActivity {
 
         textCollectionName.setText(collection.getName());
 
-        buttonAddPaper.setOnClickListener(v -> {
-            Intent intent = new Intent(CollectionDetailsActivity.this, SelectPaperActivity.class);
-            intent.putExtra("collection", collection);
-            startActivityForResult(intent, 100);
-        });
+        // Only show Add Paper button if user is the creator
+        Boolean isCreator = collection.getIsCreator();
+        if (isCreator != null && isCreator) {
+            buttonAddPaper.setVisibility(View.VISIBLE);
+            buttonAddPaper.setOnClickListener(v -> {
+                Intent intent = new Intent(CollectionDetailsActivity.this, SelectPaperActivity.class);
+                intent.putExtra("collection", collection);
+                startActivityForResult(intent, 100);
+            });
+        } else {
+            buttonAddPaper.setVisibility(View.GONE);
+        }
     }
 
     private void setupToolbar() {
@@ -96,6 +103,13 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     }
 
     private void showStatusPriorityBottomSheet(CollectionPaperDetailResponse paper) {
+        // Check if user is creator - if not, don't allow status update
+        Boolean isCreator = collection.getIsCreator();
+        if (isCreator == null || !isCreator) {
+            Toast.makeText(this, "Only the collection creator can update paper status", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View bottomSheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_paper_status, null);
         bottomSheetDialog.setContentView(bottomSheetView);
@@ -147,9 +161,19 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             return;
         }
 
+        // Get userId from session
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         CollectionPaperRequest request = new CollectionPaperRequest();
         request.setCollectionId(collection.getId());
         request.setPaperId(paper.getPaperId());
+        request.setUserId(userId);
         request.setStatus(status);
         request.setPriority(priority);
 

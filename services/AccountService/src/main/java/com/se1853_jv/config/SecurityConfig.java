@@ -79,6 +79,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/internal/**").permitAll() // Allow service-to-service communication
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
             )

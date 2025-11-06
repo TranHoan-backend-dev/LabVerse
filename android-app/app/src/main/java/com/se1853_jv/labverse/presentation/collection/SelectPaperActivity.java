@@ -73,7 +73,7 @@ public class SelectPaperActivity extends AppCompatActivity {
         setupRecyclerView();
         setupSearch();
         // TODO: xu ly phan trang
-        loadPapers(0, 0);
+        loadPapers(0, 10);
     }
 
     private void initializeViews() {
@@ -103,7 +103,7 @@ public class SelectPaperActivity extends AppCompatActivity {
     private void setupSearch() {
         // TODO: xu ly phan trang
         int currentPage = 0;
-        int pageSize = 0;
+        int pageSize = 10;
         editSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -243,9 +243,19 @@ public class SelectPaperActivity extends AppCompatActivity {
             return;
         }
 
+        // Get userId from session
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         CollectionPaperRequest request = new CollectionPaperRequest();
         request.setCollectionId(collection.getId());
         request.setPaperId(paper.getId());
+        request.setUserId(userId);
         request.setPriority("MEDIUM");
         request.setStatus("ToRead");
 
@@ -320,6 +330,9 @@ public class SelectPaperActivity extends AppCompatActivity {
         }
     }
 }
+
+
+
 
 
 
