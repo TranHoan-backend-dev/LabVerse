@@ -330,16 +330,6 @@
                 android:paddingEnd="8dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Terms and Conditions -->
-        <CheckBox
-            android:id="@+id/cbTerms"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/agree_terms"
-            android:textSize="14sp"
-            android:textColor="#6B7280"
-            android:layout_marginBottom="24dp" />
-
         <!-- Register Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCreateAccount"
