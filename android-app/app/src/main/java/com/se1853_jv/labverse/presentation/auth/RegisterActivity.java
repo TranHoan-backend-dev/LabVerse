@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +29,6 @@ public class RegisterActivity extends AppCompatActivity {
 
     private TextInputEditText etFullName, etUsername, etEmail, etPassword, etConfirmPassword;
     private AutoCompleteTextView actvRole;
-    private CheckBox cbTerms;
     private MaterialButton btnCreateAccount, btnGoogleSignIn;
     private TextView btnLogin, btnRegister, tvLoginHere;
     private View loginIndicator, registerIndicator;
@@ -71,7 +69,6 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         actvRole = findViewById(R.id.actvRole);
-        cbTerms = findViewById(R.id.cbTerms);
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         btnLogin = findViewById(R.id.btnLogin);
@@ -85,21 +82,18 @@ public class RegisterActivity extends AppCompatActivity {
         // Create role map for display names to Role enum
         roleMap = new HashMap<>();
         String piRole = getString(R.string.role_principal_investigator);
-        String labHeadRole = getString(R.string.role_lab_head);
         String researcherRole = getString(R.string.role_researcher);
-        String internRole = getString(R.string.role_intern);
+        String internRole = getString(R.string.role_student);
 
         roleMap.put(piRole, Role.PRINCIPAL_INVESTIGATOR);
-        roleMap.put(labHeadRole, Role.LAB_HEAD);
         roleMap.put(researcherRole, Role.RESEARCHER);
         roleMap.put(internRole, Role.INTERN);
 
         // Create adapter with role options
         String[] roles = new String[]{
-                piRole,
-                labHeadRole,
-                researcherRole,
-                internRole
+                piRole,           // Principal Investigator (PI)
+                researcherRole,   // Researcher (Postdoc/PhD)
+                internRole       // Student
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -218,10 +212,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (!cbTerms.isChecked()) {
-            Toast.makeText(this, "Please agree to the Terms and Conditions", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         // All validations passed
         performRegistration(fullName, username, email, password, selectedRole);
@@ -289,15 +279,13 @@ public class RegisterActivity extends AppCompatActivity {
     private String mapRoleToBackendName(Role role) {
         switch (role) {
             case PRINCIPAL_INVESTIGATOR:
-                return "PRINCIPAL_INVESTIGATOR";
-            case LAB_HEAD:
-                return "LAB_HEAD";
+                return "PI";
             case RESEARCHER:
                 return "RESEARCHER";
             case INTERN:
-                return "INTERN";
+                return "STUDENT/INTERN";
             default:
-                return "RESEARCHER"; // Default role
+                return "RESEARCHER";
         }
     }
 
