@@ -34,9 +34,9 @@ export const getReferencesOfPaper = async (id: string) => {
     return data
 }
 
-export const getPaginatedPapers = async (currentPage: string, pageSize: string, kw: string) => {
+export const getPaginatedPapers = async (currentPage: number, pageSize: number, kw: string) => {
     const response = await fetch(
-        `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}?search=${kw}&index=${currentPage}&size=${pageSize}`,
+        `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/all?search=${kw}&index=${currentPage}&size=${pageSize}`,
         {method: METHOD.GET.toString()}
     )
     const data = await response.json()
