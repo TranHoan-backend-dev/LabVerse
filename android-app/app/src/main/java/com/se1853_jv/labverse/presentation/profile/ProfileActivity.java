@@ -29,6 +29,7 @@ import com.se1853_jv.labverse.data.api.auth.AuthApiHandler;
 import com.se1853_jv.labverse.data.api.user.UserApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UpdateProfileRequest;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
+import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.presentation.auth.LoginActivity;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
@@ -38,7 +39,7 @@ public class ProfileActivity extends BaseActivity {
 
     private final String TAG = "ProfileActivity";
 
-    private TextInputEditText etFullName, etEmail, etAffiliation;
+    private TextInputEditText etFullName, etEmail, etRole;
     private AutoCompleteTextView spinnerResearchField;
     private SwitchMaterial switchPushNotifications, switchEmailUpdates, switchCollaboration;
     private MaterialButton btnSaveChanges, btnLogout;
@@ -76,7 +77,7 @@ public class ProfileActivity extends BaseActivity {
     private void bindViews() {
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
-        etAffiliation = findViewById(R.id.etAffiliation);
+        etRole = findViewById(R.id.etRole);
         spinnerResearchField = findViewById(R.id.spinnerResearchField);
         switchPushNotifications = findViewById(R.id.switchPushNotifications);
         switchEmailUpdates = findViewById(R.id.switchEmailUpdates);
@@ -145,7 +146,7 @@ public class ProfileActivity extends BaseActivity {
     private void setLoadingState(boolean loading) {
         // Disable/enable fields during loading
         etFullName.setEnabled(!loading);
-        etAffiliation.setEnabled(!loading);
+        etRole.setEnabled(!loading);
         spinnerResearchField.setEnabled(!loading);
         btnSaveChanges.setEnabled(!loading);
     }
@@ -169,10 +170,15 @@ public class ProfileActivity extends BaseActivity {
         etEmail.setFocusable(false);
         etEmail.setClickable(false);
 
-        // Display affiliation (if available in UserResponse, otherwise leave empty)
-        // Note: Affiliation might not be in UserResponse, you may need to add it to the backend
-        if (etAffiliation != null) {
-            // etAffiliation.setText(user.getAffiliation()); // Uncomment when backend supports it
+        // Display role (read-only, cannot be changed)
+        if (etRole != null && !TextUtils.isEmpty(user.getRole())) {
+            String roleDisplayName = mapRoleToDisplayName(user.getRole());
+            etRole.setText(roleDisplayName);
+        }
+        // Make role field read-only since it cannot be updated
+        if (etRole != null) {
+            etRole.setFocusable(false);
+            etRole.setClickable(false);
         }
 
         // Display username as title
@@ -243,7 +249,23 @@ public class ProfileActivity extends BaseActivity {
         btnLogout.setEnabled(false);
         btnLogout.setText("Logging out...");
 
-        // Call logout API
+        // Check if device is online
+        boolean isOnline = Connectivity.isInternetAvailable(this);
+
+        if (!isOnline) {
+            // If offline, logout locally immediately
+            Log.d(TAG, "Device is offline, performing local logout");
+            sessionManager.logout();
+            
+            Toast.makeText(this, "Logged out successfully (offline mode)",
+                    Toast.LENGTH_SHORT).show();
+            
+            // Navigate to login screen
+            navigateToLogin();
+            return;
+        }
+
+        // If online, try to call logout API
         authApiHandler.logout(new ApiCallback<>() {
             @Override
             public void onSuccess(String message) {
@@ -268,6 +290,10 @@ public class ProfileActivity extends BaseActivity {
                     sessionManager.logout();
 
                     Log.w(TAG, "Logout API error but proceeding with local logout: " + error);
+                    
+                    Toast.makeText(ProfileActivity.this,
+                            "Logged out locally (API unavailable)",
+                            Toast.LENGTH_SHORT).show();
 
                     // Navigate to login screen
                     navigateToLogin();
@@ -333,6 +359,24 @@ public class ProfileActivity extends BaseActivity {
                 Toast.makeText(ProfileActivity.this, "Failed to save profile: " + error, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /**
+     * Map backend role string to display name
+     */
+    private String mapRoleToDisplayName(String role) {
+        if (role == null) return "";
+        
+        String roleUpper = role.toUpperCase();
+        if (roleUpper.equals("PI") || roleUpper.contains("PRINCIPAL")) {
+            return getString(R.string.role_principal_investigator);
+        } else if (roleUpper.equals("RESEARCHER") || roleUpper.contains("POSTDOC") || roleUpper.contains("PHD")) {
+            return getString(R.string.role_researcher);
+        } else if (roleUpper.equals("STUDENT") || roleUpper.equals("INTERN")) {
+            return getString(R.string.role_student);
+        }
+        // Return original role if no match found
+        return role;
     }
 }
 
