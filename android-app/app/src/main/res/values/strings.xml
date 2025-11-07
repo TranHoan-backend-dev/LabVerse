@@ -106,4 +106,15 @@
     <string name="role_lab_head">Lab Head</string>
     <string name="role_researcher">Researcher (Postdoc/PhD)</string>
     <string name="role_intern">Intern (Student)</string>
+    <string name="filter_papers">Filter Papers</string>
+    <string name="author">Author</string>
+    <string name="search_by_author_name">Search by author name</string>
+    <string name="publication_year">Publication Year</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="keywords_tags">Keywords/Tags</string>
+    <string name="enter_keywords_separated_by_commas">Enter keywords separated by commas</string>
+    <string name="reset">Reset</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="filter_by_journal">Filter by journal</string>
 </resources>

@@ -1,18 +1,23 @@
 package com.se1853_jv.labverse.presentation.feed;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.reflect.TypeToken;
@@ -39,6 +44,7 @@ public class FeedActivity extends BaseActivity {
         setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav);
         setupTabs();
         getMockData();
+        handleFilterPapers();
     }
 
     private void setupTabs() {
@@ -70,5 +76,15 @@ public class FeedActivity extends BaseActivity {
                 new TypeToken<List<DiscoveryItem>>() {
                 }.getType()
         );
+    }
+
+    private void handleFilterPapers() {
+        View searchBar = findViewById(R.id.search_bar);
+        ImageButton btn = searchBar.findViewById(R.id.btn_filter);
+
+        btn.setOnClickListener(v -> {
+            var intent = new Intent(this, FilterActivity.class);
+            startActivity(intent);
+        });
     }
 }

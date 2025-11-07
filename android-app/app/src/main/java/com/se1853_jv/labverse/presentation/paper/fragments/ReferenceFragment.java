@@ -70,29 +70,29 @@ public class ReferenceFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     if (!data.isEmpty()) {
                         LinearLayout container = view.findViewById(R.id.container_citations);
-                        LayoutInflater inflater = LayoutInflater.from(getContext());
+                        var inflater = LayoutInflater.from(getContext());
 
                         data.forEach(c -> {
                             View itemView = inflater.inflate(R.layout.layout_paperdetails_references_info, container, false);
 
-                            TextView citationTitle = itemView.findViewById(R.id.title_view);
-                            TextView citationAuthors = itemView.findViewById(R.id.authors);
-                            TextView citationJournal = itemView.findViewById(R.id.journal);
-                            TextView citationYear = itemView.findViewById(R.id.year);
-                            TextView citationDoi = itemView.findViewById(R.id.doi);
+                            TextView referenceTitle = itemView.findViewById(R.id.title_view);
+                            TextView referenceAuthors = itemView.findViewById(R.id.authors);
+                            TextView referenceJournal = itemView.findViewById(R.id.journal);
+                            TextView referenceYear = itemView.findViewById(R.id.year);
+                            TextView referenceDoi = itemView.findViewById(R.id.doi);
 
-                            citationTitle.setText(c.getTitle());
-                            citationAuthors.setText(c.getAuthors());
-                            citationJournal.setText(c.getJournal());
-                            citationYear.setText(c.getPublicationYear());
-                            citationDoi.setText(c.getDoi());
+                            referenceTitle.setText(c.getTitle());
+                            referenceAuthors.setText(c.getAuthors());
+                            referenceJournal.setText(c.getJournal());
+                            referenceYear.setText(c.getPublicationYear());
+                            referenceDoi.setText(c.getDoi());
 
                             // luu du lieu goc
-                            citationTitle.setTag(c.getTitle());
-                            citationAuthors.setTag(c.getAuthors());
-                            citationJournal.setTag(c.getJournal());
-                            citationYear.setTag(c.getPublicationYear());
-                            citationDoi.setTag(c.getDoi());
+                            referenceTitle.setTag(c.getTitle());
+                            referenceAuthors.setTag(c.getAuthors());
+                            referenceJournal.setTag(c.getJournal());
+                            referenceYear.setTag(c.getPublicationYear());
+                            referenceDoi.setTag(c.getDoi());
 
                             handleChangeStyle(itemView);
 
