@@ -25,5 +25,9 @@ public interface CollectionService {
     CollectionPaperResponse updatePaperStatus(CollectionPaperRequest request);
 
     List<CollectionPaperDetailResponse> getPapersInCollection(String encodedCollectionId);
+
+    CollectionResponse updateCollection(String encodedCollectionId, UpdateCollectionRequest request);
+
+    void deleteCollection(String encodedCollectionId, String encodedUserId);
 }
 
