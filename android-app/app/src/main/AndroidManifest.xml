@@ -62,7 +62,8 @@
             android:exported="true" />
         <activity
             android:name=".presentation.feed.FilterActivity"
-            android:exported="true" />
+            android:exported="true"
+            tools:targetApi="34" />
         <activity
             android:name=".presentation.team.TeamCreateActivity"
             android:exported="true" />

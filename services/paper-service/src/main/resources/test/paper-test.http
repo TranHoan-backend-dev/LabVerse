@@ -6,8 +6,8 @@ GET {{url}}/details?id={{id}}
 Accept: application/json
 
 
-### Get citations
-GET {{url}}/citation?id={{id}}
+### Get references
+GET {{url}}/references?id={{id}}
 Accept: application/json
 
 ### Parse citations
@@ -22,5 +22,59 @@ Content-Type: application/pdf
 < ./Phishing_Emails_Detection_in_Cyber_Security.pdf
 --WebAppBoundary--
 
-###
+### Upload pdf metadata with happy case
+POST {{url}}/pdf/upload
+Content-Type: application/json
+Accept: application/json
+
+{
+  "dataUrl": "http://localhost:8080/hehe",
+  "description": "description",
+  "keywords": [
+    "kw1", "kw2", "kw3"
+  ],
+  "title": "title1",
+  "authors": "Author1, author 2",
+  "journal": "Journal",
+  "publicationYear": 2021,
+  "doi": "10.34190/iccws.20.1.3366"
+}
+
+### Upload pdf metadata with wrong format doi case
+POST {{url}}/pdf/upload
+Content-Type: application/json
+Accept: application/json
+
+{
+  "dataUrl": "http://localhost:8080/hehe",
+  "description": "description",
+  "keywords": [
+    "kw1", "kw2", "kw3"
+  ],
+  "title": "title1",
+  "authors": "Author1, author 2",
+  "journal": "Journal",
+  "publicationYear": 2021,
+  "doi": "10.3419ccws.20.1.3366"
+}
+
+### Upload pdf metadata with wrong format uri case
+POST {{url}}/pdf/upload
+Content-Type: application/json
+Accept: application/json
+
+{
+  "dataUrl": "http://ocal:8/hhe",
+  "description": "description",
+  "keywords": [
+    "kw1", "kw2", "kw3"
+  ],
+  "title": "title1",
+  "authors": "Author1, author 2",
+  "journal": "Journal",
+  "publicationYear": 2021,
+  "doi": "10.34190/iccws.20.1.3369"
+}
+
+### Ping api
 HEAD {{url}}/health
