@@ -65,4 +65,19 @@ public class CollectionController {
     public ResponseEntity<WrapperApiResponse> getPapersInCollection(@PathVariable String id) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.getPapersInCollection(id)));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<WrapperApiResponse> updateCollection(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateCollectionRequest request) {
+        return ResponseEntity.ok(WrapperApiResponse.success(collectionService.updateCollection(id, request)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<WrapperApiResponse> deleteCollection(
+            @PathVariable String id,
+            @RequestParam("userId") String encodedUserId) {
+        collectionService.deleteCollection(id, encodedUserId);
+        return ResponseEntity.ok(WrapperApiResponse.success("Collection deleted successfully"));
+    }
 }

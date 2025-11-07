@@ -54,14 +54,14 @@ public class ReferenceFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        bindingCitations(view, "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");
+        bindingReferences(view, "YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4");
         handleCopyReference(view);
     }
 
     private void bindingPaperDetails(String id) {
     }
 
-    private void bindingCitations(View view, String id) {
+    private void bindingReferences(View view, String id) {
         Log.d("ReferenceFragment", "bindingReferences");
         apiHandler.getCitationsOfPaper(id, new ApiCallback<>() {
             @Override

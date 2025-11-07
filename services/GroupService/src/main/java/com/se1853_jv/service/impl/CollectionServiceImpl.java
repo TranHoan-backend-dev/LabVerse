@@ -157,8 +157,6 @@ public class CollectionServiceImpl implements CollectionService {
                     // Get creator info (user with isAuthor = true)
                     CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
                     setCreatorInfo(response, collectionId);
-                    // User is creator for their own collections
-                    response.setIsCreator(true);
                     return response;
                 })
                 .toList();
@@ -186,8 +184,6 @@ public class CollectionServiceImpl implements CollectionService {
                     // Get creator info (user with isAuthor = true)
                     CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
                     setCreatorInfo(response, collectionId);
-                    // User is not creator for shared collections
-                    response.setIsCreator(false);
                     return response;
                 })
                 .toList();
@@ -202,23 +198,9 @@ public class CollectionServiceImpl implements CollectionService {
     public CollectionPaperResponse addPaperToCollection(CollectionPaperRequest request) {
         String collectionId = IdEncoder.decode(request.getCollectionId());
         String paperId = IdEncoder.decode(request.getPaperId());
-        String userId = request.getUserId() != null ? IdEncoder.decode(request.getUserId()) : null;
 
         Collection collection = collectionRepository.findById(collectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + collectionId));
-
-        // Check if user is the creator (isAuthor = true)
-        if (userId != null) {
-            CollectionUserId userCompositeId = new CollectionUserId();
-            userCompositeId.setCollectionId(collectionId);
-            userCompositeId.setMemberId(userId);
-            CollectionUser collectionUser = collectionUserRepository.findById(userCompositeId)
-                    .orElse(null);
-            
-            if (collectionUser == null || !Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
-                throw new BadRequestException("Only the collection creator can add papers to this collection");
-            }
-        }
 
         // Validate paper exists in paper-service
         try {
@@ -263,24 +245,10 @@ public class CollectionServiceImpl implements CollectionService {
     public CollectionPaperResponse updatePaperStatus(CollectionPaperRequest request) {
         String collectionId = IdEncoder.decode(request.getCollectionId());
         String paperId = IdEncoder.decode(request.getPaperId());
-        String userId = request.getUserId() != null ? IdEncoder.decode(request.getUserId()) : null;
 
         CollectionPaperId id = new CollectionPaperId(paperId, collectionId);
         CollectionPaper entity = collectionPaperRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paper not found in collection"));
-
-        // Check if user is the creator (isAuthor = true)
-        if (userId != null) {
-            CollectionUserId userCompositeId = new CollectionUserId();
-            userCompositeId.setCollectionId(collectionId);
-            userCompositeId.setMemberId(userId);
-            CollectionUser collectionUser = collectionUserRepository.findById(userCompositeId)
-                    .orElse(null);
-            
-            if (collectionUser == null || !Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
-                throw new BadRequestException("Only the collection creator can update paper status");
-            }
-        }
 
         entity.setPriority(request.getPriority());
         entity.setStatus(request.getStatus());
@@ -426,6 +394,98 @@ public class CollectionServiceImpl implements CollectionService {
             log.warn("Error setting creator info for collection {}: {}", collectionId, e.getMessage());
             response.setCreatorName(null);
             response.setCreatorAvatarUrl(null);
+        }
+    }
+
+    @Override
+    public CollectionResponse updateCollection(String encodedCollectionId, UpdateCollectionRequest request) {
+        try {
+            String collectionId = IdEncoder.decode(encodedCollectionId);
+            String userId = IdEncoder.decode(request.getUserId());
+
+            // Verify collection exists
+            Collection collection = collectionRepository.findById(collectionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + encodedCollectionId));
+
+            // Check authorization: user must be the author (isAuthor = true)
+            verifyUserIsAuthor(collectionId, userId);
+
+            // Validate name
+            if (request.getName() == null || request.getName().isBlank()) {
+                throw new IllegalArgumentException("Collection name must not be blank");
+            }
+
+            // Update collection name
+            collection.setName(request.getName().trim());
+            Collection saved = collectionRepository.save(collection);
+
+            // Get counts
+            long paperCount = collectionPaperRepository.findByIdCollectionId(saved.getId()).size();
+            long memberCount = collectionUserRepository.findByIdCollectionId(saved.getId()).size();
+
+            CollectionResponse response = CollectionResponse.fromEntity(saved, paperCount, memberCount);
+            setCreatorInfo(response, saved.getId());
+            storeToFirestore(response);
+            return response;
+
+        } catch (Exception e) {
+            if (e instanceof ResourceNotFoundException || e instanceof BadRequestException) {
+                throw e;
+            }
+            throw new DatabaseException("Error updating collection", e);
+        }
+    }
+
+    @Override
+    public void deleteCollection(String encodedCollectionId, String encodedUserId) {
+        try {
+            String collectionId = IdEncoder.decode(encodedCollectionId);
+            String userId = IdEncoder.decode(encodedUserId);
+
+            // Verify collection exists
+            Collection collection = collectionRepository.findById(collectionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + encodedCollectionId));
+
+            // Check authorization: user must be the author (isAuthor = true)
+            verifyUserIsAuthor(collectionId, userId);
+
+            // Delete all related collection papers
+            List<CollectionPaper> papers = collectionPaperRepository.findByIdCollectionId(collectionId);
+            collectionPaperRepository.deleteAll(papers);
+
+            // Delete all related collection users
+            List<CollectionUser> users = collectionUserRepository.findByIdCollectionId(collectionId);
+            collectionUserRepository.deleteAll(users);
+
+            // Delete the collection
+            collectionRepository.delete(collection);
+
+            log.info("Collection [{}] deleted successfully by user [{}]", collectionId, userId);
+
+        } catch (Exception e) {
+            if (e instanceof ResourceNotFoundException || e instanceof BadRequestException) {
+                throw e;
+            }
+            throw new DatabaseException("Error deleting collection", e);
+        }
+    }
+
+    /**
+     * Verify that the user is the author (creator) of the collection
+     * @param collectionId The collection ID
+     * @param userId The user ID to verify
+     * @throws BadRequestException if user is not the author
+     */
+    private void verifyUserIsAuthor(String collectionId, String userId) {
+        CollectionUserId compositeId = new CollectionUserId();
+        compositeId.setCollectionId(collectionId);
+        compositeId.setMemberId(userId);
+
+        CollectionUser collectionUser = collectionUserRepository.findById(compositeId)
+                .orElseThrow(() -> new BadRequestException("User is not a member of this collection"));
+
+        if (!Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
+            throw new BadRequestException("Only the collection author can perform this action");
         }
     }
 

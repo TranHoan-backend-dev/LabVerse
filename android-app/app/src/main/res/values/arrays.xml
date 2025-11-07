@@ -3,9 +3,8 @@
     <!-- Role options for registration -->
     <string-array name="roles">
         <item>@string/role_principal_investigator</item>
-        <item>@string/role_lab_head</item>
         <item>@string/role_researcher</item>
-        <item>@string/role_intern</item>
+        <item>@string/role_student</item>
     </string-array>
 </resources>
 
