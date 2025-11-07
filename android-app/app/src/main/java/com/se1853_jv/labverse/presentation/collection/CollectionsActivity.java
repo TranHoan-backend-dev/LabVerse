@@ -21,6 +21,7 @@ import com.se1853_jv.labverse.data.api.user.UserApiHandler;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateCollectionRequest;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
@@ -112,8 +113,9 @@ public class CollectionsActivity extends BaseActivity {
         builder.setPositiveButton("Save", (dialog, which) -> {
             String name = editName.getText().toString().trim();
             if (!name.isEmpty()) {
-                // TODO: Implement update collection API
-                Toast.makeText(this, "Update functionality will be implemented soon", Toast.LENGTH_SHORT).show();
+                updateCollection(collection, name);
+            } else {
+                Toast.makeText(this, "Collection name cannot be empty", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -123,14 +125,9 @@ public class CollectionsActivity extends BaseActivity {
     public void showDeleteCollectionDialog(@NonNull CollectionResponse collection) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Collection")
-                .setMessage("Are you sure you want to delete \"" + collection.getName() + "\"?")
+                .setMessage("Are you sure you want to delete \"" + collection.getName() + "\"? This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    // TODO: Implement delete collection API
-                    Toast.makeText(this, "Delete functionality will be implemented soon", Toast.LENGTH_SHORT).show();
-                    CollectionsFragment frag = getFragment();
-                    if (frag != null) {
-                        frag.refreshCollections();
-                    }
+                    deleteCollection(collection);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -298,7 +295,7 @@ public class CollectionsActivity extends BaseActivity {
     }
 
 
-    private void addPaperToCollection(CollectionResponse collection, String paperId, String priority, String status) {
+    private void updateCollection(CollectionResponse collection, String newName) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             return;
@@ -308,15 +305,93 @@ public class CollectionsActivity extends BaseActivity {
         com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
                 new com.se1853_jv.labverse.data.utils.SessionManager(this);
         String userId = sessionManager.getUserId();
+
         if (userId == null || userId.isEmpty()) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        UpdateCollectionRequest request = new UpdateCollectionRequest();
+        request.setName(newName);
+        request.setUserId(userId);
+
+        apiHandler.updateCollection(collection.getId(), request, new ApiCallback<CollectionResponse>() {
+            @Override
+            public void onSuccess(CollectionResponse response) {
+                runOnUiThread(() -> {
+                    Toast.makeText(CollectionsActivity.this,
+                            "Collection updated successfully",
+                            Toast.LENGTH_SHORT).show();
+                    CollectionsFragment frag = getFragment();
+                    if (frag != null) {
+                        frag.refreshCollections();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Log.e(TAG, "Error updating collection: " + error);
+                    Toast.makeText(CollectionsActivity.this,
+                            "Failed to update collection: " + error,
+                            Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private void deleteCollection(CollectionResponse collection) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get userId from session
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        apiHandler.deleteCollection(collection.getId(), userId, new ApiCallback<Object>() {
+            @Override
+            public void onSuccess(Object response) {
+                runOnUiThread(() -> {
+                    Toast.makeText(CollectionsActivity.this,
+                            "Collection deleted successfully",
+                            Toast.LENGTH_SHORT).show();
+                    CollectionsFragment frag = getFragment();
+                    if (frag != null) {
+                        frag.refreshCollections();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Log.e(TAG, "Error deleting collection: " + error);
+                    Toast.makeText(CollectionsActivity.this,
+                            "Failed to delete collection: " + error,
+                            Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private void addPaperToCollection(CollectionResponse collection, String paperId, String priority, String status) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             return;
         }
 
         CollectionPaperRequest request = new CollectionPaperRequest();
         request.setCollectionId(collection.getId());
         request.setPaperId(paperId);
-        request.setUserId(userId);
         request.setPriority(priority);
         request.setStatus(status);
 

@@ -12,7 +12,6 @@ public class CollectionResponse {
     private Long memberCount;
     private String creatorName;
     private String creatorAvatarUrl;
-    private Boolean isCreator;  // Whether current user is the creator of this collection
 
     public static CollectionResponse fromEntity(Collection entity) {
         return CollectionResponse.builder()

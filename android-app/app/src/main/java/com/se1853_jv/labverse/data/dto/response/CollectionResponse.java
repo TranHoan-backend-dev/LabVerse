@@ -16,7 +16,6 @@ public class CollectionResponse implements Serializable {
     private Long memberCount;
     private String creatorName;
     private String creatorAvatarUrl;
-    private Boolean isCreator;  // Whether current user is the creator of this collection
 }
 
 

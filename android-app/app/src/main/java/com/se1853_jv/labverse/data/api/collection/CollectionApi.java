@@ -3,6 +3,7 @@ package com.se1853_jv.labverse.data.api.collection;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateCollectionRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -46,6 +47,16 @@ public interface CollectionApi {
 
     @POST("collections/members")
     Call<BaseJsonResponse<Object>> addMemberToCollection(@Body CollectionUserRequest request);
+
+    @retrofit2.http.PUT("collections/{id}")
+    Call<BaseJsonResponse<CollectionResponse>> updateCollection(
+            @Path("id") String id,
+            @Body UpdateCollectionRequest request);
+
+    @retrofit2.http.DELETE("collections/{id}")
+    Call<BaseJsonResponse<Object>> deleteCollection(
+            @Path("id") String id,
+            @Query("userId") String encodedUserId);
 }
 
 
