@@ -61,6 +61,15 @@ public class CollectionController {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.updatePaperStatus(request)));
     }
 
+    @DeleteMapping("/{collectionId}/papers/{paperId}")
+    public ResponseEntity<WrapperApiResponse> removePaper(
+            @PathVariable String collectionId,
+            @PathVariable String paperId,
+            @RequestParam("userId") String encodedUserId) {
+        collectionService.removePaperFromCollection(collectionId, paperId, encodedUserId);
+        return ResponseEntity.ok(WrapperApiResponse.success("Paper removed from collection successfully"));
+    }
+
     @GetMapping("/{id}/papers")
     public ResponseEntity<WrapperApiResponse> getPapersInCollection(@PathVariable String id) {
         return ResponseEntity.ok(WrapperApiResponse.success(collectionService.getPapersInCollection(id)));

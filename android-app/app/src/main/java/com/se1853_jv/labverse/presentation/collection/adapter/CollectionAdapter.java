@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
+import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,17 +111,41 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 imageCreatorAvatar.setImageResource(R.mipmap.avt_mock_round);
             }
             
-            // Set role chip
-            if (isOwner) {
-                chipRole.setText("Owner");
-                chipRole.setChipBackgroundColor(ColorStateList.valueOf(android.graphics.Color.parseColor("#7CCA97")));
-                chipRole.setTextColor(android.graphics.Color.parseColor("#1B5E20"));
-            } else {
-                chipRole.setText("Reader");
-                chipRole.setChipBackgroundColor(ColorStateList.valueOf(android.graphics.Color.parseColor("#8CA5D3")));
-                chipRole.setTextColor(android.graphics.Color.parseColor("#1976D2"));
+            // Set access level chip based on currentUserAccessLevel
+            AccessLevel accessLevel = collection.getCurrentUserAccessLevel();
+            
+            // Fallback: if accessLevel is null, use isOwner to determine
+            if (accessLevel == null) {
+                accessLevel = isOwner ? AccessLevel.AUTHOR : AccessLevel.CONTRIBUTOR;
             }
+            
+            // Display access level
+            chipRole.setText(accessLevel.name());
             chipRole.setVisibility(View.VISIBLE);
+            
+            // Set color based on access level
+            int chipColor;
+            int textColor;
+            switch (accessLevel) {
+                case AUTHOR:
+                    chipColor = android.graphics.Color.parseColor("#7CCA97"); // Green
+                    textColor = android.graphics.Color.parseColor("#1B5E20"); // Dark green
+                    break;
+                case CONTRIBUTOR:
+                    chipColor = android.graphics.Color.parseColor("#FF9800"); // Orange
+                    textColor = android.graphics.Color.parseColor("#FFFFFF"); // White
+                    break;
+                case READ_ONLY:
+                    chipColor = android.graphics.Color.parseColor("#757575"); // Gray
+                    textColor = android.graphics.Color.parseColor("#FFFFFF"); // White
+                    break;
+                default:
+                    chipColor = android.graphics.Color.parseColor("#8CA5D3"); // Blue
+                    textColor = android.graphics.Color.parseColor("#1976D2"); // Dark blue
+                    break;
+            }
+            chipRole.setChipBackgroundColor(ColorStateList.valueOf(chipColor));
+            chipRole.setTextColor(textColor);
             
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
