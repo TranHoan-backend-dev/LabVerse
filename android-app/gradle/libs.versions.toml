@@ -22,6 +22,7 @@ loggingInterceptor = "5.2.1"
 lottieVersion = "6.7.0"
 coreKtx = "1.17.0"
 googleServices = "4.4.4"
+googleSignIn = "21.2.0"
 jackson = "2.17.2"
 yaml = "2.5"
 
@@ -40,6 +41,7 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersi
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 googleServices = { module = "com.google.gms:google-services", version.ref = "googleServices" }
+googleSignIn = { module = "com.google.android.gms:play-services-auth", version.ref = "googleSignIn" }
 
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

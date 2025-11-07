@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.logging.interceptor)
 
     implementation(libs.googleServices)
+    implementation(libs.googleSignIn)
 
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
