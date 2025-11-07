@@ -1,5 +1,6 @@
 package com.se1853_jv.controller
 
+import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
@@ -110,6 +111,23 @@ class PaperController(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
                 paperService.getAllPapers(searchQuery, index, pageSize),
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @PostMapping(
+        "/search",
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun searchPapers(@Valid @RequestBody request: SearchPapersRequest): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to searchPapers with filters: $request" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Search papers successfully",
+                paperService.searchPapersWithFilters(request),
                 LocalDateTime.now()
             )
         )
