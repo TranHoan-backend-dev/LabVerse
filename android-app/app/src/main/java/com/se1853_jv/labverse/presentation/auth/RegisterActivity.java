@@ -283,7 +283,7 @@ public class RegisterActivity extends AppCompatActivity {
             case RESEARCHER:
                 return "RESEARCHER";
             case INTERN:
-                return "STUDENT/INTERN";
+                return "STUDENT";
             default:
                 return "RESEARCHER";
         }
