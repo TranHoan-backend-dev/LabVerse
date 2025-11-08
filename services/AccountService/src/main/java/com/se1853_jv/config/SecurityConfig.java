@@ -61,10 +61,30 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(false);
+        
+        // Allow frontend web origins (CORS chỉ áp dụng cho browser requests)
+        // Android app không bị ảnh hưởng bởi CORS vì không phải browser
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173"
+        ));
+        
+        // Allow all HTTP methods (bao gồm cả PATCH cho update profile)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
+        
+        // Allow all headers (bao gồm Authorization cho JWT)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Expose headers để browser có thể đọc
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        
+        // Allow credentials (cookies, authorization headers) - cần cho JWT
+        configuration.setAllowCredentials(true);
+        
+        // Cache preflight requests for 1 hour
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

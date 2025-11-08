@@ -1,64 +1,83 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import type { User } from '@/types/auth.types';
+import * as accountService from '@/services/account.service';
+import { tokenStorage } from '@/utils/token';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, affiliation?: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, username: string, roleName: 'PI' | 'RESEARCHER' | 'STUDENT') => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    // Check for existing session on mount
+    const initAuth = async () => {
+      try {
+        const storedUser = tokenStorage.getUser();
+        const token = tokenStorage.getToken();
+
+        if (storedUser && token) {
+          // Verify token is still valid by fetching current user
+          try {
+            const currentUser = await accountService.getCurrentUser();
+            setUser(currentUser);
+          } catch (error) {
+            // Token invalid, clear storage
+            tokenStorage.removeToken();
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        tokenStorage.removeToken();
+        setUser(null);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    initAuth();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, affiliation?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    username: string,
+    roleName: 'PI' | 'RESEARCHER' | 'STUDENT'
+  ) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+      const authResponse = await accountService.register({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-            affiliation: affiliation || '',
-          },
-        },
+        fullName,
+        username,
+        roleName,
       });
 
-      if (error) throw error;
-      
+      setUser({
+        id: authResponse.userId,
+        email: authResponse.email,
+        username: authResponse.username,
+        fullName: authResponse.fullName,
+        avatarUrl: authResponse.avatarUrl,
+        role: authResponse.role,
+      });
+
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
@@ -69,13 +88,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const authResponse = await accountService.login({
         email,
         password,
       });
 
-      if (error) throw error;
-      
+      setUser({
+        id: authResponse.userId,
+        email: authResponse.email,
+        username: authResponse.username,
+        fullName: authResponse.fullName,
+        avatarUrl: authResponse.avatarUrl,
+        role: authResponse.role,
+      });
+
       toast.success('Signed in successfully!');
       navigate('/dashboard');
     } catch (error: any) {
@@ -86,19 +112,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await accountService.logout();
+      setUser(null);
       toast.success('Signed out successfully!');
       navigate('/');
     } catch (error: any) {
+      // Even if API call fails, clear local state
+      setUser(null);
+      tokenStorage.removeToken();
       toast.error(error.message || 'Failed to sign out');
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const currentUser = await accountService.getCurrentUser();
+      setUser(currentUser);
+    } catch (error: any) {
+      // If refresh fails, user might be logged out
+      if (error.message?.includes('expired') || error.message?.includes('401')) {
+        setUser(null);
+        tokenStorage.removeToken();
+      }
       throw error;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
