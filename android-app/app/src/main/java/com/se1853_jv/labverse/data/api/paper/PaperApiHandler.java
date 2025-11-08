@@ -28,7 +28,6 @@ public class PaperApiHandler {
     private final PaperApi apiService;
 
     public PaperApiHandler() {
-        // Shared Gson and OkHttpClient để reuse
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
@@ -40,7 +39,6 @@ public class PaperApiHandler {
                 .addInterceptor(logging)
                 .build();
 
-        // Retrofit instance 1 cho PAPER_ENDPOINT_URL
         var retrofit = new Retrofit.Builder()
                 .baseUrl(PAPER_ENDPOINT_URL.concat("papers/"))
                 .addConverterFactory(GsonConverterFactory.create(gson))
