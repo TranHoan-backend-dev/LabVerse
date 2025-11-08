@@ -99,34 +99,17 @@ class PaperController(
         )
     }
 
-    @GetMapping("/all")
-    fun getAllPapers(
-        @RequestParam(value = "search", required = false) searchQuery: String?,
-        @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int
-    ): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to getAllPapers with search: $searchQuery" }
+    @PostMapping(
+        "/all",
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun getAllPapers(@Valid @RequestBody request: SearchPapersRequest): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getAllPapers with filters: $request" }
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
-                paperService.getAllPapers(searchQuery, index, pageSize),
-                LocalDateTime.now()
-            )
-        )
-    }
-
-    @PostMapping(
-        "/search",
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-        consumes = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    fun searchPapers(@Valid @RequestBody request: SearchPapersRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to searchPapers with filters: $request" }
-        return ResponseEntity.ok(
-            WrapperApiResponse(
-                HttpStatus.OK.value(),
-                "Search papers successfully",
                 paperService.searchPapersWithFilters(request),
                 LocalDateTime.now()
             )

@@ -80,7 +80,7 @@ Accept: application/json
 HEAD {{url}}/health
 
 ### Advanced Search - General query search
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -91,7 +91,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search by title
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -102,7 +102,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search by authors
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -113,7 +113,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search by journal
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -124,7 +124,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search by keywords
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -135,7 +135,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search by year range
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -147,7 +147,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Complex search with multiple filters
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -164,7 +164,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search with tags
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -175,7 +175,7 @@ Accept: application/json
 }
 
 ### Advanced Search - Search with sorting by title
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
@@ -188,7 +188,7 @@ Accept: application/json
 }
 
 ### Advanced Search - No filters (get all papers)
-POST {{url}}/search
+POST {{url}}/all
 Content-Type: application/json
 Accept: application/json
 
