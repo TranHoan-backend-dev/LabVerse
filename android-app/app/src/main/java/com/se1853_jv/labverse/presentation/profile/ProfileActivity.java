@@ -4,8 +4,9 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.MenuItem;
+import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -70,6 +71,7 @@ public class ProfileActivity extends BaseActivity {
 
         bindViews();
         setupToolbar();
+        setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
         loadUserData();
         handleEvents();
     }
@@ -91,28 +93,21 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void setupToolbar() {
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        View header = findViewById(R.id.title_view);
+        if (header != null) {
+            ImageButton backBtn = header.findViewById(R.id.back_btn);
+            TextView titleTv = header.findViewById(R.id.title);
+            
+            if (backBtn != null) {
+                backBtn.setOnClickListener(v -> finish());
+            }
+            
+            if (titleTv != null) {
+                titleTv.setText(getString(R.string.profile));
+            }
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        if (item.getItemId() == R.id.action_more) {
-            Toast.makeText(this, "More options", Toast.LENGTH_SHORT).show();
-            // Show more options menu
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     private void loadUserData() {
         if (isLoading) return;

@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -23,33 +22,36 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.team.TeamApiHandler;
-import com.se1853_jv.labverse.data.dto.request.CreateTeamRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateTeamRequest;
 import com.se1853_jv.labverse.data.dto.response.TeamResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.domain.db.DatabaseClient;
 import com.se1853_jv.labverse.domain.infrastructure.team.model.Team;
 import com.se1853_jv.labverse.domain.infrastructure.team.repo.TeamRepository;
 
-public class TeamCreateActivity extends AppCompatActivity {
+public class TeamEditActivity extends AppCompatActivity {
 
-    private static final String TAG = "TeamCreateActivity";
+    private static final String TAG = "TeamEditActivity";
 
     private ImageView ivTeamIcon, ivCameraIcon;
-    private EditText etTeamName, etDescription;
+    private android.widget.EditText etTeamName, etDescription;
     private Spinner spinnerResearchField;
     private RadioGroup rgPrivacy;
     private RadioButton rbPublic, rbPrivate;
-    private Button btnCreateTeam;
+    private Button btnUpdateTeam;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private Uri selectedImageUri;
-    private String iconUrl; // Will be set after uploading to Cloudinary
+    private String iconUrl;
 
     private TeamApiHandler teamApiHandler;
     private TeamRepository teamRepository;
-    private boolean isCreating = false;
+    private String teamId;
+    private TeamResponse currentTeam;
+    private boolean isUpdating = false;
 
     private final String[] researchFields = {
             "Computer Science",
@@ -73,6 +75,14 @@ public class TeamCreateActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Get team ID from intent
+        teamId = getIntent().getStringExtra("teamId");
+        if (teamId == null || teamId.isEmpty()) {
+            Toast.makeText(this, "Team ID not provided", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -83,7 +93,6 @@ public class TeamCreateActivity extends AppCompatActivity {
                             ivTeamIcon.setImageURI(imageUri);
                             Toast.makeText(this, "Team icon selected", Toast.LENGTH_SHORT).show();
                             // TODO: Upload image to Cloudinary and get URL
-                            // For now, we'll leave iconUrl as null
                         }
                     }
                 }
@@ -96,6 +105,8 @@ public class TeamCreateActivity extends AppCompatActivity {
         bindViews();
         setupToolbar();
         setupSpinner();
+        setupPrivacyRadioGroup();
+        loadTeamData();
         handleEvents();
     }
 
@@ -109,12 +120,15 @@ public class TeamCreateActivity extends AppCompatActivity {
             rgPrivacy = findViewById(R.id.rg_privacy);
             rbPublic = findViewById(R.id.rb_public);
             rbPrivate = findViewById(R.id.rb_private);
-            btnCreateTeam = findViewById(R.id.btn_create_team);
+            btnUpdateTeam = findViewById(R.id.btn_create_team);
             
-            // Validate all views are found
+            if (btnUpdateTeam != null) {
+                btnUpdateTeam.setText("Update Team");
+            }
+            
             if (ivTeamIcon == null || ivCameraIcon == null || etTeamName == null || 
                 etDescription == null || spinnerResearchField == null || rgPrivacy == null ||
-                rbPublic == null || rbPrivate == null || btnCreateTeam == null) {
+                rbPublic == null || rbPrivate == null || btnUpdateTeam == null) {
                 Log.e(TAG, "One or more views not found in layout");
                 Toast.makeText(this, "Error: Layout initialization failed", Toast.LENGTH_LONG).show();
                 finish();
@@ -132,8 +146,11 @@ public class TeamCreateActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("Edit Team");
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
     }
 
     private void setupSpinner() {
@@ -149,6 +166,121 @@ public class TeamCreateActivity extends AppCompatActivity {
         spinnerResearchField.setAdapter(adapter);
     }
 
+    private void setupPrivacyRadioGroup() {
+        if (rgPrivacy == null) {
+            Log.e(TAG, "RadioGroup is null");
+            return;
+        }
+        
+        // Add listener to ensure proper RadioGroup behavior
+        rgPrivacy.setOnCheckedChangeListener((group, checkedId) -> {
+            Log.d(TAG, "RadioGroup checked changed: " + checkedId);
+            if (checkedId == R.id.rb_public) {
+                Log.d(TAG, "Public selected");
+            } else if (checkedId == R.id.rb_private) {
+                Log.d(TAG, "Private selected");
+            } else {
+                Log.d(TAG, "No radio button selected (checkedId: -1)");
+            }
+        });
+        
+        // Also make RelativeLayouts clickable to ensure proper interaction
+        View rlPublic = findViewById(R.id.rl_public);
+        View rlPrivate = findViewById(R.id.rl_private);
+        
+        if (rlPublic != null) {
+            rlPublic.setOnClickListener(v -> {
+                Log.d(TAG, "Public RelativeLayout clicked");
+                rgPrivacy.check(R.id.rb_public);
+            });
+        }
+        
+        if (rlPrivate != null) {
+            rlPrivate.setOnClickListener(v -> {
+                Log.d(TAG, "Private RelativeLayout clicked");
+                rgPrivacy.check(R.id.rb_private);
+            });
+        }
+    }
+
+    private void loadTeamData() {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        teamApiHandler.getTeamById(teamId, new ApiCallback<TeamResponse>() {
+            @Override
+            public void onSuccess(TeamResponse teamResponse) {
+                runOnUiThread(() -> {
+                    currentTeam = teamResponse;
+                    populateForm(teamResponse);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Log.e(TAG, "Error loading team: " + error);
+                    Toast.makeText(TeamEditActivity.this, 
+                            "Failed to load team: " + error, Toast.LENGTH_LONG).show();
+                    finish();
+                });
+            }
+        });
+    }
+
+    private void populateForm(TeamResponse team) {
+        if (team == null) return;
+
+        // Set team name
+        if (etTeamName != null && team.getName() != null) {
+            etTeamName.setText(team.getName());
+        }
+
+        // Set description
+        if (etDescription != null && team.getDescription() != null) {
+            etDescription.setText(team.getDescription());
+        }
+
+        // Set research field
+        if (spinnerResearchField != null && team.getResearchField() != null) {
+            ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerResearchField.getAdapter();
+            if (adapter != null) {
+                int position = adapter.getPosition(team.getResearchField());
+                if (position >= 0) {
+                    spinnerResearchField.setSelection(position);
+                }
+            }
+        }
+
+        // Set privacy - ensure radio button is set correctly
+        if (rgPrivacy != null && rbPublic != null && rbPrivate != null) {
+            String privacyStr = team.getPrivacy() != null ? team.getPrivacy().trim() : null;
+            Log.d(TAG, "Setting privacy from API: " + privacyStr);
+            
+            // Use RadioGroup's check method instead of individual RadioButton setChecked
+            // This ensures proper RadioGroup behavior
+            if (privacyStr != null && "PUBLIC".equalsIgnoreCase(privacyStr)) {
+                rgPrivacy.check(R.id.rb_public);
+                Log.d(TAG, "Set to PUBLIC via RadioGroup");
+            } else {
+                // Default to PRIVATE (including null case)
+                rgPrivacy.check(R.id.rb_private);
+                Log.d(TAG, "Set to PRIVATE via RadioGroup (value: " + privacyStr + ")");
+            }
+        }
+
+        // Set icon
+        if (ivTeamIcon != null && team.getIconUrl() != null && !team.getIconUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(team.getIconUrl())
+                    .placeholder(R.mipmap.avt_mock_round)
+                    .into(ivTeamIcon);
+            iconUrl = team.getIconUrl();
+        }
+    }
+
     private void handleEvents() {
         if (ivCameraIcon != null) {
             ivCameraIcon.setOnClickListener(v -> {
@@ -162,30 +294,26 @@ public class TeamCreateActivity extends AppCompatActivity {
         if (btnAddMembers != null) {
             btnAddMembers.setOnClickListener(v -> {
                 Toast.makeText(this, "Add members", Toast.LENGTH_SHORT).show();
-                // TODO: Navigate to add members activity
             });
         }
 
-        if (btnCreateTeam != null) {
-            btnCreateTeam.setOnClickListener(v -> createTeam());
-        } else {
-            Log.e(TAG, "Create team button is null");
+        if (btnUpdateTeam != null) {
+            btnUpdateTeam.setOnClickListener(v -> updateTeam());
         }
     }
 
-    private void createTeam() {
-        if (isCreating) {
-            return; // Prevent multiple submissions
+    private void updateTeam() {
+        if (isUpdating) {
+            return;
         }
 
-        // Validate form
         if (etTeamName == null || etDescription == null || spinnerResearchField == null || 
             rgPrivacy == null || rbPublic == null || rbPrivate == null) {
             Log.e(TAG, "One or more views are null");
             Toast.makeText(this, "Error: Form fields not initialized", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         String teamName = etTeamName.getText() != null ? etTeamName.getText().toString().trim() : "";
         String description = etDescription.getText() != null ? etDescription.getText().toString().trim() : "";
         String researchField = "";
@@ -199,54 +327,58 @@ public class TeamCreateActivity extends AppCompatActivity {
             return;
         }
 
-        // Determine privacy
-        String privacy = rbPublic.isChecked() ? "PUBLIC" : "PRIVATE";
+        // Get selected privacy - check which radio button is actually checked
+        String privacy;
+        int checkedId = rgPrivacy.getCheckedRadioButtonId();
+        if (checkedId == R.id.rb_public) {
+            privacy = "PUBLIC";
+        } else if (checkedId == R.id.rb_private) {
+            privacy = "PRIVATE";
+        } else {
+            // Fallback to checking radio buttons directly
+            privacy = rbPublic.isChecked() ? "PUBLIC" : "PRIVATE";
+        }
+        
+        Log.d(TAG, "Updating team with privacy: " + privacy + " (checkedId: " + checkedId + ")");
 
-        // Check connectivity
         boolean isOnline = Connectivity.isInternetAvailable(this);
         if (!isOnline) {
             Toast.makeText(this, "No internet connection. Please check your network.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // Create request
-        CreateTeamRequest request = new CreateTeamRequest();
+        UpdateTeamRequest request = new UpdateTeamRequest();
         request.setName(teamName);
         request.setDescription(description.isEmpty() ? null : description);
         request.setResearchField(researchField.isEmpty() ? null : researchField);
         request.setPrivacy(privacy);
-        request.setIconUrl(iconUrl); // Will be null if no image uploaded
+        request.setIconUrl(iconUrl);
 
-        // Disable button and show loading
-        isCreating = true;
-        if (btnCreateTeam != null) {
-            btnCreateTeam.setEnabled(false);
-            btnCreateTeam.setText("Creating...");
+        isUpdating = true;
+        if (btnUpdateTeam != null) {
+            btnUpdateTeam.setEnabled(false);
+            btnUpdateTeam.setText("Updating...");
         }
 
-        // Call API
-        teamApiHandler.createTeam(request, new ApiCallback<TeamResponse>() {
+        teamApiHandler.updateTeam(teamId, request, new ApiCallback<TeamResponse>() {
             @Override
             public void onSuccess(TeamResponse teamResponse) {
                 runOnUiThread(() -> {
-                    isCreating = false;
-                    if (btnCreateTeam != null) {
-                        btnCreateTeam.setEnabled(true);
-                        btnCreateTeam.setText("Create Team");
+                    isUpdating = false;
+                    if (btnUpdateTeam != null) {
+                        btnUpdateTeam.setEnabled(true);
+                        btnUpdateTeam.setText("Update Team");
                     }
 
                     if (teamResponse != null) {
-                        // Save to database
                         saveTeamToDatabase(teamResponse);
-
-                        // Show success message
-                        Toast.makeText(TeamCreateActivity.this, 
-                                "Team created successfully!", Toast.LENGTH_SHORT).show();
-
-                        // Navigate back to TeamListActivity
-                        Intent intent = new Intent(TeamCreateActivity.this, TeamListActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        Toast.makeText(TeamEditActivity.this,
+                                "Team updated successfully!", Toast.LENGTH_SHORT).show();
+                        
+                        // Return result to TeamDetailActivity
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("teamUpdated", true);
+                        setResult(RESULT_OK, resultIntent);
                         finish();
                     }
                 });
@@ -255,15 +387,14 @@ public class TeamCreateActivity extends AppCompatActivity {
             @Override
             public void onError(String error) {
                 runOnUiThread(() -> {
-                    isCreating = false;
-                    if (btnCreateTeam != null) {
-                        btnCreateTeam.setEnabled(true);
-                        btnCreateTeam.setText("Create Team");
+                    isUpdating = false;
+                    if (btnUpdateTeam != null) {
+                        btnUpdateTeam.setEnabled(true);
+                        btnUpdateTeam.setText("Update Team");
                     }
-
-                    Log.e(TAG, "Error creating team: " + error);
-                    Toast.makeText(TeamCreateActivity.this, 
-                            "Failed to create team: " + error, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Error updating team: " + error);
+                    Toast.makeText(TeamEditActivity.this,
+                            "Failed to update team: " + error, Toast.LENGTH_LONG).show();
                 });
             }
         });
@@ -290,7 +421,7 @@ public class TeamCreateActivity extends AppCompatActivity {
                         .build();
 
                 teamRepository.insertAll(java.util.Collections.singletonList(team));
-                Log.d(TAG, "Team saved to database: " + team.getId());
+                Log.d(TAG, "Team updated in database: " + team.getId());
             } catch (Exception e) {
                 Log.e(TAG, "Error saving team to database: " + e.getMessage());
             }

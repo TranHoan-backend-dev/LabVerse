@@ -185,7 +185,10 @@
                     android:id="@+id/rl_public"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="8dp">
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <RadioButton
                         android:id="@+id/rb_public"
@@ -221,13 +224,15 @@
                     android:id="@+id/rl_private"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="8dp">
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <RadioButton
                         android:id="@+id/rb_private"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
                         android:layout_centerVertical="true"/>
 
                     <LinearLayout

@@ -2,38 +2,29 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profile_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
     android:fitsSystemWindows="true"
     tools:context=".presentation.profile.ProfileActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:elevation="0dp"
-        android:minHeight="?attr/actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/profile_toolbar_menu"
-        app:navigationIcon="@drawable/ic_arrow_back_2"
-        app:title="Profile"
-        app:titleTextColor="@color/text_primary" />
+    <include
+        android:id="@+id/title_view"
+        layout="@layout/layout_common_component_details_header" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/profileScrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintTop_toBottomOf="@+id/title_view">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -780,6 +771,25 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="16dp"
+        android:background="#E0E0E0"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navbar"
+        app:layout_constraintTop_toBottomOf="@id/profileScrollView"
+        app:layout_constraintWidth="match_parent" />
+
+    <include
+        android:id="@+id/bottom_navbar"
+        layout="@layout/layout_common_component_nav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

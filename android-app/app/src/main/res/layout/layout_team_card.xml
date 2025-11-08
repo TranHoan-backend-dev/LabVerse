@@ -178,6 +178,23 @@
 
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnJoinTeam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Join Team"
+            android:textAllCaps="false"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingVertical="10dp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_team"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:cornerRadius="8dp"
+            app:backgroundTint="@color/success" />
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

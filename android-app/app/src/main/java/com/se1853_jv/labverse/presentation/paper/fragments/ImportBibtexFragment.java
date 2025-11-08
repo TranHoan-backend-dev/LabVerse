@@ -34,8 +34,8 @@ import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
-import com.se1853_jv.labverse.data.service.firebase.FirebaseService;
-import com.se1853_jv.labverse.data.service.firebase.UploadCallback;
+import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService;
+import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
@@ -55,14 +55,14 @@ public class ImportBibtexFragment extends Fragment {
     MaterialButton chooseFileBtn, importBtn;
     ActivityResultLauncher<Intent> filePickerLauncher;
     List<BibEntry> entries;
-    final FirebaseService firebaseService;
+    final CloudinaryService cloudinaryService;
     final UnpaywallService unpaywallService;
     final String TAG_NAME = "ImportBibtexFragment";
     View view;
 
     public ImportBibtexFragment() {
         this.entries = new ArrayList<>();
-        this.firebaseService = new FirebaseService();
+        this.cloudinaryService = new CloudinaryService();
         this.unpaywallService = new UnpaywallService();
     }
 
@@ -291,7 +291,7 @@ public class ImportBibtexFragment extends Fragment {
 //                    }
 //                    var object = handler.getArticleUrlFromDOI(e.getDoi());
                 var object = handler.getArticleUrlFromDOI("10.34190/iccws.20.1.3366");
-                uploadPdfToFirebase("");
+                uploadPdfToCloudinary("");
 
                 if (object != null) {
                     Log.d(TAG_NAME, object.toString());
@@ -327,11 +327,11 @@ public class ImportBibtexFragment extends Fragment {
         return uri.get();
     }
 
-    private void uploadPdfToFirebase(String doi) {
+    private void uploadPdfToCloudinary(String doi) {
         var uri = getPdfLink("10.34190/iccws.20.1.3366", view);
         Log.d(TAG_NAME, "pdf link: " + uri);
         if (uri != null) {
-            firebaseService.uploadPdfToFirebase(Uri.parse(uri), new UploadCallback() {
+            cloudinaryService.uploadPdfToCloudinary(requireContext(), Uri.parse(uri), new UploadCallback() {
 
                 @Override
                 public void onSuccess(String downloadUrl) {
