@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
+import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +19,28 @@ import java.util.List;
 public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaperAdapter.PaperViewHolder> {
     private List<CollectionPaperDetailResponse> papers = new ArrayList<>();
     private OnStatusClickListener statusClickListener;
+    private OnRemoveClickListener removeClickListener;
+    private AccessLevel currentUserAccessLevel;
 
     public interface OnStatusClickListener {
         void onStatusClick(CollectionPaperDetailResponse paper);
     }
 
+    public interface OnRemoveClickListener {
+        void onRemoveClick(CollectionPaperDetailResponse paper);
+    }
+
     public void setOnStatusClickListener(OnStatusClickListener listener) {
         this.statusClickListener = listener;
+    }
+
+    public void setOnRemoveClickListener(OnRemoveClickListener listener) {
+        this.removeClickListener = listener;
+    }
+
+    public void setCurrentUserAccessLevel(AccessLevel accessLevel) {
+        this.currentUserAccessLevel = accessLevel;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -38,7 +54,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     @Override
     public void onBindViewHolder(@NonNull PaperViewHolder holder, int position) {
         CollectionPaperDetailResponse paper = papers.get(position);
-        holder.bind(paper, statusClickListener);
+        holder.bind(paper, statusClickListener, removeClickListener, currentUserAccessLevel);
     }
 
     @Override
@@ -57,6 +73,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
         private TextView textJournal;
         private Chip chipPriority;
         private Chip chipStatus;
+        private com.google.android.material.button.MaterialButton buttonRemove;
 
         public PaperViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -65,9 +82,11 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
             textJournal = itemView.findViewById(R.id.text_paper_journal);
             chipPriority = itemView.findViewById(R.id.chip_paper_priority);
             chipStatus = itemView.findViewById(R.id.chip_paper_status);
+            buttonRemove = itemView.findViewById(R.id.button_remove_paper);
         }
 
-        public void bind(CollectionPaperDetailResponse paper, OnStatusClickListener listener) {
+        public void bind(CollectionPaperDetailResponse paper, OnStatusClickListener statusListener, 
+                        OnRemoveClickListener removeListener, AccessLevel currentUserAccessLevel) {
             // Handle title
             String title = paper.getTitle();
             if (title == null || title.isEmpty() || title.equals("Unknown Paper")) {
@@ -152,12 +171,28 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
                 
                 // Make status chip clickable
                 chipStatus.setOnClickListener(v -> {
-                    if (listener != null) {
-                        listener.onStatusClick(paper);
+                    if (statusListener != null) {
+                        statusListener.onStatusClick(paper);
                     }
                 });
             } else {
                 chipStatus.setVisibility(View.GONE);
+            }
+
+            // Show/hide remove button based on access level
+            // Only CONTRIBUTOR and AUTHOR can remove papers
+            boolean canRemovePaper = currentUserAccessLevel == AccessLevel.AUTHOR || 
+                                     currentUserAccessLevel == AccessLevel.CONTRIBUTOR;
+            
+            if (canRemovePaper && removeListener != null) {
+                buttonRemove.setVisibility(View.VISIBLE);
+                buttonRemove.setOnClickListener(v -> {
+                    if (removeListener != null) {
+                        removeListener.onRemoveClick(paper);
+                    }
+                });
+            } else {
+                buttonRemove.setVisibility(View.GONE);
             }
         }
     }

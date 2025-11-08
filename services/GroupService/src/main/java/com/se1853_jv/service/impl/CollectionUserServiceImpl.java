@@ -4,11 +4,14 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.se1853_jv.dto.request.CollectionUserRequest;
+import com.se1853_jv.dto.request.UpdateMemberAccessRequest;
 import com.se1853_jv.dto.response.CollectionUserResponse;
+import com.se1853_jv.exception.BadRequestException;
 import com.se1853_jv.exception.DatabaseException;
 import com.se1853_jv.exception.ResourceNotFoundException;
 import com.se1853_jv.model.*;
 import com.se1853_jv.model.Collection;
+import com.se1853_jv.model.enumerate.AccessLevel;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.service.CollectionUserService;
 import com.se1853_jv.util.IdEncoder;
@@ -48,10 +51,23 @@ public class CollectionUserServiceImpl implements CollectionUserService {
             throw new DatabaseException("Member already in collection", null);
         }
 
+        // Determine access level
+        AccessLevel accessLevel;
+        if (request.getAccessLevel() != null) {
+            accessLevel = request.getAccessLevel();
+        } else if (Boolean.TRUE.equals(request.getIsAuthor())) {
+            // Backward compatibility: if isAuthor is true, set to AUTHOR
+            accessLevel = AccessLevel.AUTHOR;
+        } else {
+            // Default to CONTRIBUTOR for new members
+            accessLevel = AccessLevel.CONTRIBUTOR;
+        }
+
         CollectionUser entity = CollectionUser.builder()
                 .id(compositeId)
                 .collection(collection)
                 .isAuthor(request.getIsAuthor() != null ? request.getIsAuthor() : false)
+                .accessLevel(accessLevel)
                 .build();
 
         CollectionUser saved = collectionUserRepository.save(entity);
@@ -92,12 +108,54 @@ public class CollectionUserServiceImpl implements CollectionUserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public CollectionUserResponse updateMemberAccess(String encodedCollectionId, String encodedMemberId, UpdateMemberAccessRequest request) {
+        String collectionId = IdEncoder.decode(encodedCollectionId);
+        String memberId = IdEncoder.decode(encodedMemberId);
+        String userId = IdEncoder.decode(request.getUserId());
+
+        // Verify requester is AUTHOR
+        CollectionUserId requesterId = new CollectionUserId();
+        requesterId.setCollectionId(collectionId);
+        requesterId.setMemberId(userId);
+        CollectionUser requester = collectionUserRepository.findById(requesterId)
+                .orElseThrow(() -> new BadRequestException("Requester is not a member of this collection"));
+        
+        if (requester.getAccessLevel() != AccessLevel.AUTHOR) {
+            throw new BadRequestException("Only collection authors can update member access levels");
+        }
+
+        // Prevent author from changing their own access level
+        if (memberId.equals(userId)) {
+            throw new BadRequestException("Cannot change your own access level");
+        }
+
+        // Find the member to update
+        CollectionUserId memberCompositeId = new CollectionUserId();
+        memberCompositeId.setCollectionId(collectionId);
+        memberCompositeId.setMemberId(memberId);
+        CollectionUser member = collectionUserRepository.findById(memberCompositeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in this collection"));
+
+        // Update access level
+        member.setAccessLevel(request.getAccessLevel());
+        // Also update isAuthor for backward compatibility
+        member.setIsAuthor(request.getAccessLevel() == AccessLevel.AUTHOR);
+
+        CollectionUser saved = collectionUserRepository.save(member);
+        CollectionUserResponse response = CollectionUserResponse.fromEntity(saved);
+        syncToFirestore(response);
+        
+        return response;
+    }
+
     private void syncToFirestore(CollectionUserResponse response) {
         try {
             Map<String, Object> data = new HashMap<>();
             data.put("collectionId", response.getCollectionId());
             data.put("memberId", response.getMemberId());
             data.put("isAuthor", response.getIsAuthor());
+            data.put("accessLevel", response.getAccessLevel() != null ? response.getAccessLevel().name() : null);
             data.put("timestamp", LocalDateTime.now().toString());
 
             ApiFuture<DocumentReference> future =

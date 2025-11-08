@@ -1,4 +1,4 @@
-package com.se1853_jv.labverse.data.dto.request;
+package com.se1853_jv.labverse.data.dto.response;
 
 import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CollectionUserRequest {
+public class CollectionUserResponse {
     private String collectionId;
     private String memberId;
-    private Boolean isAuthor; // Deprecated, use accessLevel instead
-    private AccessLevel accessLevel; // READ_ONLY, CONTRIBUTOR, or AUTHOR
+    private Boolean isAuthor; // Deprecated, kept for backward compatibility
+    private AccessLevel accessLevel;
 }
 
