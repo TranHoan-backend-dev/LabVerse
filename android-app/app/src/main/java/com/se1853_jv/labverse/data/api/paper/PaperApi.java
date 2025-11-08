@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import com.se1853_jv.labverse.data.dto.request.SearchPapersRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -20,6 +21,9 @@ public interface PaperApi {
             @Query("index") int currentPage,
             @Query("size") int pageSize
     );
+
+    @POST("search")
+    Call<BaseJsonResponse<List<PaperResearch>>> searchPapers(@Body SearchPapersRequest request);
 
     @HTTP(method = "DELETE", path = "{id}")
     Call<BaseJsonResponse<String>> deletePaper(@Path("id") String id);

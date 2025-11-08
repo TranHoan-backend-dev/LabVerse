@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.dto.request.SearchPapersRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -108,6 +109,38 @@ public class PaperApiHandler {
                     var result = response.body().getData();
                     callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
                     Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
+                } else {
+                    Log.e("Server Error", "Error: " + response.message());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("Server Error", "Error body: " + response.errorBody().string());
+                        } catch (Exception e) {
+                            Log.e("Server Error", "Could not read error body", e);
+                        }
+                    }
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
+                Log.e("API Error", "Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void searchPapers(SearchPapersRequest request, ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "searchPapers: " + request.toString());
+        
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.searchPapers(request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
+                    Log.d("PAPER_DATA", "Search results: " + (result != null ? result.size() : 0) + " papers");
                 } else {
                     Log.e("Server Error", "Error: " + response.message());
                     if (response.errorBody() != null) {

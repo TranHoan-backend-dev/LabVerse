@@ -40,4 +40,12 @@
     <color name="cyan">#FF19C4D4</color>
     <color name="error">#F44336</color>
 
+    <!-- Tag colors for keywords -->
+    <color name="tag_color_1">#3B82F6</color>
+    <color name="tag_color_2">#10B981</color>
+    <color name="tag_color_3">#8B5CF6</color>
+    <color name="tag_color_4">#F59E0B</color>
+    <color name="tag_color_5">#EF4444</color>
+    <color name="tag_color_6">#06B6D4</color>
+
 </resources>
