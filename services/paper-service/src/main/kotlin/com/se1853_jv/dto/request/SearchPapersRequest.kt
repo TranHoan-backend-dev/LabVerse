@@ -1,10 +1,8 @@
 package com.se1853_jv.dto.request
 
 import com.se1853_jv.config.annotation.CurrentYear
-import com.se1853_jv.config.annotation.ValidYearRange
 import jakarta.validation.constraints.*
 
-@ValidYearRange
 data class SearchPapersRequest(
     // Full-text search fields
     val query: String? = null, // General search across title, authors, journal, keywords

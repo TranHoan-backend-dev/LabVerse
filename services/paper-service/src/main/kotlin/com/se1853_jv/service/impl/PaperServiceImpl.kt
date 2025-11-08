@@ -269,6 +269,13 @@ class PaperServiceImpl(
             }
         }
         
+        // Validate year range: yearTo must be >= yearFrom
+        if (request.yearFrom != null && request.yearTo != null) {
+            if (request.yearTo < request.yearFrom) {
+                throw IllegalArgumentException("Year to must be greater than or equal to year from")
+            }
+        }
+        
         // Validate sortOrder
         if (!request.sortOrder.isNullOrBlank()) {
             val sortOrder = request.sortOrder.lowercase()
