@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CollectionUserRequest {
-    private String collectionId;
-    private String memberId;
-    private Boolean isAuthor; // Deprecated, use accessLevel instead
-    private AccessLevel accessLevel; // READ_ONLY, CONTRIBUTOR, or AUTHOR
+public class UpdateMemberAccessRequest {
+    private String userId; // User ID making the request (must be AUTHOR)
+    private AccessLevel accessLevel; // New access level for the member
 }
 

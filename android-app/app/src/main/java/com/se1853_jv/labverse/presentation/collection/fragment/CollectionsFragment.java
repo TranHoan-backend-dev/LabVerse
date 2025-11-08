@@ -277,22 +277,31 @@ public class CollectionsFragment extends Fragment {
     private void showCollectionOptions(CollectionResponse collection, View anchor, boolean isMyCollection) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         
+        // Check if current user is AUTHOR in this collection
+        com.se1853_jv.labverse.domain.enumerate.AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        boolean isAuthor = currentUserAccessLevel == com.se1853_jv.labverse.domain.enumerate.AccessLevel.AUTHOR;
+        
         if (isMyCollection) {
-            // Only PI can manage their own collections
+            // PI can manage their own collections
             popup.getMenu().add("Manage Members");
             popup.getMenu().add("Edit Collection");
             popup.getMenu().add("Delete Collection");
         } else {
-            // Shared collections - users can only view
-            popup.getMenu().add("View Details");
+            // Shared collections - only AUTHOR can manage members
+            if (isAuthor) {
+                popup.getMenu().add("Manage Members");
+            }
+            // Non-AUTHOR users in shared collections can only view (no menu options for management)
         }
 
         popup.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Manage Members".equals(title)) {
-                if (getActivity() instanceof CollectionsActivity) {
-                    ((CollectionsActivity) getActivity()).showInviteMembersDialog(collection);
-                }
+                // Open CollectionMembersActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), 
+                    com.se1853_jv.labverse.presentation.collection.CollectionMembersActivity.class);
+                intent.putExtra("collection", collection);
+                startActivity(intent);
             } else if ("Edit Collection".equals(title)) {
                 if (getActivity() instanceof CollectionsActivity) {
                     ((CollectionsActivity) getActivity()).showEditCollectionDialog(collection);

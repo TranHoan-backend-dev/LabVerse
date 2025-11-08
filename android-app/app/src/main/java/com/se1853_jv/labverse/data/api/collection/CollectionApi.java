@@ -4,11 +4,13 @@ import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
 import com.se1853_jv.labverse.data.dto.request.UpdateCollectionRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateMemberAccessRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionsPageResponse;
+import com.se1853_jv.labverse.data.dto.response.CollectionUserResponse;
 
 import java.util.List;
 
@@ -57,6 +59,26 @@ public interface CollectionApi {
     Call<BaseJsonResponse<Object>> deleteCollection(
             @Path("id") String id,
             @Query("userId") String encodedUserId);
+
+    @retrofit2.http.DELETE("collections/{collectionId}/papers/{paperId}")
+    Call<BaseJsonResponse<Object>> removePaperFromCollection(
+            @Path("collectionId") String collectionId,
+            @Path("paperId") String paperId,
+            @Query("userId") String encodedUserId);
+
+    @GET("collections/members/{collectionId}")
+    Call<BaseJsonResponse<List<CollectionUserResponse>>> getMembers(@Path("collectionId") String collectionId);
+
+    @retrofit2.http.DELETE("collections/members/{collectionId}/{memberId}")
+    Call<BaseJsonResponse<Object>> removeMember(
+            @Path("collectionId") String collectionId,
+            @Path("memberId") String memberId);
+
+    @retrofit2.http.PUT("collections/members/{collectionId}/{memberId}/access")
+    Call<BaseJsonResponse<CollectionUserResponse>> updateMemberAccess(
+            @Path("collectionId") String collectionId,
+            @Path("memberId") String memberId,
+            @Body UpdateMemberAccessRequest request);
 }
 
 

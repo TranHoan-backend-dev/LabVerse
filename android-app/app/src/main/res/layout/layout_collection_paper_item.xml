@@ -14,7 +14,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:padding="16dp">
 
         <TextView
@@ -24,56 +24,71 @@
             android:text="Paper Title"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorOnSurface"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/chip_paper_status"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/chip_paper_status" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_paper_status"
+            style="@style/Widget.Material3.Chip.Assist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ToRead"
-            style="@style/Widget.Material3.Chip.Assist"
-            app:chipMinHeight="24dp"
             android:textAppearance="?attr/textAppearanceLabelSmall"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@id/text_paper_title"
-            app:layout_constraintStart_toEndOf="@id/text_paper_title"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:chipMinHeight="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/text_paper_authors"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Authors"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/text_paper_title"
+            app:layout_constraintEnd_toStartOf="@id/chip_paper_priority"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/text_paper_journal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Journal • Year"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/text_paper_authors"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/text_paper_title"
+            android:layout_marginEnd="8dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_paper_priority"
+            style="@style/Widget.Material3.Chip.Assist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HIGH"
-            style="@style/Widget.Material3.Chip.Assist"
-            app:chipMinHeight="24dp"
             android:textAppearance="?attr/textAppearanceLabelSmall"
+            app:chipMinHeight="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chip_paper_status"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/text_paper_journal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Journal • Year"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toStartOf="@id/button_remove_paper"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_paper_authors"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_remove_paper"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remove"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorError"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chip_paper_priority"
+            android:layout_marginTop="8dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
