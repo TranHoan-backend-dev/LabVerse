@@ -29,21 +29,55 @@ const Dashboard = () => {
     });
     const [page, setPage] = useState(1);
     const pageSize = 12;
+    const [filters, setFilters] = useState({
+        author: '',
+        journal: '',
+        yearFrom: '',
+        yearTo: '',
+    });
 
     const {data, isLoading} = useQuery({
         queryKey: ['papers', user?.id, searchQuery, page],
-        queryFn: async () => {
-            const res = await getPaginatedPapers(page, pageSize, searchQuery);
-
-            if (!res.ok) throw new Error('Failed to fetch papers');
-            return await res.json();
-        },
+        queryFn: async () => await getPaginatedPapers(page, pageSize, searchQuery),
         enabled: !!user,
     });
 
-    const papers = data?.data ?? [];
-    const total = data?.total ?? 0;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    // const papers = data?.data ?? [];
+    // const total = data?.total ?? 0;
+    // const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    // Mock data
+    const papers = [
+        {
+            id: "1",
+            title: "Deep Learning for Natural Language Processing",
+            authors: ["John Doe", "Jane Smith"],
+            journal: "Journal of AI Research",
+            year: 2023,
+            abstract: "An overview of deep learning methods in NLP.",
+            doi: "10.1234/dlnlp.2023"
+        },
+        {
+            id: "2",
+            title: "Blockchain Applications in Healthcare",
+            authors: ["Alice Nguyen", "Bob Tran"],
+            journal: "Health Informatics Review",
+            year: 2022,
+            abstract: "Explores blockchain use for secure medical data sharing.",
+            doi: "10.5678/health.blockchain.2022"
+        },
+        {
+            id: "3",
+            title: "A Survey on Generative AI Models",
+            authors: ["David Pham"],
+            journal: "Computational Intelligence Journal",
+            year: 2024,
+            abstract: "Survey of current generative models and architectures.",
+            doi: "10.9876/genai.survey.2024"
+        }
+    ];
+    const total = papers.length;
+    const totalPages = 2;
 
     const importMutation = useMutation({
         // TODO: xu ly import paper
@@ -282,10 +316,75 @@ const Dashboard = () => {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <Button variant="outline">
-                                    <Filter className="h-5 w-5 mr-2"/>
-                                    Filters
-                                </Button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline">
+                                            <Filter className="h-5 w-5 mr-2"/>
+                                            Filters
+                                        </Button>
+                                    </DialogTrigger>
+
+                                    <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Filters</DialogTitle>
+                                        </DialogHeader>
+
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>Author</Label>
+                                                <Input
+                                                    value={filters.author}
+                                                    onChange={(e) => setFilters({...filters, author: e.target.value})}
+                                                    placeholder="John Doe"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label>Journal</Label>
+                                                <Input
+                                                    value={filters.journal}
+                                                    onChange={(e) => setFilters({...filters, journal: e.target.value})}
+                                                    placeholder="Nature, Science..."
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Year From</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={filters.yearFrom}
+                                                        onChange={(e) => setFilters({
+                                                            ...filters,
+                                                            yearFrom: e.target.value
+                                                        })}
+                                                        placeholder="1990"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <Label>Year To</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={filters.yearTo}
+                                                        onChange={(e) => setFilters({
+                                                            ...filters,
+                                                            yearTo: e.target.value
+                                                        })}
+                                                        placeholder="2024"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => setPage(1)}
+                                            >
+                                                Apply Filters
+                                            </Button>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
 

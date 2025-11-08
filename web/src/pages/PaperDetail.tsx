@@ -9,26 +9,38 @@ import {ArrowLeft, BookOpen, Star, Trash2, ExternalLink, FileText} from "lucide-
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
+import {getPaperDetails} from "@/services/paper.service.ts";
+import Header from "@/pages/Header.tsx";
 
 const PaperDetail = () => {
     const {id} = useParams();
     const {user} = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    // Mock data
+    const paper = {
+        id: "mock-paper-001",
+        title: "Deep Learning for Natural Language Processing",
+        authors: ["John Doe", "Jane Smith"],
+        journal: "Journal of AI Research",
+        year: 2023,
+        abstract:
+            "This paper provides an overview of recent advances in deep learning approaches for natural language processing tasks...",
+        doi: "10.1234/dlnlp.2023",
+        status: "In Progress",           // hoặc 'Finished'
+        priority: "Medium",              // 'High' | 'Medium' | 'Low'
+        keywords: ["Deep Learning", "NLP", "Transformers"],
+        pdf_url: "https://arxiv.org/pdf/1706.03762.pdf",
+        total_pages: 42,
+        last_read_page: 10,
+        is_favorite: false,
+        user_id: "mock-user-id"
+    };
 
-    const {data: paper, isLoading} = useQuery({
+    const {data, isLoading} = useQuery({
         queryKey: ['paper', id],
-        queryFn: async () => {
-            const {data, error} = await supabase
-                .from('papers')
-                .select('*')
-                .eq('id', id)
-                .eq('user_id', user?.id)
-                .single();
-
-            if (error) throw error;
-            return data;
-        },
+        // queryFn: async () => await getPaperDetails(id),
+        queryFn: async () => paper,
         enabled: !!user && !!id,
     });
 
@@ -117,41 +129,37 @@ const PaperDetail = () => {
                 />
             </Helmet>
             <div className="min-h-screen bg-background">
-                <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-                    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex h-16 items-center justify-between">
-                            <Link to="/dashboard"
-                                  className="flex items-center gap-2 transition-smooth hover:opacity-80">
-                                <ArrowLeft className="h-5 w-5"/>
-                                <BookOpen className="h-6 w-6 text-primary"/>
-                                <span className="text-xl font-bold text-gradient">LabVerse</span>
-                            </Link>
-
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => toggleFavoriteMutation.mutate(paper.is_favorite)}
-                                >
-                                    <Star
-                                        className={`h-5 w-5 ${paper.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}/>
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    onClick={() => deleteMutation.mutate()}
-                                >
-                                    <Trash2 className="h-5 w-5"/>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </header>
+                <Header/>
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="max-w-4xl mx-auto space-y-6">
                         <div>
-                            <h1 className="text-3xl font-bold mb-4">{paper.title}</h1>
+                            {/* Paper title */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                                <h1 className="text-3xl font-bold">{paper.title}</h1>
+
+                                {/* Action buttons */}
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => toggleFavoriteMutation.mutate(paper.is_favorite)}
+                                    >
+                                        <Star
+                                            className={`h-5 w-5 ${paper.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                                        />
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => deleteMutation.mutate()}
+                                    >
+                                        <Trash2 className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Badge */}
                             <div className="flex flex-wrap gap-2 mb-4">
                                 <Badge variant={paper.status === 'Finished' ? 'default' : 'secondary'}>
                                     {paper.status}
