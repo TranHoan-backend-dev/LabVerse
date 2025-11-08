@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ui_search"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Header -->
+    <include
+        android:id="@+id/header"
+        layout="@layout/layout_common_component_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Search Bar -->
+    <include
+        android:id="@+id/search_bar"
+        layout="@layout/layout_common_component_search"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header" />
+
+    <!-- Search Results Header -->
+    <TextView
+        android:id="@+id/text_search_results"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/search_results"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_bar" />
+
+    <!-- RecyclerView for Search Results -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_search_results"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@id/pagination_controls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_search_results" />
+
+    <!-- Pagination Controls -->
+    <LinearLayout
+        android:id="@+id/pagination_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingVertical="8dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_previous_page"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/previous_page"
+            android:enabled="false"
+            android:padding="8dp"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/text_page_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:text="Page 1 of 1"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface" />
+
+        <ImageButton
+            android:id="@+id/btn_next_page"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/next_page"
+            android:enabled="false"
+            android:padding="8dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/colorOnSurface" />
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No papers found"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Try adjusting your search or filters"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
+    <include
+        android:id="@+id/bottomNav"
+        layout="@layout/layout_common_component_nav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
