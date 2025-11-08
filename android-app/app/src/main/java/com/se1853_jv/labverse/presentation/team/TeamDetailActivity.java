@@ -50,6 +50,17 @@ public class TeamDetailActivity extends AppCompatActivity {
         HeaderHelper.setupProfileClickListeners(this);
         // Setup Lists navigation click listener
         HeaderHelper.setupListsNavigationClickListener(this);
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private void bindViews() {

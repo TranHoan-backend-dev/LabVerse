@@ -77,6 +77,8 @@ dependencies {
 
     implementation(libs.snake.yaml)
 
+    implementation(libs.work.manager)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

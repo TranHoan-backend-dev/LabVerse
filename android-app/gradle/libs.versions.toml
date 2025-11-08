@@ -25,6 +25,7 @@ googleServices = "4.4.4"
 googleSignIn = "21.2.0"
 jackson = "2.17.2"
 yaml = "2.5"
+workManager = "2.10.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -68,6 +69,7 @@ jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref
 jackson-annotation = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml"}
+work-manager = { module = "androidx.work:work-runtime", version.ref = "workManager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

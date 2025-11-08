@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
 
@@ -45,6 +46,18 @@ public class FeedActivity extends BaseActivity {
         setupTabs();
         getMockData();
         handleFilterPapers();
+        
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private void setupTabs() {

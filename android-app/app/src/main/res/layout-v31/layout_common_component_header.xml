@@ -36,18 +36,44 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Nút chuông -->
-    <ImageButton
-        android:id="@+id/btn_notification"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_bell"
-        android:contentDescription="@string/notifications"
+    <!-- Nút chuông với badge -->
+    <FrameLayout
+        android:id="@+id/notification_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toStartOf="@+id/avatar"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginEnd="16dp" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_notification"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_bell"
+            android:contentDescription="@string/notifications" />
+
+        <!-- Badge hiển thị số lượng thông báo chưa đọc -->
+        <TextView
+            android:id="@+id/notification_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="-4dp"
+            android:layout_marginEnd="-4dp"
+            android:background="@drawable/bg_notification_badge"
+            android:minWidth="18dp"
+            android:minHeight="18dp"
+            android:gravity="center"
+            android:paddingHorizontal="4dp"
+            android:text="0"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <!-- Avatar -->
     <ImageView

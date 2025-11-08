@@ -35,7 +35,6 @@ import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
 import com.se1853_jv.labverse.data.service.firebase.FirebaseService;
-import com.se1853_jv.labverse.data.service.firebase.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
@@ -331,7 +330,7 @@ public class ImportBibtexFragment extends Fragment {
         var uri = getPdfLink("10.34190/iccws.20.1.3366", view);
         Log.d(TAG_NAME, "pdf link: " + uri);
         if (uri != null) {
-            firebaseService.uploadPdfToFirebase(Uri.parse(uri), new UploadCallback() {
+            firebaseService.uploadPdfToFirebase(Uri.parse(uri), new FirebaseService.UploadCallback() {
 
                 @Override
                 public void onSuccess(String downloadUrl) {
