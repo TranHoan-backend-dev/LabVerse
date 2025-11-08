@@ -66,6 +66,9 @@ class PaperServiceImpl(
     override fun searchPapersWithFilters(request: SearchPapersRequest): List<PaperResponse> {
         logger.info { "Searching papers with filters: $request" }
         
+        // Validate that if string fields are provided, they are not blank
+        validateSearchRequest(request)
+        
         val queryConditions = mutableListOf<Criteria>()
         
         // General query search (searches across multiple fields)
@@ -235,6 +238,44 @@ class PaperServiceImpl(
             doi = paper.metadata?.doi ?: "",
             description = paper.description,
         )
+    }
+
+    private fun validateSearchRequest(request: SearchPapersRequest) {
+        // Validate string fields: if provided, must not be blank
+        if (request.query != null && request.query.isBlank()) {
+            throw IllegalArgumentException("Query cannot be blank if provided")
+        }
+        if (request.title != null && request.title.isBlank()) {
+            throw IllegalArgumentException("Title cannot be blank if provided")
+        }
+        if (request.authors != null && request.authors.isBlank()) {
+            throw IllegalArgumentException("Authors cannot be blank if provided")
+        }
+        if (request.journal != null && request.journal.isBlank()) {
+            throw IllegalArgumentException("Journal cannot be blank if provided")
+        }
+        
+        // Validate keywords: if provided, must not be empty and each keyword must not be blank
+        if (!request.keywords.isNullOrEmpty()) {
+            if (request.keywords.any { it.isBlank() }) {
+                throw IllegalArgumentException("Keywords cannot contain blank values")
+            }
+        }
+        
+        // Validate tagIds: if provided, must not be empty and each tagId must not be blank
+        if (!request.tagIds.isNullOrEmpty()) {
+            if (request.tagIds.any { it.isBlank() }) {
+                throw IllegalArgumentException("Tag IDs cannot contain blank values")
+            }
+        }
+        
+        // Validate sortOrder
+        if (!request.sortOrder.isNullOrBlank()) {
+            val sortOrder = request.sortOrder.lowercase()
+            if (sortOrder != "asc" && sortOrder != "desc") {
+                throw IllegalArgumentException("Sort order must be 'asc' or 'desc'")
+            }
+        }
     }
 
     private fun buildEntity(
