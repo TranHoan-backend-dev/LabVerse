@@ -32,7 +32,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
+import com.se1853_jv.labverse.data.service.firebase.FirebaseService;
+import com.se1853_jv.labverse.data.service.firebase.UploadCallback;
+import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -41,16 +45,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImportBibtexFragment extends Fragment {
-    MaterialButton chooseFileBtn;
-    MaterialButton importBtn;
+    MaterialButton chooseFileBtn, importBtn;
     ActivityResultLauncher<Intent> filePickerLauncher;
-    List<BibEntry> entries = new ArrayList<>();
+    List<BibEntry> entries;
+    final FirebaseService firebaseService;
+    final UnpaywallService unpaywallService;
+    final String TAG_NAME = "ImportBibtexFragment";
+    View view;
+
+    public ImportBibtexFragment() {
+        this.entries = new ArrayList<>();
+        this.firebaseService = new FirebaseService();
+        this.unpaywallService = new UnpaywallService();
+    }
 
     @Nullable
     @Override
@@ -66,24 +80,25 @@ public class ImportBibtexFragment extends Fragment {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        var uri = result.getData().getData(); // dia chi truu tuong cua du lieu
-                        var bibContent = readBibFile(uri);
-                        entries = ParseFileUtils.parseBibEntries(bibContent);
-                        requireActivity().runOnUiThread(() -> displayPreview(entries, view));
+                        var abstractFileLocationInDevice = result.getData().getData(); // dia chi truu tuong cua du lieu
+                        var bibtexFileContent = readBibFile(abstractFileLocationInDevice);
+                        entries = ParseFileUtils.parseBibEntries(bibtexFileContent);
+                        requireActivity().runOnUiThread(() -> displayPreview(view));
                     }
                 }
         );
-        bindView(view);
-        handleImportFileEvent();
-        handleImportEvent(view);
+        this.view = view;
+        bindView();
+        openFilesCategory();
+        handleImportEvent();
     }
 
-    private void bindView(@NonNull View view) {
+    private void bindView() {
         chooseFileBtn = view.findViewById(R.id.btn_choose_file);
         importBtn = view.findViewById(R.id.btn_import);
     }
 
-    private void handleImportFileEvent() {
+    private void openFilesCategory() {
         chooseFileBtn.setOnClickListener(v -> {
             var intent = new Intent(Intent.ACTION_GET_CONTENT);
 
@@ -110,13 +125,13 @@ public class ImportBibtexFragment extends Fragment {
                 builder.append(line).append('\n');
 
                 if (++lineCount > 50000) {
-                    Log.w("ReadBibFile", "File quá lớn, dừng đọc sớm để tránh tràn bộ nhớ");
+                    Log.w(TAG_NAME, "File quá lớn, dừng đọc sớm để tránh tràn bộ nhớ");
                     break;
                 }
             }
 
         } catch (Exception e) {
-            Log.e("ReadBibFile", "Error reading file: " + e.getMessage(), e);
+            Log.e(TAG_NAME, "Error reading file: " + e.getMessage(), e);
             return "";
         }
 
@@ -124,7 +139,7 @@ public class ImportBibtexFragment extends Fragment {
     }
 
     @SuppressLint("SetTextI18n")
-    private void displayPreview(@NonNull List<BibEntry> entries, @NonNull View view) {
+    private void displayPreview(@NonNull View view) {
         LinearLayout previewContainer = view.findViewById(R.id.pdfSummaryWrapper);
         previewContainer.removeAllViews();
 
@@ -258,7 +273,7 @@ public class ImportBibtexFragment extends Fragment {
     // </editor-fold>
 
     // <editor-fold> desc="import file module"
-    private void handleImportEvent(@NonNull View view) {
+    private void handleImportEvent() {
         var handler = new CrossRefApiHandler();
         importBtn.setOnClickListener(v -> {
             if (entries == null || entries.isEmpty()) {
@@ -274,14 +289,16 @@ public class ImportBibtexFragment extends Fragment {
 //                        runOnUiThread(() -> Toast.makeText(this, "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
 //                        return;
 //                    }
-//                    var paper = handler.getArticleUrlFromDOI(e.getDoi());
+//                    var object = handler.getArticleUrlFromDOI(e.getDoi());
                 var object = handler.getArticleUrlFromDOI("10.34190/iccws.20.1.3366");
+                uploadPdfToFirebase("");
+
                 if (object != null) {
-                    Log.d("Paper", object.toString());
+                    Log.d(TAG_NAME, object.toString());
                     var mapper = new ObjectMapper();
                     try {
                         var paper = mapper.readValue(object.toString(), PaperResearch.class);
-                        Log.d("Paper", paper.toString());
+                        Log.d(TAG_NAME, paper.toString());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
@@ -291,6 +308,42 @@ public class ImportBibtexFragment extends Fragment {
 //                }
             });
         });
+    }
+
+    private String getPdfLink(String doi, View view) {
+        AtomicReference<String> uri = new AtomicReference<>();
+        unpaywallService.getPdfUrl(doi, new ApiCallback<>() {
+            @Override
+            public void onSuccess(String data) {
+//                Log.d(TAG_NAME, "pdf link: " + data);
+                uri.set(data);
+            }
+
+            @Override
+            public void onError(String error) {
+                requireActivity().runOnUiThread(() -> Toast.makeText(view.getContext(), "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
+            }
+        });
+        return uri.get();
+    }
+
+    private void uploadPdfToFirebase(String doi) {
+        var uri = getPdfLink("10.34190/iccws.20.1.3366", view);
+        Log.d(TAG_NAME, "pdf link: " + uri);
+        if (uri != null) {
+            firebaseService.uploadPdfToFirebase(Uri.parse(uri), new UploadCallback() {
+
+                @Override
+                public void onSuccess(String downloadUrl) {
+                    Log.d(TAG_NAME, "download url successfully: " + downloadUrl);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    requireActivity().runOnUiThread(() -> Toast.makeText(view.getContext(), "Upload không thành công", Toast.LENGTH_SHORT).show());
+                }
+            });
+        }
     }
     // </editor-fold>
 }

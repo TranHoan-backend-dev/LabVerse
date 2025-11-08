@@ -34,17 +34,23 @@ export const getReferencesOfPaper = async (id: string) => {
     return data
 }
 
-export const getPaginatedPapers = async (currentPage: number, pageSize: number, kw: string) => {
+export const getPaginatedPapers = async (
+    currentPage: number, pageSize: number,
+    kw?: string,
+    filter?: {
+        author: string,
+        journal: string,
+        yearFrom: string,
+        yearTo: string,
+    }) => {
     const response = await fetch(
-        `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/all?search=${kw}&index=${currentPage}&size=${pageSize}`,
-        {
-            method: METHOD.GET.toString(),
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        }
+        `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/all?index=${currentPage}&size=${pageSize}
+        ${kw && `search=${kw}`}
+        ${filter.author && `&author=${filter.author}`}
+        ${filter.journal && `&journal=${filter.journal}`}
+        ${filter.yearFrom && `&from=${filter.yearFrom}`}
+        ${filter.yearTo && `&to=${filter.yearTo}`}`,
+        {method: METHOD.GET.toString()}
     )
     const data = await response.json()
     console.log(data)
