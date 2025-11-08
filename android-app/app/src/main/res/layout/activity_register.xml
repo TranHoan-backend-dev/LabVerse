@@ -117,14 +117,6 @@
         </LinearLayout>
 
         <!-- Full Name Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/full_name"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilFullName"
             android:layout_width="match_parent"
@@ -152,14 +144,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Username Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/username"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilUsername"
             android:layout_width="match_parent"
@@ -187,14 +171,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Email Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/email_address"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilEmail"
             android:layout_width="match_parent"
@@ -222,14 +198,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/password"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
             android:layout_width="match_parent"
@@ -259,14 +227,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Confirm Password Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/confirm_password"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilConfirmPassword"
             android:layout_width="match_parent"
@@ -296,14 +256,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Role Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/role"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilRole"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"

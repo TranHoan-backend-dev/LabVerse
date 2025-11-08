@@ -4,19 +4,28 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.auth.AuthApiHandler;
+import com.se1853_jv.labverse.data.dto.request.GoogleLoginRequest;
 import com.se1853_jv.labverse.data.dto.response.AuthResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.enumerate.Role;
@@ -37,6 +46,9 @@ public class RegisterActivity extends AppCompatActivity {
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
     private ProgressDialog progressDialog;
+    private GoogleSignInClient googleSignInClient;
+    private static final int RC_SIGN_IN = 9002;
+    private static final String TAG = "RegisterActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +72,9 @@ public class RegisterActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Creating account...");
         progressDialog.setCancelable(false);
+
+        // Configure Google Sign-In
+        configureGoogleSignIn();
     }
 
     private void initializeViews() {
@@ -283,7 +298,7 @@ public class RegisterActivity extends AppCompatActivity {
             case RESEARCHER:
                 return "RESEARCHER";
             case INTERN:
-                return "STUDENT/INTERN";
+                return "STUDENT";
             default:
                 return "RESEARCHER";
         }
@@ -296,9 +311,109 @@ public class RegisterActivity extends AppCompatActivity {
         finish();
     }
 
+    private void configureGoogleSignIn() {
+        // Configure Google Sign-In to request the user's ID, email address, and basic profile
+        // Note: You need to get your Web Client ID from Google Cloud Console
+        // The Web Client ID is different from Android Client ID - you need the Web Client ID for ID tokens
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+    }
+
     private void handleGoogleRegister() {
-        // TODO: Implement Google Sign-Up
-        Toast.makeText(this, "Google Sign-Up functionality coming soon", Toast.LENGTH_SHORT).show();
+        // Đăng xuất khỏi Google Sign-In trước để luôn hiển thị dialog chọn tài khoản
+        // Điều này cho phép người dùng chọn tài khoản Google khác mỗi lần đăng ký
+        googleSignInClient.signOut()
+                .addOnCompleteListener(this, task -> {
+                    // Sau khi đăng xuất, mở dialog đăng nhập mới
+                    // Dialog sẽ hiển thị danh sách tất cả các tài khoản Google để chọn
+                    Intent signInIntent = googleSignInClient.getSignInIntent();
+                    startActivityForResult(signInIntent, RC_SIGN_IN);
+                });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleGoogleSignInResult(task);
+        }
+    }
+
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            if (account != null && account.getIdToken() != null) {
+                // Got the ID token, now send it to the backend
+                String idToken = account.getIdToken();
+                performGoogleRegister(idToken);
+            } else {
+                Toast.makeText(this, "Google Sign-Up failed: Unable to get account information", Toast.LENGTH_SHORT).show();
+            }
+        } catch (ApiException e) {
+            Log.e(TAG, "Google Sign-In failed", e);
+            String errorMessage = "Google Sign-Up failed";
+            if (e.getStatusCode() == 12500) {
+                errorMessage = "Google Sign-Up was cancelled";
+            } else if (e.getStatusCode() == 10) {
+                errorMessage = "Google Play Services is not available. Please update Google Play Services.";
+            } else if (e.getStatusCode() == 7) {
+                errorMessage = "Network error. Please check your internet connection.";
+            }
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void performGoogleRegister(String idToken) {
+        // Show loading
+        progressDialog.setMessage("Signing up with Google...");
+        progressDialog.show();
+        btnGoogleSignIn.setEnabled(false);
+
+        // Create Google login request (same endpoint handles both login and register)
+        GoogleLoginRequest request = new GoogleLoginRequest(idToken);
+
+        // Call API
+        authApiHandler.googleLogin(request, new ApiCallback<AuthResponse>() {
+            @Override
+            public void onSuccess(AuthResponse response) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    btnGoogleSignIn.setEnabled(true);
+
+                    // Save user session
+                    sessionManager.saveAuthResponse(response);
+
+                    // Show success message
+                    Toast.makeText(RegisterActivity.this,
+                            "Welcome to LabVerse, " + response.getFullName() + "!",
+                            Toast.LENGTH_SHORT).show();
+
+                    // Navigate to main screen
+                    navigateToFeed();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    btnGoogleSignIn.setEnabled(true);
+
+                    // Show error message
+                    String errorMessage = "Google Sign-Up failed. Please try again.";
+                    if (error != null && !error.isEmpty()) {
+                        errorMessage = error;
+                    }
+                    Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 }
 

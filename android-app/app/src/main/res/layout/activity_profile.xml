@@ -203,19 +203,21 @@
                             app:boxCornerRadiusBottomStart="12dp"
                             app:boxCornerRadiusBottomEnd="12dp"
                             app:boxStrokeColor="@color/border_color"
-                            app:startIconDrawable="@drawable/ic_university"
+                            app:startIconDrawable="@drawable/ic_user_24"
                             app:startIconTint="@color/primary">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etAffiliation"
+                                android:id="@+id/etRole"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Affiliation"
-                                android:inputType="text"
+                                android:hint="@string/role"
+                                android:inputType="none"
                                 android:paddingVertical="14dp"
                                 android:textColor="@color/text_primary"
                                 android:textSize="16sp"
-                                tools:text="Vietnam National University" />
+                                android:focusable="false"
+                                android:clickable="false"
+                                tools:text="Principal Investigator (PI)" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 

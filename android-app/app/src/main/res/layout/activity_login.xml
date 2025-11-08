@@ -117,14 +117,6 @@
         </LinearLayout>
 
         <!-- Email Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/email_address"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilEmail"
             android:layout_width="match_parent"
@@ -152,14 +144,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Input -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/password"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
             android:layout_width="match_parent"
@@ -188,21 +172,13 @@
                 android:paddingEnd="8dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Remember Me & Forgot Password -->
+        <!-- Forgot Password -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="end"
             android:layout_marginBottom="24dp">
-
-            <CheckBox
-                android:id="@+id/cbRememberMe"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/remember_me"
-                android:textSize="14sp"
-                android:textColor="#6B7280" />
 
             <TextView
                 android:id="@+id/tvForgotPassword"

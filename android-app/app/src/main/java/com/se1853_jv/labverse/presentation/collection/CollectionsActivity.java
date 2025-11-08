@@ -3,12 +3,15 @@ package com.se1853_jv.labverse.presentation.collection;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -198,48 +201,105 @@ public class CollectionsActivity extends BaseActivity {
     }
 
     public void showInviteMembersDialog(CollectionResponse collection) {
-        if (collection == null) {
-            Toast.makeText(this, "Please select a collection first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Invite Team Members to " + collection.getName());
+        String title = collection != null 
+            ? "Invite Team Members to " + collection.getName()
+            : "Invite Team Members";
+        builder.setTitle(title);
 
         View dialogView = getLayoutInflater().inflate(R.layout.layout_dialog_invite_members, null);
         EditText editEmail = dialogView.findViewById(R.id.edit_member_email);
+        Spinner spinnerCollection = dialogView.findViewById(R.id.spinner_collection);
+        Spinner spinnerAccessLevel = dialogView.findViewById(R.id.spinner_access_level);
+        TextView textCollectionLabel = dialogView.findViewById(R.id.text_collection_label);
+
+        // Setup Access Level spinner
+        String[] accessLevels = {"READ_ONLY", "CONTRIBUTOR", "AUTHOR"};
+        ArrayAdapter<String> accessLevelAdapter = new ArrayAdapter<>(this, 
+            android.R.layout.simple_spinner_item, accessLevels);
+        accessLevelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAccessLevel.setAdapter(accessLevelAdapter);
+        spinnerAccessLevel.setSelection(1); // Default to CONTRIBUTOR
+
+        // Setup Collection spinner if collection is null
+        CollectionsFragment frag = getFragment();
+        List<CollectionResponse> myCollections = frag != null ? frag.getMyCollections() : null;
+        
+        if (collection == null && myCollections != null && !myCollections.isEmpty()) {
+            // Show collection selector
+            textCollectionLabel.setVisibility(View.VISIBLE);
+            spinnerCollection.setVisibility(View.VISIBLE);
+            
+            ArrayAdapter<CollectionResponse> collectionAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, myCollections) {
+                @NonNull
+                @Override
+                public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                    TextView textView = (TextView) super.getView(position, convertView, parent);
+                    textView.setText(getItem(position).getName());
+                    return textView;
+                }
+
+                @Override
+                public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                    TextView textView = (TextView) super.getDropDownView(position, convertView, parent);
+                    textView.setText(getItem(position).getName());
+                    return textView;
+                }
+            };
+            collectionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerCollection.setAdapter(collectionAdapter);
+        } else {
+            // Hide collection selector if collection is already selected
+            textCollectionLabel.setVisibility(View.GONE);
+            spinnerCollection.setVisibility(View.GONE);
+        }
 
         builder.setView(dialogView);
         builder.setPositiveButton("Send Invite", (dialog, which) -> {
             String email = editEmail.getText().toString().trim();
-            if (!email.isEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                inviteMember(email, collection);
-            } else {
+            if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // Get selected collection
+            CollectionResponse selectedCollection = collection;
+            if (selectedCollection == null && spinnerCollection.getVisibility() == View.VISIBLE) {
+                selectedCollection = (CollectionResponse) spinnerCollection.getSelectedItem();
+            }
+
+            if (selectedCollection == null) {
+                Toast.makeText(this, "Please select a collection", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Get selected access level
+            String selectedAccessLevel = (String) spinnerAccessLevel.getSelectedItem();
+            com.se1853_jv.labverse.domain.enumerate.AccessLevel accessLevel = 
+                com.se1853_jv.labverse.domain.enumerate.AccessLevel.valueOf(selectedAccessLevel);
+
+            inviteMember(email, selectedCollection, accessLevel);
         });
         builder.setNegativeButton("Cancel", null);
         builder.show();
     }
 
     public void showInviteMembersDialog() {
-        // Show dialog to select collection from My Collections
+        // Show dialog without pre-selected collection, user will choose from spinner
         CollectionsFragment frag = getFragment();
         if (frag != null) {
-            // Get first collection from My Collections (PI can only invite to their own collections)
             List<CollectionResponse> myCollections = frag.getMyCollections();
-            if (myCollections != null && !myCollections.isEmpty()) {
-                // For now, use the first collection. In the future, can add a selection dialog
-                showInviteMembersDialog(myCollections.get(0));
-            } else {
+            if (myCollections == null || myCollections.isEmpty()) {
                 Toast.makeText(this, "Please create a collection first", Toast.LENGTH_SHORT).show();
+                return;
             }
-        } else {
-            Toast.makeText(this, "Please select a collection first", Toast.LENGTH_SHORT).show();
         }
+        showInviteMembersDialog(null); // Pass null to show collection selector
     }
 
-    private void inviteMember(String email, CollectionResponse collection) {
+    private void inviteMember(String email, CollectionResponse collection, 
+                             com.se1853_jv.labverse.domain.enumerate.AccessLevel accessLevel) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             return;
@@ -253,7 +313,8 @@ public class CollectionsActivity extends BaseActivity {
                 CollectionUserRequest request = new CollectionUserRequest();
                 request.setCollectionId(collection.getId());
                 request.setMemberId(userResponse.getId());
-                request.setIsAuthor(false); // Default to non-author, can be changed later
+                request.setIsAuthor(accessLevel == com.se1853_jv.labverse.domain.enumerate.AccessLevel.AUTHOR);
+                request.setAccessLevel(accessLevel);
 
                 apiHandler.addMemberToCollection(request, new ApiCallback<Object>() {
                     @Override

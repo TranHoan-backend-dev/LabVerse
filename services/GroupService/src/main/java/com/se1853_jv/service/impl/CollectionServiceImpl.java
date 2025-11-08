@@ -9,6 +9,7 @@ import com.se1853_jv.dto.response.PaperResponse;
 import com.se1853_jv.exception.*;
 import com.se1853_jv.model.*;
 import com.se1853_jv.model.Collection;
+import com.se1853_jv.model.enumerate.AccessLevel;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.service.CollectionService;
 import com.se1853_jv.service.PaperService;
@@ -76,6 +77,7 @@ public class CollectionServiceImpl implements CollectionService {
                     .id(compositeId)
                     .collection(saved)
                     .isAuthor(true) // Creator is always author
+                    .accessLevel(com.se1853_jv.model.enumerate.AccessLevel.AUTHOR) // Creator has AUTHOR access
                     .build();
             collectionUserRepository.save(collectionUser);
 
@@ -157,6 +159,8 @@ public class CollectionServiceImpl implements CollectionService {
                     // Get creator info (user with isAuthor = true)
                     CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
                     setCreatorInfo(response, collectionId);
+                    // Set current user's access level
+                    response.setCurrentUserAccessLevel(cu.getAccessLevel());
                     return response;
                 })
                 .toList();
@@ -184,6 +188,8 @@ public class CollectionServiceImpl implements CollectionService {
                     // Get creator info (user with isAuthor = true)
                     CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
                     setCreatorInfo(response, collectionId);
+                    // Set current user's access level
+                    response.setCurrentUserAccessLevel(cu.getAccessLevel());
                     return response;
                 })
                 .toList();
@@ -201,6 +207,12 @@ public class CollectionServiceImpl implements CollectionService {
 
         Collection collection = collectionRepository.findById(collectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + collectionId));
+
+        // Check authorization if userId is provided
+        if (request.getUserId() != null && !request.getUserId().isBlank()) {
+            String userId = IdEncoder.decode(request.getUserId());
+            verifyUserCanAddPaper(collectionId, userId);
+        }
 
         // Validate paper exists in paper-service
         try {
@@ -250,10 +262,55 @@ public class CollectionServiceImpl implements CollectionService {
         CollectionPaper entity = collectionPaperRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paper not found in collection"));
 
-        entity.setPriority(request.getPriority());
-        entity.setStatus(request.getStatus());
+        // Check authorization if userId is provided
+        String currentPriority = entity.getPriority(); // Get current priority before update
+        if (request.getUserId() != null && !request.getUserId().isBlank()) {
+            String userId = IdEncoder.decode(request.getUserId());
+            verifyUserCanUpdatePaperStatus(collectionId, userId, request.getPriority(), currentPriority);
+        }
+
+        // Always allow status update (AUTHOR, CONTRIBUTOR, READ_ONLY can all update status)
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            entity.setStatus(request.getStatus());
+        }
+        
+        // Only update priority if it's provided and user has permission
+        // If priority is null or empty, keep the current priority (don't update)
+        if (request.getPriority() != null && !request.getPriority().isBlank()) {
+            entity.setPriority(request.getPriority());
+        }
+        // If priority is null/empty, entity.getPriority() remains unchanged
 
         return CollectionPaperResponse.fromEntity(collectionPaperRepository.save(entity));
+    }
+
+    @Override
+    public void removePaperFromCollection(String encodedCollectionId, String encodedPaperId, String encodedUserId) {
+        String collectionId = IdEncoder.decode(encodedCollectionId);
+        String paperId = IdEncoder.decode(encodedPaperId);
+        String userId = IdEncoder.decode(encodedUserId);
+
+        // Check authorization - only CONTRIBUTOR and AUTHOR can remove papers
+        CollectionUserId compositeId = new CollectionUserId();
+        compositeId.setCollectionId(collectionId);
+        compositeId.setMemberId(userId);
+
+        CollectionUser collectionUser = collectionUserRepository.findById(compositeId)
+                .orElseThrow(() -> new BadRequestException("User is not a member of this collection"));
+
+        AccessLevel accessLevel = collectionUser.getAccessLevel();
+        if (accessLevel == AccessLevel.READ_ONLY) {
+            throw new BadRequestException("Read-only users cannot remove papers from the collection");
+        }
+
+        // Verify paper exists in collection
+        CollectionPaperId paperCompositeId = new CollectionPaperId(paperId, collectionId);
+        CollectionPaper collectionPaper = collectionPaperRepository.findById(paperCompositeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Paper not found in this collection"));
+
+        // Remove paper from collection
+        collectionPaperRepository.delete(collectionPaper);
+        log.info("Paper [{}] removed from collection [{}] by user [{}]", paperId, collectionId, userId);
     }
 
     @Override
@@ -486,6 +543,59 @@ public class CollectionServiceImpl implements CollectionService {
 
         if (!Boolean.TRUE.equals(collectionUser.getIsAuthor())) {
             throw new BadRequestException("Only the collection author can perform this action");
+        }
+    }
+
+    /**
+     * Verify that the user can add papers to the collection
+     * READ_ONLY users cannot add papers
+     * @param collectionId The collection ID
+     * @param userId The user ID to verify
+     * @throws BadRequestException if user does not have permission
+     */
+    private void verifyUserCanAddPaper(String collectionId, String userId) {
+        CollectionUserId compositeId = new CollectionUserId();
+        compositeId.setCollectionId(collectionId);
+        compositeId.setMemberId(userId);
+
+        CollectionUser collectionUser = collectionUserRepository.findById(compositeId)
+                .orElseThrow(() -> new BadRequestException("User is not a member of this collection"));
+
+        AccessLevel accessLevel = collectionUser.getAccessLevel();
+        if (accessLevel == AccessLevel.READ_ONLY) {
+            throw new BadRequestException("Read-only users cannot add papers to the collection");
+        }
+    }
+
+    /**
+     * Verify that the user can update paper status/priority
+     * - AUTHOR: Can update both status and priority
+     * - CONTRIBUTOR: Can update status, but priority can only be set by AUTHOR
+     * - READ_ONLY: Can update status only (cannot set priority)
+     * @param collectionId The collection ID
+     * @param userId The user ID to verify
+     * @param priority The priority being set (null if only status is being updated)
+     * @param currentPriority The current priority of the paper (to check if priority is being changed)
+     * @throws BadRequestException if user does not have permission
+     */
+    private void verifyUserCanUpdatePaperStatus(String collectionId, String userId, String priority, String currentPriority) {
+        CollectionUserId compositeId = new CollectionUserId();
+        compositeId.setCollectionId(collectionId);
+        compositeId.setMemberId(userId);
+
+        CollectionUser collectionUser = collectionUserRepository.findById(compositeId)
+                .orElseThrow(() -> new BadRequestException("User is not a member of this collection"));
+
+        AccessLevel accessLevel = collectionUser.getAccessLevel();
+        
+        // All users (AUTHOR, CONTRIBUTOR, READ_ONLY) can update status
+        // But only AUTHOR can change priority
+        if (priority != null && !priority.isBlank()) {
+            // Check if priority is being changed
+            boolean isPriorityChanged = currentPriority == null || !priority.equals(currentPriority);
+            if (isPriorityChanged && accessLevel != AccessLevel.AUTHOR) {
+                throw new BadRequestException("Only collection authors can set paper priority");
+            }
         }
     }
 

@@ -83,6 +83,10 @@
         <activity
             android:name=".presentation.collection.CollectionsActivity"
             android:exported="true" />
+        <activity
+            android:name=".presentation.collection.CollectionMembersActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.collection.CollectionsActivity" />
     </application>
 
 </manifest>

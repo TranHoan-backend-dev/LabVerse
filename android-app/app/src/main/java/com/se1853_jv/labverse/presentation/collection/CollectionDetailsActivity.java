@@ -25,6 +25,8 @@ import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
+import com.se1853_jv.labverse.data.utils.SessionManager;
+import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionPaperAdapter;
 
 import java.util.ArrayList;
@@ -71,11 +73,22 @@ public class CollectionDetailsActivity extends AppCompatActivity {
 
         textCollectionName.setText(collection.getName());
 
-        buttonAddPaper.setOnClickListener(v -> {
-            Intent intent = new Intent(CollectionDetailsActivity.this, SelectPaperActivity.class);
-            intent.putExtra("collection", collection);
-            startActivityForResult(intent, 100);
-        });
+        // Check access level to enable/disable add paper button
+        AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        boolean canAddPaper = currentUserAccessLevel == AccessLevel.AUTHOR || 
+                              currentUserAccessLevel == AccessLevel.CONTRIBUTOR;
+        
+        if (!canAddPaper) {
+            // READ_ONLY users cannot add papers
+            buttonAddPaper.setEnabled(false);
+            buttonAddPaper.setAlpha(0.5f);
+        } else {
+            buttonAddPaper.setOnClickListener(v -> {
+                Intent intent = new Intent(CollectionDetailsActivity.this, SelectPaperActivity.class);
+                intent.putExtra("collection", collection);
+                startActivityForResult(intent, 100);
+            });
+        }
     }
 
     private void setupToolbar() {
@@ -91,6 +104,12 @@ public class CollectionDetailsActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         adapter = new CollectionPaperAdapter();
         adapter.setOnStatusClickListener(paper -> showStatusPriorityBottomSheet(paper));
+        adapter.setOnRemoveClickListener(paper -> showRemovePaperDialog(paper));
+        
+        // Set current user's access level in adapter
+        AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        adapter.setCurrentUserAccessLevel(currentUserAccessLevel);
+        
         recyclerPapers.setLayoutManager(new LinearLayoutManager(this));
         recyclerPapers.setAdapter(adapter);
     }
@@ -130,9 +149,37 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             spinnerPriority.setSelection(priorityPosition);
         }
 
+        // Disable priority spinner for non-AUTHOR users (only AUTHOR can set priority)
+        AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        boolean isAuthor = currentUserAccessLevel == AccessLevel.AUTHOR;
+        
+        if (!isAuthor) {
+            spinnerPriority.setEnabled(false);
+            spinnerPriority.setAlpha(0.5f); // Visual indication of disabled state
+            TextView priorityLabel = bottomSheetView.findViewById(R.id.text_priority_label);
+            if (priorityLabel != null) {
+                priorityLabel.setAlpha(0.5f);
+            }
+        }
+
         buttonSave.setOnClickListener(v -> {
             String newStatus = (String) spinnerStatus.getSelectedItem();
-            String newPriority = (String) spinnerPriority.getSelectedItem();
+            String newPriority = null;
+            
+            // Only send priority if user is AUTHOR and priority is being changed
+            if (isAuthor && spinnerPriority.isEnabled()) {
+                String selectedPriority = (String) spinnerPriority.getSelectedItem();
+                // Only send priority if it's different from current
+                if (selectedPriority != null && !selectedPriority.equals(currentPriority)) {
+                    newPriority = selectedPriority;
+                } else {
+                    // Don't send priority if it hasn't changed (backend will keep current)
+                    newPriority = null;
+                }
+            } else {
+                // For non-AUTHOR users, don't send priority (backend will keep current)
+                newPriority = null;
+            }
             
             updatePaperStatus(paper, newStatus, newPriority);
             bottomSheetDialog.dismiss();
@@ -141,16 +188,67 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         bottomSheetDialog.show();
     }
 
+    private void showRemovePaperDialog(CollectionPaperDetailResponse paper) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Remove Paper")
+                .setMessage("Are you sure you want to remove \"" + paper.getTitle() + "\" from this collection?")
+                .setPositiveButton("Remove", (dialog, which) -> {
+                    removePaperFromCollection(paper);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void removePaperFromCollection(CollectionPaperDetailResponse paper) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+
+        apiHandler.removePaperFromCollection(collection.getId(), paper.getPaperId(), userId,
+                new ApiCallback<Object>() {
+                    @Override
+                    public void onSuccess(Object response) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(CollectionDetailsActivity.this,
+                                    "Paper removed from collection successfully",
+                                    Toast.LENGTH_SHORT).show();
+                            loadPapers(); // Refresh papers list
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            android.util.Log.e(TAG, "Error removing paper: " + error);
+                            Toast.makeText(CollectionDetailsActivity.this,
+                                    "Failed to remove paper: " + error,
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+    }
+
     private void updatePaperStatus(CollectionPaperDetailResponse paper, String status, String priority) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Get userId from session for authorization
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+
         CollectionPaperRequest request = new CollectionPaperRequest();
         request.setCollectionId(collection.getId());
         request.setPaperId(paper.getPaperId());
+        request.setUserId(userId); // Add userId for authorization check
         request.setStatus(status);
+        // Only send priority if it's being changed (for AUTHOR) or keep current priority
+        // Backend will handle: if priority is null or same as current, it won't update priority
         request.setPriority(priority);
 
         apiHandler.updatePaperStatus(request, new ApiCallback<CollectionPaperResponse>() {
@@ -169,9 +267,14 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     android.util.Log.e(TAG, "Error updating paper status: " + error);
+                    String errorMessage = error;
+                    // Check if it's an authorization error
+                    if (error != null && (error.contains("Read-only") || error.contains("Only collection authors"))) {
+                        errorMessage = "You don't have permission to perform this action. " + error;
+                    }
                     Toast.makeText(CollectionDetailsActivity.this,
-                            "Failed to update status: " + error,
-                            Toast.LENGTH_SHORT).show();
+                            "Failed to update status: " + errorMessage,
+                            Toast.LENGTH_LONG).show();
                 });
             }
         });
