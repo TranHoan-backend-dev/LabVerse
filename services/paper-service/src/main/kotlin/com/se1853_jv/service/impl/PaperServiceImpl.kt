@@ -43,8 +43,47 @@ class PaperServiceImpl(
         return response
     }
 
-    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
-        logger.info { "Getting all papers with search query: $searchQuery" }
+    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?, tagIds: List<String>?): List<PaperResponse> {
+        logger.info { "Getting all papers with search query: $searchQuery, tagIds: $tagIds" }
+        
+        // If tagIds is provided, use MongoTemplate for efficient querying
+        if (!tagIds.isNullOrEmpty()) {
+            val queryConditions = mutableListOf<Criteria>()
+            
+            // Tags filter - papers must have at least one of the provided tagIds
+            queryConditions.add(Criteria("tagIds").`in`(tagIds))
+            
+            // General query search (searches across multiple fields)
+            if (!searchQuery.isNullOrBlank()) {
+                val searchPattern = ".*${Regex.escape(searchQuery)}.*"
+                val regex = Regex(searchPattern, RegexOption.IGNORE_CASE)
+                queryConditions.add(
+                    Criteria().orOperator(
+                        Criteria("metadata.title").regex(regex.pattern, "i"),
+                        Criteria("metadata.authors").regex(regex.pattern, "i"),
+                        Criteria("metadata.journal").regex(regex.pattern, "i"),
+                        Criteria("keywords").regex(regex.pattern, "i"),
+                        Criteria("description").regex(regex.pattern, "i")
+                    )
+                )
+            }
+            
+            val mongoQuery = Query(Criteria().andOperator(*queryConditions.toTypedArray()))
+            
+            // Pagination
+            val pageRequest = PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE)
+            mongoQuery.with(pageRequest)
+            
+            // Default sort by publication year descending
+            mongoQuery.with(Sort.by(Sort.Direction.DESC, "metadata.publicationYear"))
+            
+            val papers = mongoTemplate.find(mongoQuery, Paper::class.java)
+            logger.info { "Found ${papers.size} papers matching filters" }
+            
+            return papers.map { convert(it) }
+        }
+        
+        // If no tagIds, use the original simple filtering approach
         val allPapers: Page<Paper> = paperRepo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
         val data = allPapers.content
 

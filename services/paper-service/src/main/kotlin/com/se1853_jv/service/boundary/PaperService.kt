@@ -6,7 +6,7 @@ import com.se1853_jv.dto.response.PaperResponse
 
 interface PaperService {
     fun getPaperDetails(paperId: String): PaperResponse
-    fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse>
+    fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?, tagIds: List<String>?): List<PaperResponse>
     fun searchPapersWithFilters(request: SearchPapersRequest): List<PaperResponse>
     fun deleteById(id: String)
     fun createNewPaper(req: UploadPdfRequest)

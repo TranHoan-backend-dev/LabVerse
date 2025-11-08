@@ -1,6 +1,5 @@
 package com.se1853_jv.controller
 
-import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
@@ -99,18 +98,19 @@ class PaperController(
         )
     }
 
-    @PostMapping(
-        "/all",
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-        consumes = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    fun getAllPapers(@Valid @RequestBody request: SearchPapersRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to getAllPapers with filters: $request" }
+    @GetMapping("/all")
+    fun getAllPapers(
+        @RequestParam(value = "search", required = false) searchQuery: String?,
+        @RequestParam index: Int,
+        @RequestParam(value = "size", required = false) pageSize: Int,
+        @RequestParam(value = "tagIds", required = false) tagIds: List<String>?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getAllPapers with search: $searchQuery, tagIds: $tagIds" }
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
-                paperService.searchPapersWithFilters(request),
+                paperService.getAllPapers(searchQuery, index, pageSize, tagIds),
                 LocalDateTime.now()
             )
         )
