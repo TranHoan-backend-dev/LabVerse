@@ -21,10 +21,4 @@ public class FirebaseService {
                 )
                 .addOnFailureListener(callback::onFailure);
     }
-
-    public interface UploadCallback {
-        void onSuccess(String downloadUrl);
-
-        void onFailure(Exception e);
-    }
 }
