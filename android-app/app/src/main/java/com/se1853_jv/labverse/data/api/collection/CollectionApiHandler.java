@@ -11,6 +11,7 @@ import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.CollectionRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.request.CollectionUserRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateCollectionRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -103,31 +104,7 @@ public class CollectionApiHandler {
         });
     }
 
-    public void getCollectionById(String id, ApiCallback<CollectionResponse> callback) {
-        Log.d(TAG, "getCollectionById: " + id);
-        Call<BaseJsonResponse<CollectionResponse>> call = apiService.getCollectionById(id);
-        call.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<BaseJsonResponse<CollectionResponse>> call,
-                                   @NonNull Response<BaseJsonResponse<CollectionResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    var result = response.body().getData();
-                    callback.onSuccess(result);
-                    Log.d(TAG, "Collection fetched: " + (result != null ? result.getName() : "null"));
-                } else {
-                    Log.e(TAG, "Server Error: " + response.message());
-                    callback.onError(response.message());
-                }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<BaseJsonResponse<CollectionResponse>> call,
-                                   @NonNull Throwable t) {
-                Log.e(TAG, "API Error: " + t.getMessage(), t);
-                callback.onError(t.getMessage());
-            }
-        });
-    }
 
     public void createCollection(@NonNull CollectionRequest request, ApiCallback<CollectionResponse> callback) {
         Log.d(TAG, "createCollection: " + request.getName());
@@ -167,8 +144,22 @@ public class CollectionApiHandler {
                     callback.onSuccess(result);
                     Log.d(TAG, "Paper added to collection successfully");
                 } else {
-                    Log.e(TAG, "Server Error: " + response.message());
-                    callback.onError(response.message());
+                    // Try to parse error message from response body
+                    String errorMessage = response.message();
+                    if (response.errorBody() != null) {
+                        try {
+                            com.google.gson.Gson gson = new com.google.gson.Gson();
+                            String errorBody = response.errorBody().string();
+                            BaseJsonResponse<?> errorResponse = gson.fromJson(errorBody, BaseJsonResponse.class);
+                            if (errorResponse != null && errorResponse.getMessage() != null && !errorResponse.getMessage().isEmpty()) {
+                                errorMessage = errorResponse.getMessage();
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to parse error response: " + e.getMessage());
+                        }
+                    }
+                    Log.e(TAG, "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
 
@@ -244,6 +235,165 @@ public class CollectionApiHandler {
                     var result = response.body().getData();
                     callback.onSuccess(result);
                     Log.d(TAG, "Member added to collection successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getMembers(@NonNull String collectionId, ApiCallback<List<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>> callback) {
+        Log.d(TAG, "getMembers: collectionId=" + collectionId);
+        Call<BaseJsonResponse<List<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>>> call = apiService.getMembers(collectionId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>>> call,
+                                   @NonNull Response<BaseJsonResponse<List<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Members fetched: " + (result != null ? result.size() : 0));
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void removeMember(@NonNull String collectionId, @NonNull String memberId, ApiCallback<Object> callback) {
+        Log.d(TAG, "removeMember: collectionId=" + collectionId + ", memberId=" + memberId);
+        Call<BaseJsonResponse<Object>> call = apiService.removeMember(collectionId, memberId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Member removed successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void updateMemberAccess(@NonNull String collectionId, @NonNull String memberId,
+                                   @NonNull com.se1853_jv.labverse.data.dto.request.UpdateMemberAccessRequest request,
+                                   ApiCallback<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse> callback) {
+        Log.d(TAG, "updateMemberAccess: collectionId=" + collectionId + ", memberId=" + memberId);
+        Call<BaseJsonResponse<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>> call = apiService.updateMemberAccess(collectionId, memberId, request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Member access updated successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<com.se1853_jv.labverse.data.dto.response.CollectionUserResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void updateCollection(@NonNull String collectionId, @NonNull UpdateCollectionRequest request, ApiCallback<CollectionResponse> callback) {
+        Log.d(TAG, "updateCollection: collectionId=" + collectionId + ", name=" + request.getName());
+        Call<BaseJsonResponse<CollectionResponse>> call = apiService.updateCollection(collectionId, request);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<CollectionResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<CollectionResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Collection updated: " + (result != null ? result.getName() : "null"));
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<CollectionResponse>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void deleteCollection(@NonNull String collectionId, @NonNull String encodedUserId, ApiCallback<Object> callback) {
+        Log.d(TAG, "deleteCollection: collectionId=" + collectionId + ", userId=" + encodedUserId);
+        Call<BaseJsonResponse<Object>> call = apiService.deleteCollection(collectionId, encodedUserId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Collection deleted successfully");
+                } else {
+                    Log.e(TAG, "Server Error: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void removePaperFromCollection(@NonNull String collectionId, @NonNull String paperId, 
+                                          @NonNull String encodedUserId, ApiCallback<Object> callback) {
+        Log.d(TAG, "removePaperFromCollection: collectionId=" + collectionId + ", paperId=" + paperId);
+        Call<BaseJsonResponse<Object>> call = apiService.removePaperFromCollection(collectionId, paperId, encodedUserId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Paper removed from collection successfully");
                 } else {
                     Log.e(TAG, "Server Error: " + response.message());
                     callback.onError(response.message());

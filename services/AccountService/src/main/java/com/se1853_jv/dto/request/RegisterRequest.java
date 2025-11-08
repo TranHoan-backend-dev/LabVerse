@@ -2,6 +2,7 @@ package com.se1853_jv.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
@@ -21,7 +22,10 @@ public class RegisterRequest {
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
-    private String roleName = "RESEARCHER"; // Default role
+    @NotBlank(message = "Role is required")
+    @Pattern(regexp = "^(PI|RESEARCHER|STUDENT)$", 
+             message = "Role must be one of: PI, RESEARCHER, or STUDENT")
+    private String roleName;
 
     public RegisterRequest() {
     }

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface TagRepository : MongoRepository<Tag, String> {
     fun findByPaperIdsContaining(papers: String): List<Tag>
+    fun findByName(name: String): Tag?
 }

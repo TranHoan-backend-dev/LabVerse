@@ -4,19 +4,27 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.auth.AuthApiHandler;
 import com.se1853_jv.labverse.data.dto.request.ForgotPasswordRequest;
+import com.se1853_jv.labverse.data.dto.request.GoogleLoginRequest;
 import com.se1853_jv.labverse.data.dto.request.LoginRequest;
 import com.se1853_jv.labverse.data.dto.response.AuthResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
@@ -25,7 +33,6 @@ import com.se1853_jv.labverse.presentation.feed.FeedActivity;
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputEditText etEmail, etPassword;
-    private CheckBox cbRememberMe;
     private MaterialButton btnSignIn, btnGoogleSignIn;
     private TextView btnLogin, btnRegister, tvForgotPassword, tvCreateAccount;
     private View loginIndicator, registerIndicator;
@@ -33,6 +40,9 @@ public class LoginActivity extends AppCompatActivity {
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
     private ProgressDialog progressDialog;
+    private GoogleSignInClient googleSignInClient;
+    private static final int RC_SIGN_IN = 9001;
+    private static final String TAG = "LoginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +69,14 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Logging in...");
         progressDialog.setCancelable(false);
+
+        // Configure Google Sign-In
+        configureGoogleSignIn();
     }
 
     private void initializeViews() {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
-        cbRememberMe = findViewById(R.id.cbRememberMe);
         btnSignIn = findViewById(R.id.btnSignIn);
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         btnLogin = findViewById(R.id.btnLogin);
@@ -215,9 +227,105 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
+    private void configureGoogleSignIn() {
+        // Configure Google Sign-In to request the user's ID, email address, and basic profile
+        // Note: You need to get your Web Client ID from Google Cloud Console
+        // The Web Client ID is different from Android Client ID - you need the Web Client ID for ID tokens
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+    }
+
     private void handleGoogleLogin() {
-        // TODO: Implement Google Sign-In
-        Toast.makeText(this, "Google Sign-In functionality coming soon", Toast.LENGTH_SHORT).show();
+        googleSignInClient.signOut()
+                .addOnCompleteListener(this, task -> {
+                    Intent signInIntent = googleSignInClient.getSignInIntent();
+                    startActivityForResult(signInIntent, RC_SIGN_IN);
+                });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleGoogleSignInResult(task);
+        }
+    }
+
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            if (account != null && account.getIdToken() != null) {
+                // Got the ID token, now send it to the backend
+                String idToken = account.getIdToken();
+                performGoogleLogin(idToken);
+            } else {
+                Toast.makeText(this, "Google Sign-In failed: Unable to get account information", Toast.LENGTH_SHORT).show();
+            }
+        } catch (ApiException e) {
+            Log.e(TAG, "Google Sign-In failed", e);
+            String errorMessage = "Google Sign-In failed";
+            if (e.getStatusCode() == 12500) {
+                errorMessage = "Google Sign-In was cancelled";
+            } else if (e.getStatusCode() == 10) {
+                errorMessage = "Google Play Services is not available. Please update Google Play Services.";
+            } else if (e.getStatusCode() == 7) {
+                errorMessage = "Network error. Please check your internet connection.";
+            }
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void performGoogleLogin(String idToken) {
+        // Show loading
+        progressDialog.setMessage("Signing in with Google...");
+        progressDialog.show();
+        btnGoogleSignIn.setEnabled(false);
+
+        // Create Google login request
+        GoogleLoginRequest request = new GoogleLoginRequest(idToken);
+
+        // Call API
+        authApiHandler.googleLogin(request, new ApiCallback<AuthResponse>() {
+            @Override
+            public void onSuccess(AuthResponse response) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    btnGoogleSignIn.setEnabled(true);
+
+                    // Save user session
+                    sessionManager.saveAuthResponse(response);
+
+                    // Show success message
+                    Toast.makeText(LoginActivity.this,
+                            "Welcome, " + response.getFullName() + "!",
+                            Toast.LENGTH_SHORT).show();
+
+                    // Navigate to main screen
+                    navigateToFeed();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    btnGoogleSignIn.setEnabled(true);
+
+                    // Show error message
+                    String errorMessage = "Google Sign-In failed. Please try again.";
+                    if (error != null && !error.isEmpty()) {
+                        errorMessage = error;
+                    }
+                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void handleForgotPassword() {

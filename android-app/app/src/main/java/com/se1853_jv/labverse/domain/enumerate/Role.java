@@ -9,7 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Role {
     PRINCIPAL_INVESTIGATOR(List.of("PI")),
-    LAB_HEAD(List.of("Lab Head")),
     RESEARCHER(List.of("Postdoc", "PhD")),
     INTERN(List.of("Student", "Intern"));
 

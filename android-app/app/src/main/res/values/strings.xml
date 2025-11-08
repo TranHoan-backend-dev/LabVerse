@@ -103,7 +103,24 @@
 
     <!-- Roles -->
     <string name="role_principal_investigator">Principal Investigator (PI)</string>
-    <string name="role_lab_head">Lab Head</string>
     <string name="role_researcher">Researcher (Postdoc/PhD)</string>
     <string name="role_intern">Intern (Student)</string>
+    <string name="filter_papers">Filter Papers</string>
+    <string name="author">Author</string>
+    <string name="search_by_author_name">Search by author name</string>
+    <string name="publication_year">Publication Year</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="keywords_tags">Keywords/Tags</string>
+    <string name="enter_keywords_separated_by_commas">Enter keywords separated by commas</string>
+    <string name="reset">Reset</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="filter_by_journal">Filter by journal</string>
+    <string name="role_student">Student</string>
+    
+    <!-- Google Sign-In Configuration -->
+    <!-- Replace this with your Web Client ID from Google Cloud Console -->
+    <!-- The Web Client ID is different from Android Client ID -->
+    <!-- You can find it in: Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs (Web application type) -->
+    <string name="default_web_client_id">536556216607-3rtqbemg7v1r48n4pu2diirs0lspuqbt.apps.googleusercontent.com</string>
 </resources>

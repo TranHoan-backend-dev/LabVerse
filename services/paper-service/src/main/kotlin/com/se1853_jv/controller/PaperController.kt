@@ -1,12 +1,15 @@
 package com.se1853_jv.controller
 
+import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.GrobidService
 import com.se1853_jv.service.boundary.ReferenceService
 import com.se1853_jv.service.boundary.PaperService
+import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -53,8 +56,31 @@ class PaperController(
         )
     }
 
-    @PostMapping("/pdf/parse", produces = ["application/json"], consumes = ["multipart/form-data"])
-    fun extractDataFromPdfFile(@RequestParam("file") file: MultipartFile): ResponseEntity<WrapperApiResponse> {
+    @PostMapping(
+        "/pdf/upload",
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun uploadPdfFile(@Valid @RequestBody request: UploadPdfRequest): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to uploadPdfFile controller" }
+        paperService.createNewPaper(request)
+
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Upload paper successfully",
+                null,
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @PostMapping(
+        "/pdf/parse",
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
+    fun extractDataFromPdfFile(@RequestBody file: MultipartFile): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to extractDataFromPdfFile controller" }
         val temp: File = File.createTempFile("pdf_", ".pdf")
         file.transferTo(temp)
@@ -72,7 +98,7 @@ class PaperController(
         )
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,

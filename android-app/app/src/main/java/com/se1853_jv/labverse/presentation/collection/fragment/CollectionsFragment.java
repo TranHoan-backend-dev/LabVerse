@@ -89,6 +89,7 @@ public class CollectionsFragment extends Fragment {
     private void setupRecyclerViews() {
         // Setup My Collections RecyclerView
         adapterMyCollections = new CollectionAdapter();
+        adapterMyCollections.setIsOwner(true); // Owner role for My Collections
         adapterMyCollections.setOnCollectionClickListener(new CollectionAdapter.OnCollectionClickListener() {
             @Override
             public void onCollectionClick(CollectionResponse collection) {
@@ -105,6 +106,7 @@ public class CollectionsFragment extends Fragment {
 
         // Setup Shared Collections RecyclerView
         adapterSharedCollections = new CollectionAdapter();
+        adapterSharedCollections.setIsOwner(false); // Reader role for Shared Collections
         adapterSharedCollections.setOnCollectionClickListener(new CollectionAdapter.OnCollectionClickListener() {
             @Override
             public void onCollectionClick(CollectionResponse collection) {
@@ -143,7 +145,7 @@ public class CollectionsFragment extends Fragment {
             buttonCreateCollection.setVisibility(View.GONE);
             buttonInviteMembers.setVisibility(View.GONE);
             
-            // Hide "My Collections" section header for non-PI users
+            // Hide "My Collections" section completely for non-PI users
             View view = getView();
             if (view != null) {
                 TextView textMyCollectionsHeader = view.findViewById(R.id.text_my_collections_header);
@@ -151,6 +153,10 @@ public class CollectionsFragment extends Fragment {
                     textMyCollectionsHeader.setVisibility(View.GONE);
                 }
             }
+            
+            // Hide empty state message and RecyclerView for My Collections
+            textEmptyMyCollections.setVisibility(View.GONE);
+            recyclerMyCollections.setVisibility(View.GONE);
         }
     }
 
@@ -170,8 +176,13 @@ public class CollectionsFragment extends Fragment {
         // Note: userId from session might already be encoded from AuthResponse
         String encodedUserId = userId; // Use as-is for now, adjust if needed based on backend response format
         
-        // Load My Collections (collections where user is author)
-        loadMyCollections(encodedUserId);
+        // Only load My Collections if user is PI
+        String role = sessionManager.getRole();
+        boolean isPI = "PI".equals(role);
+        if (isPI) {
+            // Load My Collections (collections where user is author)
+            loadMyCollections(encodedUserId);
+        }
         
         // Load Shared Collections (collections where user is not author)
         loadSharedCollections(encodedUserId);
@@ -232,6 +243,16 @@ public class CollectionsFragment extends Fragment {
     }
 
     private void displayMyCollections() {
+        // Only show My Collections section for PI users
+        String role = sessionManager.getRole();
+        boolean isPI = "PI".equals(role);
+        
+        if (!isPI) {
+            textEmptyMyCollections.setVisibility(View.GONE);
+            recyclerMyCollections.setVisibility(View.GONE);
+            return;
+        }
+        
         if (myCollections.isEmpty()) {
             textEmptyMyCollections.setVisibility(View.VISIBLE);
             recyclerMyCollections.setVisibility(View.GONE);
@@ -256,22 +277,31 @@ public class CollectionsFragment extends Fragment {
     private void showCollectionOptions(CollectionResponse collection, View anchor, boolean isMyCollection) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         
+        // Check if current user is AUTHOR in this collection
+        com.se1853_jv.labverse.domain.enumerate.AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        boolean isAuthor = currentUserAccessLevel == com.se1853_jv.labverse.domain.enumerate.AccessLevel.AUTHOR;
+        
         if (isMyCollection) {
-            // Only PI can manage their own collections
+            // PI can manage their own collections
             popup.getMenu().add("Manage Members");
             popup.getMenu().add("Edit Collection");
             popup.getMenu().add("Delete Collection");
         } else {
-            // Shared collections - users can only view
-            popup.getMenu().add("View Details");
+            // Shared collections - only AUTHOR can manage members
+            if (isAuthor) {
+                popup.getMenu().add("Manage Members");
+            }
+            // Non-AUTHOR users in shared collections can only view (no menu options for management)
         }
 
         popup.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Manage Members".equals(title)) {
-                if (getActivity() instanceof CollectionsActivity) {
-                    ((CollectionsActivity) getActivity()).showInviteMembersDialog(collection);
-                }
+                // Open CollectionMembersActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), 
+                    com.se1853_jv.labverse.presentation.collection.CollectionMembersActivity.class);
+                intent.putExtra("collection", collection);
+                startActivity(intent);
             } else if ("Edit Collection".equals(title)) {
                 if (getActivity() instanceof CollectionsActivity) {
                     ((CollectionsActivity) getActivity()).showEditCollectionDialog(collection);

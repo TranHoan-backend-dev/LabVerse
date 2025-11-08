@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - LabVerse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .endpoint {
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CORS Test Tool</h1>
+        <p>Test CORS với các service khác nhau trong LabVerse Gateway</p>
+        
+        <div class="test-section">
+            <h2>1. Account Service</h2>
+            <div class="endpoint">GET /account-service/api/users/me</div>
+            <button onclick="testAccountService()">Test Account Service</button>
+            <div id="account-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Reading Service</h2>
+            <div class="endpoint">GET /reading-service/reading-lists/user/{userId}</div>
+            <button onclick="testReadingService()">Test Reading Service</button>
+            <div id="reading-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Paper Service</h2>
+            <div class="endpoint">GET /paper-service/papers/all?search=&index=1&size=12</div>
+            <button onclick="testPaperService()">Test Paper Service</button>
+            <div id="paper-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Group Service</h2>
+            <div class="endpoint">GET /group-service/...</div>
+            <button onclick="testGroupService()">Test Group Service</button>
+            <div id="group-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. OPTIONS Preflight Test</h2>
+            <div class="endpoint">OPTIONS /paper-service/papers/all</div>
+            <button onclick="testOptionsPreflight()">Test OPTIONS Preflight</button>
+            <div id="options-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const GATEWAY_URL = 'http://localhost:8080';
+        const CURRENT_ORIGIN = window.location.origin;
+
+        function showResult(elementId, success, message, details = '') {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.className = 'result ' + (success ? 'success' : 'error');
+            resultDiv.textContent = `${success ? '✅' : '❌'} ${message}\n\n${details}`;
+        }
+
+        function showInfo(elementId, message, details = '') {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.className = 'result info';
+            resultDiv.textContent = `ℹ️ ${message}\n\n${details}`;
+        }
+
+        async function testAccountService() {
+            showInfo('account-result', 'Testing...', 'Sending GET request to Account Service...');
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}/account-service/api/users/me`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const responseText = await response.text();
+                const details = `Status: ${response.status} ${response.statusText}\n` +
+                               `Headers:\n${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n\n` +
+                               `Response: ${responseText}`;
+
+                if (response.ok) {
+                    showResult('account-result', true, 'Request successful!', details);
+                } else {
+                    showResult('account-result', false, `Request failed: ${response.status}`, details);
+                }
+            } catch (error) {
+                showResult('account-result', false, 'CORS Error or Network Error', 
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are missing\n` +
+                    `2. Origin ${CURRENT_ORIGIN} is not allowed\n` +
+                    `3. Preflight request failed`);
+            }
+        }
+
+        async function testReadingService() {
+            showInfo('reading-result', 'Testing...', 'Sending GET request to Reading Service...');
+            
+            // Using a dummy encoded ID for testing
+            const dummyUserId = 'test123';
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}/reading-service/reading-lists/user/${dummyUserId}`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const responseText = await response.text();
+                const details = `Status: ${response.status} ${response.statusText}\n` +
+                               `Headers:\n${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n\n` +
+                               `Response: ${responseText}`;
+
+                if (response.ok) {
+                    showResult('reading-result', true, 'Request successful!', details);
+                } else {
+                    // Even if status is not OK, if we got a response, CORS worked
+                    showResult('reading-result', true, 'CORS headers present (request reached server)', details);
+                }
+            } catch (error) {
+                showResult('reading-result', false, 'CORS Error or Network Error', 
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are missing\n` +
+                    `2. Origin ${CURRENT_ORIGIN} is not allowed\n` +
+                    `3. Preflight request failed`);
+            }
+        }
+
+        async function testPaperService() {
+            showInfo('paper-result', 'Testing...', 'Sending GET request to Paper Service...');
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}/paper-service/papers/all?search=&index=1&size=12`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const responseText = await response.text();
+                const details = `Status: ${response.status} ${response.statusText}\n` +
+                               `Headers:\n${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n\n` +
+                               `Response: ${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}`;
+
+                // Check for CORS headers
+                const corsHeaders = {
+                    'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                    'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+                    'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+                };
+
+                if (response.ok) {
+                    showResult('paper-result', true, 'Request successful!', 
+                        `CORS Headers:\n${JSON.stringify(corsHeaders, null, 2)}\n\n${details}`);
+                } else {
+                    // Even if status is not OK, if we got a response, CORS worked
+                    const hasCorsHeaders = Object.values(corsHeaders).some(v => v !== null);
+                    if (hasCorsHeaders) {
+                        showResult('paper-result', true, 'CORS headers present (request reached server)', 
+                            `CORS Headers:\n${JSON.stringify(corsHeaders, null, 2)}\n\n${details}`);
+                    } else {
+                        showResult('paper-result', false, `Request failed: ${response.status}`, details);
+                    }
+                }
+            } catch (error) {
+                showResult('paper-result', false, 'CORS Error or Network Error', 
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are missing\n` +
+                    `2. Origin ${CURRENT_ORIGIN} is not allowed\n` +
+                    `3. Preflight request failed\n\n` +
+                    `Check browser console (F12) for more details.`);
+            }
+        }
+
+        async function testGroupService() {
+            showInfo('group-result', 'Testing...', 'Sending GET request to Group Service...');
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}/group-service/api/teams`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const responseText = await response.text();
+                const details = `Status: ${response.status} ${response.statusText}\n` +
+                               `Headers:\n${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n\n` +
+                               `Response: ${responseText}`;
+
+                if (response.ok) {
+                    showResult('group-result', true, 'Request successful!', details);
+                } else {
+                    showResult('group-result', true, 'CORS headers present (request reached server)', details);
+                }
+            } catch (error) {
+                showResult('group-result', false, 'CORS Error or Network Error', 
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are missing\n` +
+                    `2. Origin ${CURRENT_ORIGIN} is not allowed\n` +
+                    `3. Preflight request failed`);
+            }
+        }
+
+        async function testOptionsPreflight() {
+            showInfo('options-result', 'Testing OPTIONS preflight...', 'Sending OPTIONS request to Paper Service...');
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}/paper-service/papers/all?search=&index=1&size=12`, {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'content-type',
+                    }
+                });
+
+                const details = `Status: ${response.status} ${response.statusText}\n` +
+                               `Headers:\n${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`;
+
+                // Check for CORS headers
+                const corsHeaders = {
+                    'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                    'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+                    'access-control-allow-headers': response.headers.get('access-control-allow-headers'),
+                    'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+                    'access-control-max-age': response.headers.get('access-control-max-age'),
+                };
+
+                const hasCorsHeaders = Object.values(corsHeaders).some(v => v !== null);
+                
+                if (hasCorsHeaders) {
+                    showResult('options-result', true, 'OPTIONS preflight successful!', 
+                        `CORS Headers Found:\n${JSON.stringify(corsHeaders, null, 2)}\n\n${details}`);
+                } else {
+                    showResult('options-result', false, 'OPTIONS preflight failed - No CORS headers', 
+                        `No CORS headers found in response.\n\n${details}\n\n` +
+                        `This means CORS is not configured correctly in GatewayService.`);
+                }
+            } catch (error) {
+                showResult('options-result', false, 'OPTIONS Request Failed', 
+                    `Error: ${error.message}\n\n` +
+                    `This means the OPTIONS request was blocked before reaching the server.\n` +
+                    `Check GatewayService logs for more details.`);
+            }
+        }
+
+        // Show current origin on load
+        window.addEventListener('load', () => {
+            console.log('Current Origin:', CURRENT_ORIGIN);
+            console.log('Gateway URL:', GATEWAY_URL);
+        });
+    </script>
+</body>
+</html>
+

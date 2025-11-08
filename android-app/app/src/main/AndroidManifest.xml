@@ -61,6 +61,10 @@
             android:name=".presentation.profile.ProfileActivity"
             android:exported="true" />
         <activity
+            android:name=".presentation.feed.FilterActivity"
+            android:exported="true"
+            tools:targetApi="34" />
+        <activity
             android:name=".presentation.team.TeamCreateActivity"
             android:exported="true" />
         <activity
@@ -79,6 +83,10 @@
         <activity
             android:name=".presentation.collection.CollectionsActivity"
             android:exported="true" />
+        <activity
+            android:name=".presentation.collection.CollectionMembersActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.collection.CollectionsActivity" />
     </application>
 
 </manifest>

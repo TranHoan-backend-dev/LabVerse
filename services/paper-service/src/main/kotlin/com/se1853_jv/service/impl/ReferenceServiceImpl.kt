@@ -18,19 +18,26 @@ private const val COLLECTION_NAME: String = "reference"
 class ReferenceServiceImpl(
     private val repo: ReferenceRepository,
     private val encoder: EncoderService,
-    private val db: Firestore,
+    private val db: Firestore?,
 ) : ReferenceService {
 
     override fun getReferencesByPaperId(id: String): List<ReferenceResponse> {
         logger.info { "Get references with paper id $id" }
         val list = repo.findByPaperIdsContaining(id).map { convert(it) }
 
-        val result: MutableList<Map<String, Any>> = ArrayList()
-        list.forEach { item ->
-            result.add(storeData(item))
+        if (db != null) {
+            try {
+                val result: MutableList<Map<String, Any>> = ArrayList()
+                list.forEach { item ->
+                    result.add(storeData(item))
+                }
+                result.forEach { db.collection(COLLECTION_NAME).add(it) }
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to send references to Firebase: ${e.message}" }
+            }
+        } else {
+            logger.debug { "Firebase not available, skipping Firebase sync for references" }
         }
-
-        result.forEach { db.collection(COLLECTION_NAME).add(it) }
 
         return list
     }
@@ -40,8 +47,16 @@ class ReferenceServiceImpl(
         val reference = repo.findById(id).orElseThrow { RuntimeException("Reference not found") }
         val response = convert(reference)
 
-        val data: ApiFuture<DocumentReference> = db.collection(COLLECTION_NAME).add(storeData(response))
-        logger.info { "Data: ${data.get().id}" }
+        if (db != null) {
+            try {
+                val data: ApiFuture<DocumentReference> = db.collection(COLLECTION_NAME).add(storeData(response))
+                logger.info { "Data: ${data.get().id}" }
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to send reference to Firebase: ${e.message}" }
+            }
+        } else {
+            logger.debug { "Firebase not available, skipping Firebase sync for reference" }
+        }
 
         return response
     }

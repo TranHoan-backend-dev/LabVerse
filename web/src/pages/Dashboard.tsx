@@ -12,6 +12,7 @@ import {Link} from "react-router-dom";
 import {useAuth} from "@/contexts/AuthContext";
 import {toast} from "sonner";
 import {Helmet} from "react-helmet-async";
+import {getPaginatedPapers} from "@/services/paper.service.ts";
 
 const Dashboard = () => {
     const {user, signOut} = useAuth();
@@ -26,61 +27,60 @@ const Dashboard = () => {
         abstract: '',
         doi: '',
     });
+    const [page, setPage] = useState(1);
+    const pageSize = 12;
 
-    const {data: papers, isLoading} = useQuery({
-        queryKey: ['papers', user?.id, searchQuery],
+    const {data, isLoading} = useQuery({
+        queryKey: ['papers', user?.id, searchQuery, page],
         queryFn: async () => {
-            let query = supabase
-                .from('papers')
-                .select('*')
-                .eq('user_id', user?.id)
-                .order('created_at', {ascending: false});
-
-            if (searchQuery) {
-                query = query.or(`title.ilike.%${searchQuery}%,authors.cs.{${searchQuery}}`);
-            }
-
-            const {data, error} = await query;
-            if (error) throw error;
-            return data;
+            const res = await getPaginatedPapers(page, pageSize, searchQuery);
+            // getPaginatedPapers already returns parsed JSON data
+            return res;
         },
         enabled: !!user,
     });
 
+    const papers = data?.data ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
     const importMutation = useMutation({
-        mutationFn: async () => {
-            const authorsArray = newPaper.authors.split(',').map(a => a.trim()).filter(a => a);
-
-            const {error} = await supabase
-                .from('papers')
-                .insert({
-                    user_id: user?.id,
-                    title: newPaper.title,
-                    authors: authorsArray,
-                    journal: newPaper.journal || null,
-                    year: newPaper.year || null,
-                    abstract: newPaper.abstract || null,
-                    doi: newPaper.doi || null,
-                });
-
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            toast.success('Paper imported successfully');
-            queryClient.invalidateQueries({queryKey: ['papers']});
-            setIsImportOpen(false);
-            setNewPaper({
-                title: '',
-                authors: '',
-                journal: '',
-                year: new Date().getFullYear(),
-                abstract: '',
-                doi: '',
-            });
-        },
-        onError: () => {
-            toast.error('Failed to import paper');
-        },
+        // TODO: xu ly import paper
+        // mutationFn: async () => {
+        //     const authorsArray = newPaper.authors
+        //         .split(',')
+        //         .map(a => a.trim())
+        //         .filter(a => a);
+        //
+        //     const payload = {
+        //         title: newPaper.title,
+        //         authors: authorsArray,
+        //         journal: newPaper.journal || null,
+        //         year: newPaper.year || null,
+        //         abstract: newPaper.abstract || null,
+        //         doi: newPaper.doi || null,
+        //     };
+        //
+        //     const res = await
+        //
+        //     if (!res.ok) throw new Error('Failed to import paper');
+        // },
+        // onSuccess: () => {
+        //     toast.success('Paper imported successfully');
+        //     queryClient.invalidateQueries({queryKey: ['papers']});
+        //     setIsImportOpen(false);
+        //     setNewPaper({
+        //         title: '',
+        //         authors: '',
+        //         journal: '',
+        //         year: new Date().getFullYear(),
+        //         abstract: '',
+        //         doi: '',
+        //     });
+        // },
+        // onError: () => {
+        //     toast.error('Failed to import paper');
+        // },
     });
 
     return (
@@ -314,6 +314,27 @@ const Dashboard = () => {
                                         Import Paper
                                     </Button>
                                 )}
+                            </div>
+                        )}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-3 mt-8">
+                                <Button
+                                    variant="outline"
+                                    disabled={page === 1}
+                                    onClick={() => setPage(page - 1)}
+                                >
+                                    Previous
+                                </Button>
+
+                                <span className="text-sm font-medium">Page {page} / {totalPages}</span>
+
+                                <Button
+                                    variant="outline"
+                                    disabled={page === totalPages}
+                                    onClick={() => setPage(page + 1)}
+                                >
+                                    Next
+                                </Button>
                             </div>
                         )}
                     </div>

@@ -19,7 +19,7 @@ public class RegisterRequest {
         this.password = password;
         this.fullName = fullName;
         this.username = username;
-        this.roleName = "RESEARCHER"; // Default role
+        this.roleName = roleName; // Default role
     }
 }
 

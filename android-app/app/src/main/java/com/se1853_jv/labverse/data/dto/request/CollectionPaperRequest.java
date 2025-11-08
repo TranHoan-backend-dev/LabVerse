@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class CollectionPaperRequest {
     private String collectionId;
     private String paperId;
+    private String userId;    // User ID making the request (for authorization)
     private String priority;  // e.g. HIGH / MEDIUM / LOW
     private String status;    // e.g. ToRead / Reading / Finished
 }
