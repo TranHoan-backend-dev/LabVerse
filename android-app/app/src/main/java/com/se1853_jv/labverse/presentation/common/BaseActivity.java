@@ -16,6 +16,7 @@ import com.se1853_jv.labverse.presentation.collection.CollectionsActivity;
 import com.se1853_jv.labverse.presentation.feed.FeedActivity;
 import com.se1853_jv.labverse.presentation.profile.ProfileActivity;
 import com.se1853_jv.labverse.presentation.readinglist.ReadingListActivity;
+import com.se1853_jv.labverse.presentation.search.SearchActivity;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -40,7 +41,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         profileBtn = parent.findViewById(R.id.profile_btn);
 
         handleNavigatingToHomeScreen();
-        // TODO: search modal
+        handleNavigatingToSearchScreen();
         handleNavigatingToReadingListScreen();
         handleNavigatingToCollectionScreen();
         handleNavigatingToProfileScreen();
@@ -51,6 +52,16 @@ public abstract class BaseActivity extends AppCompatActivity {
             Log.e(TAG, "handleNavigatingToHomeScreen");
             if (!(this instanceof FeedActivity)) {
                 var intent = new Intent(this, FeedActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void handleNavigatingToSearchScreen() {
+        searchBtn.setOnClickListener(v -> {
+            Log.e(TAG, "handleNavigatingToSearchScreen");
+            if (!(this instanceof SearchActivity)) {
+                var intent = new Intent(this, SearchActivity.class);
                 startActivity(intent);
             }
         });

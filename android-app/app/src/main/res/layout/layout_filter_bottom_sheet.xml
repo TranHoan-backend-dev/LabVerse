@@ -41,10 +41,17 @@
         </LinearLayout>
 
         <!-- Author -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/author"
+            android:textSize="14sp" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/input_author"
@@ -55,10 +62,10 @@
 
         <!-- Journal -->
         <TextView
-            android:id="@+id/journal_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:text="@string/journal"
             android:textSize="14sp" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -73,8 +80,7 @@
                 android:layout_height="wrap_content"
                 android:dropDownVerticalOffset="8dp"
                 android:hint="@string/filter_by_journal"
-                android:inputType="none"
-                android:labelFor="@+id/journal_label" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Year -->
