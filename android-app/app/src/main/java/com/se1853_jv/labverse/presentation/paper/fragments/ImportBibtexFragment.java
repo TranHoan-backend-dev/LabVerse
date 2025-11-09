@@ -427,13 +427,16 @@ public class ImportBibtexFragment extends Fragment {
         request.setKeywords(null);
         request.setTags(null);
         
+        // Get userId from session manager
+        String userId = sessionManager != null ? sessionManager.getUserId() : null;
+        
         // Call API synchronously (we're already in background thread)
         final boolean[] success = {false};
         final String[] errorMessage = {null};
         
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         
-        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
+        paperApiHandler.uploadPdf(request, userId, new ApiCallback<Object>() {
             @Override
             public void onSuccess(Object data) {
                 success[0] = true;
