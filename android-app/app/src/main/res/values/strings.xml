@@ -27,7 +27,7 @@
     <string name="home">Home</string>
     <string name="search">Search</string>
     <string name="lists">Lists</string>
-    <string name="collections">Collections</string>
+    <string name="collections">Collection</string>
     <string name="profile">Profile</string>
     <string name="discovery">Discovery</string>
     <string name="my_papers">My papers</string>
@@ -118,7 +118,16 @@
     <string name="apply_filters">Apply Filters</string>
     <string name="filter_by_journal">Filter by journal</string>
     <string name="role_student">Student</string>
-    
+    <string name="search_results">Search Results</string>
+    <string name="all_papers">All Papers</string>
+    <string name="recent">Recent</string>
+    <string name="my_library">My Library</string>
+    <string name="page_info">Page %1$d of %2$d</string>
+    <string name="showing_papers">Showing %1$d-%2$d of %3$d papers</string>
+    <string name="library">Library</string>
+    <string name="import_paper">Import Paper</string>
+
+    <string name="close">Close</string>
     <!-- Google Sign-In Configuration -->
     <!-- Replace this with your Web Client ID from Google Cloud Console -->
     <!-- The Web Client ID is different from Android Client ID -->

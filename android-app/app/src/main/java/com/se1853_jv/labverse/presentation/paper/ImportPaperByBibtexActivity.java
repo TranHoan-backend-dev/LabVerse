@@ -3,6 +3,7 @@ package com.se1853_jv.labverse.presentation.paper;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,6 +23,7 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
 
         setupToolbarAndNavbar();
         setupViewPager();
+        handleBackEvent();
     }
 
     private void setupToolbarAndNavbar() {
@@ -43,6 +45,12 @@ public class ImportPaperByBibtexActivity extends AppCompatActivity {
 
         View bottomNavbar = findViewById(R.id.bottom_navbar);
         bottomNavbar.setVisibility(View.GONE);
+    }
+
+    private void handleBackEvent() {
+        View header = findViewById(R.id.title_view);
+        ImageButton btn = header.findViewById(R.id.back_btn);
+        btn.setOnClickListener(v -> finish());
     }
 
     private void setupViewPager() {

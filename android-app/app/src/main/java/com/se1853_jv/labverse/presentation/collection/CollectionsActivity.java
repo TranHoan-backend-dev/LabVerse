@@ -32,6 +32,7 @@ import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionsPagerAdapter;
 import com.se1853_jv.labverse.presentation.collection.fragment.CollectionsFragment;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 
 import java.util.List;
 
@@ -60,6 +61,18 @@ public class CollectionsActivity extends BaseActivity {
         apiHandler = new CollectionApiHandler();
         userApiHandler = new UserApiHandler(this);
         setupViewPager();
+        
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private void hideSearchBar() {

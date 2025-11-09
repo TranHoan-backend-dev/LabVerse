@@ -1,6 +1,7 @@
 package com.se1853_jv.labverse.presentation.readinglist;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
@@ -46,6 +48,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
     private RecyclerView recyclerPapers;
     private TextView textEmptyState;
     private ProgressBar progressBar;
+    private FloatingActionButton fabImportPaper;
     private SelectPaperAdapter adapter;
     
     private final List<PaperResearch> allPapers = new ArrayList<>();
@@ -78,6 +81,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         setupRecyclerView();
         setupSearch();
         setupScrollListener();
+        setupFabImportPaper();
         // Load tất cả papers (getAllPapers)
         loadAllPapers(0, PAGE_SIZE);
     }
@@ -88,6 +92,24 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         recyclerPapers = findViewById(R.id.recycler_papers);
         textEmptyState = findViewById(R.id.text_empty_state);
         progressBar = findViewById(R.id.progress_bar);
+        fabImportPaper = findViewById(R.id.fab_import_paper);
+    }
+    
+    private void setupFabImportPaper() {
+        if (fabImportPaper != null) {
+            fabImportPaper.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(SelectPaperForReadingListActivity.this, 
+                            com.se1853_jv.labverse.presentation.paper.ImportPaperByBibtexActivity.class);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    android.util.Log.e(TAG, "Error opening import paper activity: " + e.getMessage());
+                    Toast.makeText(SelectPaperForReadingListActivity.this, 
+                            "Failed to open import paper: " + e.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void setupToolbar() {
@@ -178,7 +200,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         isLoading = true;
         showLoading(true);
         
-        paperApiHandler.getAllPapers(query, page, pageSize, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(query, page, pageSize, null, null, null, null, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -267,7 +289,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         showLoading(true);
 
         // Gọi getAllPapers với searchQuery = null để lấy tất cả papers
-        paperApiHandler.getAllPapers(null, page, pageSize, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(null, page, pageSize, null, null, null, null, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {

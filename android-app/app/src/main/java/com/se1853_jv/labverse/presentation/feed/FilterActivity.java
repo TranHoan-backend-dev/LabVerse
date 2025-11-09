@@ -42,7 +42,6 @@ public class FilterActivity extends AppCompatActivity {
         author = findViewById(R.id.input_author);
         yearFrom = findViewById(R.id.input_year_from);
         yearTo = findViewById(R.id.input_year_to);
-        keywordsOrTags = findViewById(R.id.input_tags);
     }
 
     private void handleCloseEvent() {

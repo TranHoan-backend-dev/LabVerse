@@ -27,10 +27,13 @@ import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
 import com.se1853_jv.labverse.presentation.paper.ImportPaperManuallyActivity;
+import com.se1853_jv.labverse.presentation.team.TeamListActivity;
 
 import java.util.List;
 
@@ -38,7 +41,7 @@ public class FeedActivity extends BaseActivity {
     private static final String PREFS_NAME = "FeedActivityPrefs";
     private static final String KEY_FAB_X = "fab_x";
     private static final String KEY_FAB_Y = "fab_y";
-    
+
     private float dX, dY;
     private int lastAction;
     private View rootLayout;
@@ -62,6 +65,18 @@ public class FeedActivity extends BaseActivity {
         setupFabDragAndDrop();
         getMockData();
         handleFilterPapers();
+
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private TabLayoutMediator mediator;
@@ -97,13 +112,142 @@ public class FeedActivity extends BaseActivity {
         mediator.attach();
 
         // Handle FAB visibility based on current tab
+        // Add tab selection listener to intercept Teams tab clicks
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                try {
+                    int position = tab.getPosition();
+                    if (position == 2) { // Teams tab
+                        // Temporarily detach mediator to prevent ViewPager sync
+                        try {
+                            if (mediator != null) {
+                                mediator.detach();
+                            }
+                        } catch (Exception e) {
+                            Log.e("FeedActivity", "Error detaching mediator: " + e.getMessage());
+                        }
+
+                        // Get current page before navigation
+                        final int currentPage;
+                        if (pager != null) {
+                            int tempPage = pager.getCurrentItem();
+                            currentPage = (tempPage == 2) ? 0 : tempPage; // If already on Teams, go to Discovery
+                        } else {
+                            currentPage = 0;
+                        }
+
+                        // Navigate to TeamListActivity
+                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
+                        startActivity(intent);
+
+                        // Reset ViewPager and tab selection after navigation
+                        if (tabLayout != null && pager != null) {
+                            final ViewPager2 finalPager = pager;
+                            final TabLayout finalTabLayout = tabLayout;
+                            final TabLayoutMediator finalMediator = mediator;
+
+                            tabLayout.post(() -> {
+                                try {
+                                    // Reset ViewPager to previous page
+                                    if (finalPager != null) {
+                                        finalPager.setCurrentItem(currentPage, false);
+                                    }
+
+                                    // Reset tab selection to previous tab
+                                    if (finalTabLayout != null) {
+                                        TabLayout.Tab prevTab = finalTabLayout.getTabAt(currentPage);
+                                        if (prevTab != null) {
+                                            finalTabLayout.selectTab(prevTab, false);
+                                        }
+                                    }
+
+                                    // Reattach mediator
+                                    if (finalMediator != null) {
+                                        finalMediator.attach();
+                                    }
+                                } catch (Exception e) {
+                                    Log.e("FeedActivity", "Error resetting tabs: " + e.getMessage());
+                                }
+                            });
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("FeedActivity", "Error in onTabSelected: " + e.getMessage(), e);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                // Do nothing
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                try {
+                    int position = tab.getPosition();
+                    if (position == 2) { // Teams tab
+                        // Navigate to TeamListActivity when reselected
+                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
+                        startActivity(intent);
+                    }
+                } catch (Exception e) {
+                    Log.e("FeedActivity", "Error in onTabReselected: " + e.getMessage(), e);
+                }
+            }
+        });
+
+        // Prevent ViewPager from swiping to Teams tab (position 2)
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                updateFabVisibility(position);
+                try {
+                    if (position == 2) { // Teams tab
+                        // Temporarily detach mediator
+                        try {
+                            if (mediator != null) {
+                                mediator.detach();
+                            }
+                        } catch (Exception e) {
+                            Log.e("FeedActivity", "Error detaching mediator in page callback: " + e.getMessage());
+                        }
+
+                        // Navigate to TeamListActivity
+                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
+                        startActivity(intent);
+
+                        // Go back to previous page
+                        if (pager != null && tabLayout != null) {
+                            pager.post(() -> {
+                                try {
+                                    if (pager != null) {
+                                        pager.setCurrentItem(0, false);
+                                    }
+
+                                    // Reset tab selection
+                                    if (tabLayout != null) {
+                                        TabLayout.Tab prevTab = tabLayout.getTabAt(0);
+                                        if (prevTab != null) {
+                                            tabLayout.selectTab(prevTab, false);
+                                        }
+                                    }
+
+                                    // Reattach mediator
+                                    if (mediator != null) {
+                                        mediator.attach();
+                                    }
+                                } catch (Exception e) {
+                                    Log.e("FeedActivity", "Error resetting in page callback: " + e.getMessage());
+                                }
+                            });
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("FeedActivity", "Error in onPageSelected: " + e.getMessage(), e);
+                }
             }
         });
-        
+
         // Set initial FAB visibility
         updateFabVisibility(pager.getCurrentItem());
     }
@@ -129,34 +273,45 @@ public class FeedActivity extends BaseActivity {
 
     private static final int REQUEST_CODE_IMPORT_PAPER = 1001;
     private static final float DRAG_THRESHOLD = 10f; // Minimum distance to consider as drag
-    
+
     private FloatingActionButton fabImportPaper;
     private boolean isDragging = false;
     private float initialTouchX, initialTouchY;
-    
+
     private void setupImportPaperButton() {
         fabImportPaper = findViewById(R.id.fabImportPaper);
         if (fabImportPaper != null) {
             fabImportPaper.setOnClickListener(v -> {
+                android.util.Log.d("FeedActivity", "FAB clicked, isDragging: " + isDragging);
                 // Only trigger click if not dragging
                 if (!isDragging) {
-                    Intent intent = new Intent(FeedActivity.this, ImportPaperManuallyActivity.class);
-                    startActivityForResult(intent, REQUEST_CODE_IMPORT_PAPER);
+                    try {
+                        Intent intent = new Intent(FeedActivity.this, ImportPaperManuallyActivity.class);
+                        startActivityForResult(intent, REQUEST_CODE_IMPORT_PAPER);
+                        android.util.Log.d("FeedActivity", "Started ImportPaperManuallyActivity");
+                    } catch (Exception e) {
+                        android.util.Log.e("FeedActivity", "Error starting ImportPaperManuallyActivity: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                } else {
+                    android.util.Log.d("FeedActivity", "Click ignored because isDragging is true");
                 }
             });
+        } else {
+            android.util.Log.e("FeedActivity", "fabImportPaper is null!");
         }
     }
-    
+
     private void setupFabDragAndDrop() {
         if (fabImportPaper == null || rootLayout == null) return;
-        
+
         // Ensure FAB is visible first
         fabImportPaper.setVisibility(View.VISIBLE);
-        
+
         // Wait for layout to be measured before removing constraints
         fabImportPaper.post(() -> {
             if (fabImportPaper == null || rootLayout == null) return;
-            
+
             // Get screen dimensions
             int screenWidth = rootLayout.getWidth();
             int screenHeight = rootLayout.getHeight();
@@ -164,17 +319,17 @@ public class FeedActivity extends BaseActivity {
             int bottomNavHeight = bottomNav != null ? bottomNav.getHeight() : 0;
             int fabWidth = fabImportPaper.getWidth();
             int fabHeight = fabImportPaper.getHeight();
-            
+
             if (screenWidth == 0 || screenHeight == 0 || fabWidth == 0 || fabHeight == 0) {
                 // Layout not ready, try again later
                 fabImportPaper.postDelayed(() -> setupFabDragAndDrop(), 100);
                 return;
             }
-            
+
             // Calculate default position (bottom right) - same as XML constraints
             float defaultX = screenWidth - fabWidth - dpToPx(24); // 24dp margin
             float defaultY = screenHeight - fabHeight - bottomNavHeight - dpToPx(80); // 80dp margin
-            
+
             // Remove constraints to allow free movement
             ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) fabImportPaper.getLayoutParams();
             params.leftToLeft = ConstraintLayout.LayoutParams.UNSET;
@@ -182,15 +337,15 @@ public class FeedActivity extends BaseActivity {
             params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
             params.topToTop = ConstraintLayout.LayoutParams.UNSET;
             fabImportPaper.setLayoutParams(params);
-            
+
             // Set default position first
             fabImportPaper.setX(defaultX);
             fabImportPaper.setY(defaultY);
-            
+
             // Load saved position (will override default if exists)
             loadFabPosition();
         });
-        
+
         fabImportPaper.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
@@ -198,7 +353,7 @@ public class FeedActivity extends BaseActivity {
                 if (!isTouchInsideView(view, event)) {
                     return false;
                 }
-                
+
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         // Store initial touch position
@@ -208,81 +363,83 @@ public class FeedActivity extends BaseActivity {
                         dY = view.getY() - event.getRawY();
                         lastAction = MotionEvent.ACTION_DOWN;
                         isDragging = false;
-                        // Request parent to not intercept touch events initially
-                        view.getParent().requestDisallowInterceptTouchEvent(true);
-                        return true; // Consume to start tracking
-                        
+                        // Don't consume ACTION_DOWN to allow click to work
+                        return false;
+
                     case MotionEvent.ACTION_MOVE:
                         // Calculate distance moved
                         float deltaX = Math.abs(event.getRawX() - initialTouchX);
                         float deltaY = Math.abs(event.getRawY() - initialTouchY);
-                        
+
                         // Only start dragging if moved beyond threshold
                         if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
                             isDragging = true;
                             lastAction = MotionEvent.ACTION_MOVE;
-                            
+
                             // Continue to prevent parent from intercepting
                             view.getParent().requestDisallowInterceptTouchEvent(true);
-                            
+
                             // Cancel any pending click
                             view.setPressed(false);
-                            
+                            view.cancelLongPress();
+
                             // Calculate new position
                             float newX = event.getRawX() + dX;
                             float newY = event.getRawY() + dY;
-                            
+
                             // Get screen bounds
                             Rect displayRect = new Rect();
                             rootLayout.getWindowVisibleDisplayFrame(displayRect);
                             int statusBarHeight = displayRect.top;
                             int screenWidth = rootLayout.getWidth();
                             int screenHeight = rootLayout.getHeight();
-                            
+
                             // Get FAB dimensions
                             int fabWidth = view.getWidth();
                             int fabHeight = view.getHeight();
-                            
+
                             // Get bottom navbar height
                             View bottomNav = findViewById(R.id.bottomNav);
                             int bottomNavHeight = bottomNav != null ? bottomNav.getHeight() : 0;
-                            
+
                             // Constrain FAB within screen bounds
                             newX = Math.max(0, Math.min(newX, screenWidth - fabWidth));
                             newY = Math.max(statusBarHeight, Math.min(newY, screenHeight - fabHeight - bottomNavHeight));
-                            
+
                             // Update FAB position
                             view.setX(newX);
                             view.setY(newY);
-                            
+
                             return true; // Consume the event
                         }
-                        // Not enough movement yet, but still prevent parent interception
-                        view.getParent().requestDisallowInterceptTouchEvent(true);
-                        return true;
-                        
+                        // Not enough movement yet - don't consume, let click work normally
+                        return false;
+
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
                         // Allow parent to intercept again
                         view.getParent().requestDisallowInterceptTouchEvent(false);
-                        
+
                         if (isDragging) {
                             // Save position after drag
                             saveFabPosition(view.getX(), view.getY());
                             isDragging = false;
+                            // Reset pressed state to prevent click
+                            view.setPressed(false);
+                            view.cancelLongPress();
                             return true; // Consume the event to prevent click
                         }
-                        // If not dragging, let onClick handle it
+                        // If not dragging, reset flag and let onClick handle it naturally
                         isDragging = false;
-                        return false;
-                        
+                        return false; // Let the click event propagate normally
+
                     default:
                         return false;
                 }
             }
         });
     }
-    
+
     private void saveFabPosition(float x, float y) {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -290,45 +447,45 @@ public class FeedActivity extends BaseActivity {
         editor.putFloat(KEY_FAB_Y, y);
         editor.apply();
     }
-    
+
     private void loadFabPosition() {
         if (fabImportPaper == null || rootLayout == null) return;
-        
+
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         float savedX = prefs.getFloat(KEY_FAB_X, -1);
         float savedY = prefs.getFloat(KEY_FAB_Y, -1);
-        
+
         if (savedX >= 0 && savedY >= 0) {
             // Wait for layout to be measured
             fabImportPaper.post(() -> {
                 if (fabImportPaper == null || rootLayout == null) return;
-                
+
                 // Get screen bounds
                 Rect displayRect = new Rect();
                 rootLayout.getWindowVisibleDisplayFrame(displayRect);
                 int screenWidth = rootLayout.getWidth();
                 int screenHeight = rootLayout.getHeight();
-                
+
                 if (screenWidth == 0 || screenHeight == 0) return; // Layout not ready
-                
+
                 // Get FAB dimensions
                 int fabWidth = fabImportPaper.getWidth();
                 int fabHeight = fabImportPaper.getHeight();
-                
+
                 if (fabWidth == 0 || fabHeight == 0) return; // FAB not measured
-                
+
                 // Get bottom navbar height
                 View bottomNav = findViewById(R.id.bottomNav);
                 int bottomNavHeight = bottomNav != null ? bottomNav.getHeight() : 0;
-                
+
                 // Ensure saved position is within bounds
                 float x = Math.max(0, Math.min(savedX, screenWidth - fabWidth));
                 float y = Math.max(displayRect.top, Math.min(savedY, screenHeight - fabHeight - bottomNavHeight));
-                
+
                 // Apply saved position
                 fabImportPaper.setX(x);
                 fabImportPaper.setY(y);
-                
+
                 // Make sure FAB is visible
                 fabImportPaper.setVisibility(View.VISIBLE);
             });
@@ -341,7 +498,7 @@ public class FeedActivity extends BaseActivity {
             });
         }
     }
-    
+
     private void updateFabVisibility(int position) {
         if (fabImportPaper != null) {
             // Only show FAB on My Papers tab (position 1)
@@ -353,11 +510,11 @@ public class FeedActivity extends BaseActivity {
             }
         }
     }
-    
+
     private int dpToPx(float dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
-    
+
     private boolean isTouchInsideView(View view, MotionEvent event) {
         int[] location = new int[2];
         view.getLocationOnScreen(location);
@@ -365,10 +522,10 @@ public class FeedActivity extends BaseActivity {
         int y = location[1];
         int width = view.getWidth();
         int height = view.getHeight();
-        
+
         float touchX = event.getRawX();
         float touchY = event.getRawY();
-        
+
         return touchX >= x && touchX <= x + width && touchY >= y && touchY <= y + height;
     }
 
