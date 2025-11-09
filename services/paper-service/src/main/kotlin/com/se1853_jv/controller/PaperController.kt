@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
@@ -103,35 +104,42 @@ class PaperController(
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int
+        @RequestParam(value = "size", required = false) pageSize: Int,
+        // filter
+        @RequestParam(value = "author", required = false) author: String?,
+        @RequestParam(value = "journal", required = false) journal: String?,
+        @RequestParam(value = "from", required = false) publicationYearFrom: Int?,
+        @RequestParam(value = "to", required = false) publicationYearTo: Int?,
     ): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to getAllPapers with search: $searchQuery" }
+
+        if ((publicationYearFrom != null && publicationYearFrom > LocalDate.now().year) ||
+            (publicationYearTo != null && publicationYearTo < 1000)
+        ) {
+            return ResponseEntity.ok(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Get all papers failed. Publication year must be from 1000 and does not larger than the current year",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
-                paperService.getAllPapers(searchQuery, index, pageSize),
+                paperService.getAllPapers(
+                    searchQuery, index, pageSize,
+                    author, journal, publicationYearFrom, publicationYearTo
+                ),
                 LocalDateTime.now()
             )
         )
     }
 
-    @PostMapping(
-        "/search",
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-        consumes = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    fun searchPapers(@Valid @RequestBody request: SearchPapersRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to searchPapers with filters: $request" }
-        return ResponseEntity.ok(
-            WrapperApiResponse(
-                HttpStatus.OK.value(),
-                "Search papers successfully",
-                paperService.searchPapersWithFilters(request),
-                LocalDateTime.now()
-            )
-        )
-    }
+
 
     @DeleteMapping("/{id}")
     fun deletePaper(@PathVariable("id") paperId: String): ResponseEntity<WrapperApiResponse> {

@@ -79,120 +79,14 @@ Accept: application/json
 ### Ping api
 HEAD {{url}}/health
 
-### Advanced Search - General query search
-POST {{url}}/search
-Content-Type: application/json
+### Get paper with pagination and full of request params
+GET {{url}}/all?index=1&size=&author=Hoan&journal=hehe&from=2004&to=2025
 Accept: application/json
 
-{
-  "query": "machine learning",
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search by title
-POST {{url}}/search
-Content-Type: application/json
+### Get paper with pagination and missing some request params #1
+GET {{url}}/all?index=1&size=&from=2004&to=2025
 Accept: application/json
 
-{
-  "title": "Phishing",
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search by authors
-POST {{url}}/search
-Content-Type: application/json
+### Get paper with pagination and missing some request params #2
+GET {{url}}/all?index=1&author=Hoan&journal=hehe
 Accept: application/json
-
-{
-  "authors": "Author1",
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search by journal
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "journal": "Journal",
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search by keywords
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "keywords": ["kw1", "kw2"],
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search by year range
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "yearFrom": 2020,
-  "yearTo": 2023,
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Complex search with multiple filters
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "query": "machine learning",
-  "title": "neural",
-  "yearFrom": 2020,
-  "yearTo": 2024,
-  "keywords": ["deep learning", "ai"],
-  "pageIndex": 0,
-  "pageSize": 20,
-  "sortBy": "publicationYear",
-  "sortOrder": "desc"
-}
-
-### Advanced Search - Search with tags
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "tagIds": ["tag-id-1", "tag-id-2"],
-  "pageIndex": 0,
-  "pageSize": 10
-}
-
-### Advanced Search - Search with sorting by title
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "query": "security",
-  "pageIndex": 0,
-  "pageSize": 10,
-  "sortBy": "title",
-  "sortOrder": "asc"
-}
-
-### Advanced Search - No filters (get all papers)
-POST {{url}}/search
-Content-Type: application/json
-Accept: application/json
-
-{
-  "pageIndex": 0,
-  "pageSize": 10
-}
