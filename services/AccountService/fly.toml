@@ -1,0 +1,45 @@
+# fly.toml app configuration file generated for prm392-services on 2025-11-09T16:24:17+07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'prm392-services'
+primary_region = 'sin'
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
+
+[build]
+
+[env]
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = 'http://labverse-eureka.fly.dev/eureka/'
+  SERVER_PORT = '8080'
+  SPRING_PROFILES_ACTIVE = 'dev'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [[services.tcp_checks]]
+    interval = '15s'
+    timeout = '2s'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

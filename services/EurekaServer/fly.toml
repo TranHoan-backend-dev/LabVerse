@@ -1,0 +1,26 @@
+app = "labverse-eureka"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[env]
+SERVER_PORT = "8761"
+SPRING_PROFILES_ACTIVE = "dev"
+EUREKA_CLIENT_REGISTER_WITH_EUREKA = "false"
+EUREKA_CLIENT_FETCH_REGISTRY = "false"
+
+[[services]]
+internal_port = 8761
+protocol = "tcp"
+
+[[services.ports]]
+handlers = ["http"]
+port = 80
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443
+
+[[services.tcp_checks]]
+interval = "15s"
+timeout = "2s"
+port = 8761
