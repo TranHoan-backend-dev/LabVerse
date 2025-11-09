@@ -23,7 +23,7 @@ import com.se1853_jv.labverse.presentation.paper.PaperDetailsActivity;
 import java.util.List;
 
 public class MyPaperMainContentFragment extends Fragment {
-    private static int CURRENT_PAGE = 0;
+    private int CURRENT_PAGE = 0; // Changed from static to instance variable
     private final static int PAGE_SIZE = 5;
     private List<Paper> papers;
 
@@ -42,6 +42,9 @@ public class MyPaperMainContentFragment extends Fragment {
             papers = (List<Paper>) getArguments().getSerializable("papers");
         }
 
+        // Reset to first page when new data is loaded
+        CURRENT_PAGE = 0;
+        
         buildPaperCard(view, getLayoutInflater());
         buildPagination(view);
     }
@@ -51,9 +54,26 @@ public class MyPaperMainContentFragment extends Fragment {
         LinearLayout layout = view.findViewById(R.id.card_container);
         layout.removeAllViews();
 
-        if (papers.isEmpty()) return;
+        if (papers == null || papers.isEmpty()) {
+            // Show empty state or return
+            return;
+        }
 
-        for (var paper : papers.subList(CURRENT_PAGE, CURRENT_PAGE + PAGE_SIZE)) {
+        // Calculate the end index to avoid IndexOutOfBoundsException
+        int startIndex = CURRENT_PAGE * PAGE_SIZE;
+        int endIndex = Math.min(startIndex + PAGE_SIZE, papers.size());
+        
+        // Reset CURRENT_PAGE if it's out of bounds
+        if (startIndex >= papers.size()) {
+            CURRENT_PAGE = 0;
+            startIndex = 0;
+            endIndex = Math.min(PAGE_SIZE, papers.size());
+        }
+
+        // Get the sublist for current page
+        List<Paper> papersToShow = papers.subList(startIndex, endIndex);
+
+        for (var paper : papersToShow) {
             View card = inflater.inflate(R.layout.layout_mypaper_card, layout, false);
 
             TextView title = card.findViewById(R.id.title);
@@ -105,8 +125,9 @@ public class MyPaperMainContentFragment extends Fragment {
 
         btnNext.setOnClickListener(v -> {
             var numberOfPage = getNumberOfPage();
-            if (CURRENT_PAGE < numberOfPage - 1) {
-                CURRENT_PAGE++;
+            int nextPage = CURRENT_PAGE + 1;
+            if (nextPage < numberOfPage) {
+                CURRENT_PAGE = nextPage;
                 buildPaperCard(view, getLayoutInflater());
                 updatePageInfo(view);
             } else {
@@ -125,7 +146,8 @@ public class MyPaperMainContentFragment extends Fragment {
 
     private int getNumberOfPage() {
         if (papers == null || papers.isEmpty()) return 1;
-        return (int) Math.ceil((double) papers.size() / PAGE_SIZE);
+        int totalPages = (int) Math.ceil((double) papers.size() / PAGE_SIZE);
+        return Math.max(1, totalPages); // At least 1 page
     }
 
     private void navigateToReadPdfScreen(@NonNull View parent, String id) {

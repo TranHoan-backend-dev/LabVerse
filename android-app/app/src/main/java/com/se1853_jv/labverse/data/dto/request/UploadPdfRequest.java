@@ -18,7 +18,7 @@ public class UploadPdfRequest implements Serializable {
     private String authors;
     private String journal;
     private Integer publicationYear;
-    private String doi;
+    private String doi; // Optional - backend will auto-generate if null or empty
     private List<String> tags;
 }
 

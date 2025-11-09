@@ -96,6 +96,17 @@
             android:name=".presentation.collection.CollectionMembersActivity"
             android:exported="false"
             android:parentActivityName=".presentation.collection.CollectionsActivity" />
+        <activity
+            android:name=".presentation.readinglist.ReadingListsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.readinglist.ReadingListDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.readinglist.ReadingListsActivity" />
+        <activity
+            android:name=".presentation.readinglist.SelectPaperForReadingListActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.readinglist.ReadingListDetailActivity" />
     </application>
 
 </manifest>

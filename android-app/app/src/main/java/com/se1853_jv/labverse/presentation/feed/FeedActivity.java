@@ -239,13 +239,29 @@ public class FeedActivity extends BaseActivity {
         });
     }
 
+    private static final int REQUEST_CODE_IMPORT_PAPER = 1001;
+    
     private void setupImportPaperButton() {
         FloatingActionButton fabImportPaper = findViewById(R.id.fabImportPaper);
         if (fabImportPaper != null) {
             fabImportPaper.setOnClickListener(v -> {
                 Intent intent = new Intent(FeedActivity.this, ImportPaperManuallyActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE_IMPORT_PAPER);
             });
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_IMPORT_PAPER && resultCode == RESULT_OK) {
+            // Paper was uploaded successfully, reload My Papers tab
+            Log.d("FeedActivity", "Paper uploaded, reloading My Papers tab");
+            // Switch to My Papers tab and trigger reload
+            if (pager != null) {
+                pager.setCurrentItem(1, false); // Switch to My Papers tab (index 1)
+                // Fragment's onResume will be called automatically
+            }
         }
     }
 }

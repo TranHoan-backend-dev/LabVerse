@@ -15,7 +15,7 @@ import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.collection.CollectionsActivity;
 import com.se1853_jv.labverse.presentation.feed.FeedActivity;
 import com.se1853_jv.labverse.presentation.profile.ProfileActivity;
-import com.se1853_jv.labverse.presentation.readinglist.ReadingListActivity;
+import com.se1853_jv.labverse.presentation.readinglist.ReadingListsActivity;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -59,8 +59,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void handleNavigatingToReadingListScreen() {
         readingListBtn.setOnClickListener(v -> {
             Log.e(TAG, "handleNavigatingToReadingListScreen");
-            if (!(this instanceof ReadingListActivity)) {
-                var intent = new Intent(this, ReadingListActivity.class);
+            if (!this.getClass().equals(ReadingListsActivity.class)) {
+                var intent = new Intent(this, ReadingListsActivity.class);
                 startActivity(intent);
             }
         });

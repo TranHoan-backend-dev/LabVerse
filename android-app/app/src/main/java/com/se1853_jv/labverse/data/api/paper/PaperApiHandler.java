@@ -163,9 +163,41 @@ public class PaperApiHandler {
         });
     }
 
-    public void uploadPdf(UploadPdfRequest request, ApiCallback<Object> callback) {
-        Log.d("PAPER_UPLOAD", "uploadPdf: " + request.getDataUrl());
-        Call<BaseJsonResponse<Object>> call = apiService.uploadPdf(request);
+    public void getPapersByUserId(String userId, ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getPapersByUserId called with encoded userId: " + userId);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getPapersByUserId(userId);
+        call.enqueue(new Callback<BaseJsonResponse<List<PaperResearch>>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
+                    Log.d("PAPER_DATA", "Papers fetched for user: " + (result != null ? result.size() : 0));
+                } else {
+                    String errorMessage = "Failed to get papers by user";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e("PAPER_DATA", "Error parsing error body", e);
+                        }
+                    }
+                    Log.e("PAPER_DATA", "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
+                Log.e("PAPER_DATA", "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void uploadPdf(UploadPdfRequest request, String userId, ApiCallback<Object> callback) {
+        Log.d("PAPER_UPLOAD", "uploadPdf: " + request.getDataUrl() + ", userId: " + userId);
+        Call<BaseJsonResponse<Object>> call = apiService.uploadPdf(request, userId);
         call.enqueue(new Callback<BaseJsonResponse<Object>>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Response<BaseJsonResponse<Object>> response) {

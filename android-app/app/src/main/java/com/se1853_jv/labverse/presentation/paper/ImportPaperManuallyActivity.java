@@ -32,6 +32,7 @@ import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.utils.CloudinaryStorageHelper;
 import com.se1853_jv.labverse.data.utils.Connectivity;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.data.utils.TestPdfGenerator;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
     
     private CloudinaryStorageHelper storageHelper;
     private PaperApiHandler paperApiHandler;
+    private SessionManager sessionManager;
     private Uri selectedFileUri;
     private String selectedFileName;
 
@@ -82,6 +84,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         // Initialize helpers
         storageHelper = new CloudinaryStorageHelper();
         paperApiHandler = new PaperApiHandler(this);
+        sessionManager = new SessionManager(this);
         // Cloudinary đã được khởi tạo trong LabVerseApplication
         
         filePickerLauncher = registerForActivityResult(
@@ -325,18 +328,19 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
                 return;
             }
             
-            // Validate DOI format if provided
+            // Validate DOI format if provided (optional - will be auto-generated if empty)
             // DOI format: 10.xxxx/xxxxx (e.g., 10.1234/example.2024.123)
             if (!doi.isEmpty()) {
-                // Pattern: (?:doi:\s*|https?://(?:dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)
+                // Pattern: (?:doi:\s*|https?://(?:dx\.)?doi\\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)
                 // Simplified: starts with 10. followed by digits, then /, then alphanumeric and special chars
                 String doiPattern = "^(?:doi:\\s*|https?://(?:dx\\.)?doi\\.org/)?(10\\.\\d{4,9}/[-._;()/:A-Z0-9]+)$";
                 if (!doi.matches(doiPattern)) {
-                    etDoi.setError("DOI format is invalid. Example: 10.1234/example.2024.123");
+                    etDoi.setError("DOI format is invalid. Example: 10.1234/example.2024.123 (Leave empty to auto-generate)");
                     etDoi.requestFocus();
                     return;
                 }
             }
+            // If DOI is empty, backend will auto-generate a unique DOI
             
             // Parse keywords
             List<String> keywords = new ArrayList<>();
@@ -384,24 +388,35 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
                 request.setJournal(journal);
                 request.setPublicationYear(year > 0 ? year : null);
                 
-                // DOI validation: Backend requires DOI with correct format
-                // If empty, use a placeholder that matches the pattern
-                // Pattern: (?:doi:\s*|https?://(?:dx\.)?doi\.org/)?(10\.\d{4,9}/[-._;()/:A-Z0-9]+)
+                // DOI: If empty, backend will auto-generate a unique DOI
+                // If provided, use the user's DOI (already validated above)
                 if (doi.isEmpty()) {
-                    // Use a placeholder DOI that matches the pattern
-                    // Format: 10.0000/placeholder.unknown
-                    request.setDoi("10.0000/placeholder.unknown");
-                    Log.w(TAG, "⚠️ DOI is empty, using placeholder. User should provide a valid DOI.");
+                    request.setDoi(null); // Backend will auto-generate
+                    Log.d(TAG, "DOI is empty, backend will auto-generate a unique DOI");
                 } else {
-                    // DOI đã được validate ở trên, gửi trực tiếp
-                    request.setDoi(doi);
+                    request.setDoi(doi); // Use user-provided DOI
                 }
                 
                 request.setDescription(description.isEmpty() ? null : description);
                 request.setKeywords(keywords.isEmpty() ? null : keywords);
                 request.setTags(null); // Can be added later
                 
-                paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
+                // Get current user ID
+                String userId = sessionManager.getUserId();
+                Log.d(TAG, "Current userId: " + userId);
+                if (userId == null || userId.isEmpty()) {
+                    runOnUiThread(() -> {
+                        if (progressBar != null) {
+                            progressBar.setVisibility(ProgressBar.GONE);
+                        }
+                        Toast.makeText(ImportPaperManuallyActivity.this, 
+                                "User not logged in. Please login first.", Toast.LENGTH_LONG).show();
+                    });
+                    return;
+                }
+                
+                Log.d(TAG, "Uploading paper with userId: " + userId + ", DOI: " + request.getDoi());
+                paperApiHandler.uploadPdf(request, userId, new ApiCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         runOnUiThread(() -> {
@@ -410,6 +425,8 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
                             }
                             Toast.makeText(ImportPaperManuallyActivity.this, 
                                     "Paper uploaded successfully!", Toast.LENGTH_SHORT).show();
+                            // Set result to notify that paper was uploaded
+                            setResult(RESULT_OK);
                             finish();
                         });
                     }

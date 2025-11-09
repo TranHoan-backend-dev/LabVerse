@@ -113,7 +113,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:hint="DOI (optional)"
-                app:helperText="Format: 10.1234/example"
+                app:helperText="Leave empty to auto-generate"
                 app:helperTextEnabled="true"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"

@@ -22,9 +22,12 @@ public interface PaperApi {
             @Query("size") int pageSize
     );
 
+    @GET("user/{userId}")
+    Call<BaseJsonResponse<List<PaperResearch>>> getPapersByUserId(@Path("userId") String userId);
+
     @HTTP(method = "DELETE", path = "{id}")
     Call<BaseJsonResponse<String>> deletePaper(@Path("id") String id);
 
     @POST("pdf/upload")
-    Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request);
+    Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request, @Header("X-User-Id") String userId);
 }
