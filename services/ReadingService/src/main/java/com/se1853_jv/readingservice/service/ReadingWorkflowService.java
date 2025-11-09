@@ -14,6 +14,8 @@ public interface ReadingWorkflowService {
 
     List<ReadingWorkflowResponse> getWorkflowsByUser(String usersid, String status);
 
+    List<ReadingWorkflowResponse> getWorkflowsByCollection(String collectionId, String status);
+
     void updateProgress(ReadingWorkflowProgressRequest request);
 
     void updateStatus(ReadingWorkflowStatusRequest request);

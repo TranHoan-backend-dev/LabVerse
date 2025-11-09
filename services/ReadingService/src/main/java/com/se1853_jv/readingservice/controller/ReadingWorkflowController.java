@@ -67,6 +67,22 @@ public class ReadingWorkflowController {
         return ResponseEntity.ok(WrapperApiResponse.success(workflows));
     }
 
+    @GetMapping("/collection/{collectionId}")
+    @Operation(summary = "Get workflows by collection", 
+               description = "Get all reading workflows for a collection, optionally filtered by status. Collection ID should be encoded.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Workflows retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid encoded collection ID")
+    })
+    public ResponseEntity<WrapperApiResponse<List<ReadingWorkflowResponse>>> getWorkflowsByCollection(
+            @Parameter(description = "Encoded Collection ID", required = true) @PathVariable String collectionId,
+            @Parameter(description = "Filter by status: unread, reading, or finished") 
+            @RequestParam(required = false) String status) {
+        String decodedCollectionId = IdEncoder.decodeString(collectionId);
+        List<ReadingWorkflowResponse> workflows = readingWorkflowService.getWorkflowsByCollection(decodedCollectionId, status);
+        return ResponseEntity.ok(WrapperApiResponse.success(workflows));
+    }
+
     @PutMapping("/progress")
     @Operation(summary = "Update reading progress", 
                description = "Update lastPage and progress. If progress >= 100, status is auto-updated to 'finished'. IDs should be encoded in request body.")
