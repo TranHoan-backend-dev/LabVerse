@@ -79,14 +79,44 @@ Accept: application/json
 ### Ping api
 HEAD {{url}}/health
 
+### Get all papers - No search query
+GET {{url}}/all?index=0&size=10
+Accept: application/json
+
+### Get all papers - With search query
+GET {{url}}/all?search=machine learning&index=0&size=10
+Accept: application/json
+
+### Get all papers - Search by title
+GET {{url}}/all?search=Phishing&index=0&size=10
+Accept: application/json
+
+### Get all papers - Search by authors
+GET {{url}}/all?search=Author1&index=0&size=10
 ### Get paper with pagination and full of request params
 GET {{url}}/all?index=1&size=&author=Hoan&journal=hehe&from=2004&to=2025
 Accept: application/json
 
+### Get all papers - Search by journal
+GET {{url}}/all?search=Journal&index=0&size=10
 ### Get paper with pagination and missing some request params #1
 GET {{url}}/all?index=1&size=&from=2004&to=2025
 Accept: application/json
 
+### Get all papers - Pagination
+GET {{url}}/all?index=1&size=5
 ### Get paper with pagination and missing some request params #2
 GET {{url}}/all?index=1&author=Hoan&journal=hehe
+Accept: application/json
+
+### Get all papers - Search by tags (single tag)
+GET {{url}}/all?tagIds=e5507c1e-e431-4f16-b5d4-bd11138e1963&index=0&size=10
+Accept: application/json
+
+### Get all papers - Search by multiple tags
+GET {{url}}/all?tagIds=e5507c1e-e431-4f16-b5d4-bd11138e1963&tagIds=53e497b0-9ec7-4ebc-9ade-56f4d3e7be67&index=0&size=10
+Accept: application/json
+
+### Get all papers - Search by tags with search query
+GET {{url}}/all?tagIds=e5507c1e-e431-4f16-b5d4-bd11138e1963&search=machine learning&index=0&size=10
 Accept: application/json
