@@ -1,6 +1,5 @@
 package com.se1853_jv.controller
 
-import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
@@ -107,12 +106,12 @@ class PaperController(
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int,
+        @RequestParam(value = "size", required = false) pageSize: Int?,
         // filter
         @RequestParam(value = "author", required = false) author: String?,
         @RequestParam(value = "journal", required = false) journal: String?,
         @RequestParam(value = "from", required = false) publicationYearFrom: Int?,
-        @RequestParam(value = "to", required = false) publicationYearTo: Int?,
+        @RequestParam(value = "to", required = false) publicationYearTo: Int?
     ): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to getAllPapers with search: $searchQuery" }
 

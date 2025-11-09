@@ -27,11 +27,8 @@
         <url/>
     </scm>
     <properties>
-        <java.version>17</java.version>
-        <kotlin.version>1.9.24</kotlin.version>
+        <kotlin.version>1.9.25</kotlin.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -52,8 +49,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
+            <artifactId>kotlin-stdlib</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -63,10 +59,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-security</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
@@ -112,12 +108,6 @@
             <artifactId>kotlin-test-junit5</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
-            <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -136,21 +126,12 @@
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -158,12 +139,6 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <source>src/main/kotlin</source>
-                                <source>target/generated-sources/annotations</source>
-                            </sourceDirs>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>test-compile</id>
@@ -171,12 +146,6 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <source>src/test/kotlin</source>
-                                <source>target/generated-test-sources/test-annotations</source>
-                            </sourceDirs>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -188,7 +157,6 @@
                         <plugin>all-open</plugin>
                         <plugin>no-arg</plugin>
                     </compilerPlugins>
-                    <jvmTarget>17</jvmTarget>
                 </configuration>
                 <dependencies>
                     <dependency>
