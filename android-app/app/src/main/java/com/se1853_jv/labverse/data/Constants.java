@@ -6,5 +6,6 @@ public class Constants {
     public static String PAPER_ENDPOINT_GATEWAY_URL = BASE_URL + "v1/api/";
 
     public static String GROUP_ENDPOINT_URL = BASE_URL + "group-service/";
+    public static String GROUP_ENDPOINT_GATEWAY_URL = BASE_URL + "v1/api/"; // GroupService uses /v1/api as context path
 
 }

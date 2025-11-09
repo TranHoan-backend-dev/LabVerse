@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.paper;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -427,17 +428,224 @@ public class PDFReaderActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_style, menu);
+        getMenuInflater().inflate(R.menu.menu_pdf_reader, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish();
+            return true;
+        } else if (id == R.id.export_annotations) {
+            exportAnnotations();
+            return true;
+        } else if (id == R.id.import_annotations) {
+            importAnnotations();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Export annotations to JSON file
+     */
+    private void exportAnnotations() {
+        if (collectionId == null) {
+            Toast.makeText(this, "Cannot export: No collection ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (jwtToken == null) {
+            Toast.makeText(this, "Cannot export: Not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show progress dialog
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Exporting annotations...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        apiHandler.exportAnnotations(jwtToken, paperId, collectionId, 
+            new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
+                @Override
+                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
+                    runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        saveExportToFile(exportData);
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(PDFReaderActivity.this, "Export failed: " + error, Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "Error exporting annotations: " + error);
+                    });
+                }
+            });
+    }
+
+    /**
+     * Save exported annotations to JSON file
+     * Uses app's external files directory (no permission needed)
+     */
+    private void saveExportToFile(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
+        try {
+            com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+            String json = gson.toJson(exportData);
+
+            // Create file in app's external files directory (no permission needed)
+            String fileName = "annotations_" + paperId + "_" + System.currentTimeMillis() + ".json";
+            java.io.File exportDir = new java.io.File(getExternalFilesDir(null), "exports");
+            if (!exportDir.exists()) {
+                exportDir.mkdirs();
+            }
+            java.io.File exportFile = new java.io.File(exportDir, fileName);
+
+            java.io.FileWriter writer = new java.io.FileWriter(exportFile);
+            writer.write(json);
+            writer.close();
+
+            // Share file via Android ShareSheet
+            android.content.Intent shareIntent = new android.content.Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/json");
+            
+            // Use FileProvider to share file
+            android.net.Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
+                this,
+                getPackageName() + ".provider",
+                exportFile
+            );
+            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // Show success dialog with share option
+            new MaterialAlertDialogBuilder(this)
+                .setTitle("Export Successful")
+                .setMessage("Annotations exported successfully!")
+                .setPositiveButton("Share", (dialog, which) -> {
+                    startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
+                })
+                .setNegativeButton("OK", null)
+                .show();
+
+            Log.d(TAG, "Annotations exported to: " + exportFile.getAbsolutePath());
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving export file", e);
+            Toast.makeText(this, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Import annotations from JSON file
+     */
+    private void importAnnotations() {
+        if (collectionId == null) {
+            Toast.makeText(this, "Cannot import: No collection ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Open file picker
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/json");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Select JSON file"), IMPORT_ANNOTATIONS_REQUEST_CODE);
+    }
+
+    private static final int IMPORT_ANNOTATIONS_REQUEST_CODE = 1001;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == IMPORT_ANNOTATIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            Uri fileUri = data.getData();
+            if (fileUri != null) {
+                loadAndImportAnnotations(fileUri);
+            }
+        }
+    }
+
+    /**
+     * Load JSON file and import annotations
+     */
+    private void loadAndImportAnnotations(Uri fileUri) {
+        try {
+            // Read JSON file
+            java.io.InputStream inputStream = getContentResolver().openInputStream(fileUri);
+            if (inputStream == null) {
+                Toast.makeText(this, "Cannot read file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream));
+            StringBuilder jsonBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonBuilder.append(line);
+            }
+            reader.close();
+            inputStream.close();
+
+            // Parse JSON
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse importData = 
+                gson.fromJson(jsonBuilder.toString(), com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse.class);
+
+            // Validate paperId and collectionId
+            if (!importData.paperId.equals(paperId)) {
+                Toast.makeText(this, "Cannot import: Paper ID mismatch", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (!importData.collectionId.equals(collectionId)) {
+                Toast.makeText(this, "Cannot import: Collection ID mismatch", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // Show progress dialog
+            android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+            progressDialog.setMessage("Importing annotations...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+
+            // Import via API
+            if (jwtToken == null) {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Cannot import: Not authenticated", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            apiHandler.importAnnotations(jwtToken, paperId, collectionId, importData,
+                new com.se1853_jv.labverse.data.api.ApiCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void data) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(PDFReaderActivity.this, "Annotations imported successfully", Toast.LENGTH_SHORT).show();
+                            // Reload annotations to display imported ones
+                            loadAnnotations();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(PDFReaderActivity.this, "Import failed: " + error, Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Error importing annotations: " + error);
+                        });
+                    }
+                });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error reading import file", e);
+            Toast.makeText(this, "Error reading file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 }
 

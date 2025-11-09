@@ -8,6 +8,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Handler để gọi Annotation API từ paper-service
+ * Handler để gọi Annotation API từ group-service
  */
 public class AnnotationApiHandler {
     private static final String TAG = "AnnotationApiHandler";
-    private static final String BASE_URL = Constants.PAPER_ENDPOINT_GATEWAY_URL + "annotations/";
+    private static final String BASE_URL = Constants.GROUP_ENDPOINT_GATEWAY_URL + "annotations/";
     private final AnnotationApi apiService;
 
     public AnnotationApiHandler() {
@@ -172,6 +173,72 @@ public class AnnotationApiHandler {
             public void onFailure(@NonNull Call<com.se1853_jv.labverse.data.dto.response.BaseJsonResponse<List<AnnotationApi.HighlightResponse>>> call,
                                 @NonNull Throwable t) {
                 Log.e(TAG, "Failed to get highlights", t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Export annotations for a paper in a collection
+     */
+    public void exportAnnotations(String token, String paperId, String collectionId, 
+                                  ApiCallback<AnnotationApi.ExportAnnotationsResponse> callback) {
+        Log.d(TAG, "Exporting annotations for paper: " + paperId);
+        
+        Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call = 
+            apiService.exportAnnotations("Bearer " + token, paperId, collectionId);
+        
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call,
+                                 @NonNull Response<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Annotations exported successfully");
+                } else {
+                    Log.e(TAG, "Error exporting annotations: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call,
+                                @NonNull Throwable t) {
+                Log.e(TAG, "Failed to export annotations", t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Import annotations from exported data
+     */
+    public void importAnnotations(String token, String paperId, String collectionId,
+                                  AnnotationApi.ExportAnnotationsResponse importData,
+                                  ApiCallback<Void> callback) {
+        Log.d(TAG, "Importing annotations for paper: " + paperId);
+        
+        Call<BaseJsonResponse<Void>> call = 
+            apiService.importAnnotations("Bearer " + token, paperId, collectionId, importData);
+        
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Void>> call,
+                                 @NonNull Response<BaseJsonResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                    Log.d(TAG, "Annotations imported successfully");
+                } else {
+                    Log.e(TAG, "Error importing annotations: " + response.message());
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Void>> call,
+                                @NonNull Throwable t) {
+                Log.e(TAG, "Failed to import annotations", t);
                 callback.onError(t.getMessage());
             }
         });

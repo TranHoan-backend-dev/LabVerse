@@ -175,11 +175,4 @@ public class FirebaseService {
         void onFailure(Exception e);
     }
 
-    /**
-     * Callback for PDF upload
-     */
-    public interface UploadCallback {
-        void onSuccess(String downloadUrl);
-        void onFailure(Exception e);
-    }
 }

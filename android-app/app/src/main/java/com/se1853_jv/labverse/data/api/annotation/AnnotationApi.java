@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.data.api.annotation;
 
+import com.google.gson.annotations.SerializedName;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 
 import java.util.List;
@@ -121,6 +122,50 @@ public interface AnnotationApi {
         public int coordinationX;
         public int coordinationY;
         public int pageNumber;
+    }
+
+    /**
+     * Export all annotations for a paper in a collection
+     * GET /v1/api/annotations/export?paperId=...&collectionId=...
+     */
+    @GET("export")
+    Call<BaseJsonResponse<ExportAnnotationsResponse>> exportAnnotations(
+            @Header("Authorization") String authToken,
+            @Query("paperId") String paperId,
+            @Query("collectionId") String collectionId
+    );
+
+    /**
+     * Import annotations from exported data
+     * POST /v1/api/annotations/import?paperId=...&collectionId=...
+     */
+    @POST("import")
+    Call<BaseJsonResponse<Void>> importAnnotations(
+            @Header("Authorization") String authToken,
+            @Query("paperId") String paperId,
+            @Query("collectionId") String collectionId,
+            @Body ExportAnnotationsResponse importData
+    );
+
+    // --- Export/Import DTOs ---
+    class ExportAnnotationsResponse {
+        @SerializedName("paperId")
+        public String paperId;
+        
+        @SerializedName("collectionId")
+        public String collectionId;
+        
+        @SerializedName("exportedBy")
+        public String exportedBy;
+        
+        @SerializedName("exportedAt")
+        public String exportedAt;
+        
+        @SerializedName("notes")
+        public List<NoteResponse> notes;
+        
+        @SerializedName("highlights")
+        public List<HighlightResponse> highlights;
     }
 }
 
