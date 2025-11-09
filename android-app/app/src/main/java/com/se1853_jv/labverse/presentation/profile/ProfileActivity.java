@@ -71,7 +71,8 @@ public class ProfileActivity extends BaseActivity {
 
         bindViews();
         setupToolbar();
-        setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
+        // ProfileActivity layout doesn't have bottom navbar, skip setup
+        // setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
         loadUserData();
         handleEvents();
     }

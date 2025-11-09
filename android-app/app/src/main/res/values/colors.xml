@@ -40,4 +40,15 @@
     <color name="light_black">#FF1D1D1F</color>
     <color name="black">#FF000000</color>
 
+    <!--  App Theme Colors  -->
+    <color name="primary">#FF4A4DE8</color>
+    <color name="text_primary">#FF000000</color>
+    <color name="text_secondary">#757575</color>
+    <color name="border_color">#E0E0E0</color>
+    <color name="success">#22C55E</color>
+    <color name="blue">#2196F3</color>
+    <color name="light_blue">#DBEAFE</color>
+    <color name="gray">#757575</color>
+    <color name="dark_gray">#D1D5DB</color>
+
 </resources>
