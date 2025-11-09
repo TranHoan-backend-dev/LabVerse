@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
-import com.se1853_jv.labverse.data.dto.request.SearchPapersRequest;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
 import com.se1853_jv.labverse.presentation.common.HeaderHelper;
@@ -196,9 +195,17 @@ public class SearchActivity extends BaseActivity implements FilterDialogFragment
         hideEmptyState();
         updatePaginationControls(); // Disable buttons while loading
 
-        SearchPapersRequest request = buildSearchRequest();
+        // Build search query (combine query and keywords)
+        String searchQuery = buildSearchQuery();
+        String author = currentFilterData != null && currentFilterData.author != null && !currentFilterData.author.isEmpty() 
+                ? currentFilterData.author : null;
+        String journal = currentFilterData != null && currentFilterData.journal != null && !currentFilterData.journal.isEmpty() 
+                ? currentFilterData.journal : null;
+        Integer yearFrom = currentFilterData != null ? currentFilterData.yearFrom : null;
+        Integer yearTo = currentFilterData != null ? currentFilterData.yearTo : null;
         
-        paperApiHandler.searchPapers(request, new ApiCallback<List<PaperResearch>>() {
+        paperApiHandler.getAllPapers(searchQuery, currentPage, PAGE_SIZE, author, journal, yearFrom, yearTo, 
+                new ApiCallback<List<PaperResearch>>() {
             @Override
             public void onSuccess(List<PaperResearch> papers) {
                 runOnUiThread(() -> {
@@ -280,36 +287,24 @@ public class SearchActivity extends BaseActivity implements FilterDialogFragment
         });
     }
 
-    private SearchPapersRequest buildSearchRequest() {
-        SearchPapersRequest.SearchPapersRequestBuilder builder = SearchPapersRequest.builder()
-                .pageIndex(currentPage)
-                .pageSize(PAGE_SIZE);
-
-        // Set query
-        if (!currentQuery.isEmpty()) {
-            builder.query(currentQuery);
+    private String buildSearchQuery() {
+        StringBuilder queryBuilder = new StringBuilder();
+        
+        // Add main search query
+        if (currentQuery != null && !currentQuery.trim().isEmpty()) {
+            queryBuilder.append(currentQuery.trim());
         }
-
-        // Apply filters
-        if (currentFilterData != null) {
-            if (currentFilterData.author != null && !currentFilterData.author.isEmpty()) {
-                builder.authors(currentFilterData.author);
+        
+        // Add keywords to search query (backend searches in keywords field)
+        if (currentFilterData != null && currentFilterData.keywords != null && !currentFilterData.keywords.isEmpty()) {
+            if (queryBuilder.length() > 0) {
+                queryBuilder.append(" ");
             }
-            if (currentFilterData.journal != null && !currentFilterData.journal.isEmpty()) {
-                builder.journal(currentFilterData.journal);
-            }
-            if (currentFilterData.yearFrom != null) {
-                builder.yearFrom(currentFilterData.yearFrom);
-            }
-            if (currentFilterData.yearTo != null) {
-                builder.yearTo(currentFilterData.yearTo);
-            }
-            if (currentFilterData.keywords != null && !currentFilterData.keywords.isEmpty()) {
-                builder.keywords(currentFilterData.keywords);
-            }
+            queryBuilder.append(String.join(" ", currentFilterData.keywords));
         }
-
-        return builder.build();
+        
+        String result = queryBuilder.toString().trim();
+        return result.isEmpty() ? null : result;
     }
 
     private void showLoading(boolean show) {
