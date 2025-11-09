@@ -24,6 +24,9 @@ public interface ReadingListApi {
     @GET("reading-lists/user/{userId}")
     Call<BaseJsonResponse<List<ReadingListResponse>>> getReadingListsByUser(@Path("userId") String userId);
 
+    @GET("reading-lists/{listId}")
+    Call<BaseJsonResponse<ReadingListResponse>> getReadingListById(@Path("listId") String listId);
+
     @PUT("reading-lists/{listId}/papers")
     Call<BaseJsonResponse<ReadingListResponse>> updatePapers(
             @Path("listId") String listId,

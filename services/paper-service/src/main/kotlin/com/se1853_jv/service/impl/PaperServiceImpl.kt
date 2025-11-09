@@ -116,12 +116,12 @@ class PaperServiceImpl(
             req.doi
         }
 
-        val tagIds = emptyList<String>()
+        val tagIds = mutableListOf<String>()
         if (!req.tags.isNullOrEmpty()) {
             req.tags.forEach {
                 val tag = tagRepo.findByName(it)
-                if (tag != null) {
-                    tagIds.plus(tag.id)
+                if (tag != null && tag.id != null) {
+                    tagIds.add(tag.id)
                 }
             }
         }

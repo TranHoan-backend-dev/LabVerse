@@ -108,6 +108,44 @@ public class ReadingListApiHandler {
     }
 
     /**
+     * Get reading list by ID
+     * Note: listId should be encoded before calling
+     */
+    public void getReadingListById(String listId, ApiCallback<ReadingListResponse> callback) {
+        // listId from API response is already encoded, use directly
+        Log.d(TAG, "Getting reading list by ID: " + listId);
+        Call<BaseJsonResponse<ReadingListResponse>> call = readingListApi.getReadingListById(listId);
+        call.enqueue(new Callback<BaseJsonResponse<ReadingListResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<ReadingListResponse>> call,
+                                 @NonNull Response<BaseJsonResponse<ReadingListResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Reading list retrieved: " + (result != null ? result.getId() : "null"));
+                } else {
+                    String errorMessage = "Failed to get reading list";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
+                        }
+                    }
+                    Log.e(TAG, "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<ReadingListResponse>> call, @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
      * Get reading lists by user ID
      * Note: userId should be encoded before calling
      */

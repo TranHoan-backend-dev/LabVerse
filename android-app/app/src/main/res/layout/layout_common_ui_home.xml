@@ -96,14 +96,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Floating Action Button for Import Paper -->
+    <!-- Floating Action Button for Import Paper (Draggable) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabImportPaper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="80dp"
-        android:contentDescription="Import Paper"
+        android:contentDescription="Import Paper - Drag to move"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/primary"
         app:tint="@color/white"

@@ -118,12 +118,12 @@ public class MyPaperFragment extends Fragment {
 
         Log.d("MyPaperFragment", "Loading papers for userId: " + userId);
         
-        // Encode userId for API call
-        String encodedUserId = EncoderUtils.encode(userId);
-        Log.d("MyPaperFragment", "Encoded userId: " + encodedUserId);
+        // userId từ SessionManager đã được encode từ backend khi login
+        // Không cần encode lại, sử dụng trực tiếp
+        Log.d("MyPaperFragment", "Using userId directly (already encoded from backend): " + userId);
         
         // Load papers by user ID from API
-        paperApiHandler.getPapersByUserId(encodedUserId, new ApiCallback<List<PaperResearch>>() {
+        paperApiHandler.getPapersByUserId(userId, new ApiCallback<List<PaperResearch>>() {
             @Override
             public void onSuccess(List<PaperResearch> paperResearchList) {
                 if (getActivity() == null) return;

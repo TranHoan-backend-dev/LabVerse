@@ -105,8 +105,8 @@ class PaperController(
     @GetMapping("/all")
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
-        @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int,
+        @RequestParam(value = "index", defaultValue = "0") index: Int,
+        @RequestParam(value = "size", required = false, defaultValue = "50") pageSize: Int,
         // filter
         @RequestParam(value = "author", required = false) author: String?,
         @RequestParam(value = "journal", required = false) journal: String?,
@@ -161,11 +161,13 @@ class PaperController(
     @DeleteMapping("/{id}")
     fun deletePaper(@PathVariable("id") paperId: String): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to deletePaper with id: $paperId" }
+        val decodedId = encoder.decode(paperId)
+        paperService.deleteById(decodedId)
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Delete paper successfully",
-                paperService.deleteById(paperId),
+                null,
                 LocalDateTime.now()
             )
         )

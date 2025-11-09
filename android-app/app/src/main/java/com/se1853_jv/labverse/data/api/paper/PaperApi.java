@@ -11,23 +11,23 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 public interface PaperApi {
-    @GET("details")
+    @GET("papers/details")
     Call<BaseJsonResponse<PaperResearch>> getPaperDetails(@Query("id") String id);
-    @GET("citation")
+    @GET("papers/citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
-    @GET("all")
+    @GET("papers/all")
     Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(
-            @Query("search") String searchQuery,
+            @Query(value = "search", encoded = true) String searchQuery,
             @Query("index") int currentPage,
             @Query("size") int pageSize
     );
 
-    @GET("user/{userId}")
+    @GET("papers/user/{userId}")
     Call<BaseJsonResponse<List<PaperResearch>>> getPapersByUserId(@Path("userId") String userId);
 
-    @HTTP(method = "DELETE", path = "{id}")
+    @HTTP(method = "DELETE", path = "papers/{id}")
     Call<BaseJsonResponse<String>> deletePaper(@Path("id") String id);
 
-    @POST("pdf/upload")
+    @POST("papers/pdf/upload")
     Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request, @Header("X-User-Id") String userId);
 }
