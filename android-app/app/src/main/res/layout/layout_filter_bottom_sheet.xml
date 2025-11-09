@@ -41,12 +41,6 @@
         </LinearLayout>
 
         <!-- Author -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/author"
-            android:textSize="14sp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -61,12 +55,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Journal -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/journal"
-            android:textSize="14sp" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -84,12 +72,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Year -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/publication_year"
-            android:textSize="14sp" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -130,12 +113,7 @@
         </LinearLayout>
 
         <!-- Tags -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/keywords_tags"
-            android:textSize="14sp" />
+
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"

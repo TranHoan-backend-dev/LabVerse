@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.api.ApiCallback;
-import com.se1853_jv.labverse.data.dto.request.SearchPapersRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -33,7 +32,7 @@ public class PaperApiHandler {
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
 
-        var logging = new HttpLoggingInterceptor();
+        var logging = new HttpLoggingInterceptor(message -> Log.d("HTTP", message));
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         var client = new OkHttpClient.Builder()
@@ -96,65 +95,70 @@ public class PaperApiHandler {
         });
     }
 
-    public void getAllPapers(String searchQuery, int currentPage, int pageSize, ApiCallback<List<PaperResearch>> callback) {
-        Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
+    public void getAllPapers(String searchQuery, int currentPage, int pageSize, 
+                             String author, String journal, Integer yearFrom, Integer yearTo,
+                             ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getAllPapers called with:");
+        Log.d("PAPER_DATA", "  searchQuery=" + searchQuery);
+        Log.d("PAPER_DATA", "  currentPage=" + currentPage);
+        Log.d("PAPER_DATA", "  pageSize=" + pageSize);
+        Log.d("PAPER_DATA", "  author=" + author);
+        Log.d("PAPER_DATA", "  journal=" + journal);
+        Log.d("PAPER_DATA", "  yearFrom=" + yearFrom);
+        Log.d("PAPER_DATA", "  yearTo=" + yearTo);
         
-        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(searchQuery, currentPage, pageSize);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(
+                searchQuery, currentPage, pageSize, author, journal, yearFrom, yearTo);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    var result = response.body().getData();
-                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
-                    Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
+                Log.d("PAPER_DATA", "Response received:");
+                Log.d("PAPER_DATA", "  isSuccessful: " + response.isSuccessful());
+                Log.d("PAPER_DATA", "  code: " + response.code());
+                Log.d("PAPER_DATA", "  message: " + response.message());
+                
+                if (response.isSuccessful()) {
+                    BaseJsonResponse<List<PaperResearch>> body = response.body();
+                    if (body != null) {
+                        Log.d("PAPER_DATA", "Response body:");
+                        Log.d("PAPER_DATA", "  status: " + body.getStatus());
+                        Log.d("PAPER_DATA", "  message: " + body.getMessage());
+                        
+                        var result = body.getData();
+                        if (result != null) {
+                            Log.d("PAPER_DATA", "Papers fetched: " + result.size());
+                            callback.onSuccess(new ArrayList<>(result));
+                        } else {
+                            Log.w("PAPER_DATA", "Response data is null");
+                            callback.onSuccess(new ArrayList<>());
+                        }
+                    } else {
+                        Log.e("PAPER_DATA", "Response body is null");
+                        callback.onError("Response body is null");
+                    }
                 } else {
-                    Log.e("Server Error", "Error: " + response.message());
+                    Log.e("PAPER_DATA", "Response not successful. Code: " + response.code());
+                    String errorMessage = "Server error: " + response.code();
                     if (response.errorBody() != null) {
                         try {
-                            Log.e("Server Error", "Error body: " + response.errorBody().string());
+                            String errorBody = response.errorBody().string();
+                            Log.e("PAPER_DATA", "Error body: " + errorBody);
+                            errorMessage += " - " + errorBody;
                         } catch (Exception e) {
-                            Log.e("Server Error", "Could not read error body", e);
+                            Log.e("PAPER_DATA", "Could not read error body", e);
                         }
                     }
-                    callback.onError(response.message());
+                    callback.onError(errorMessage);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
-                Log.e("API Error", "Error: " + t.getMessage(), t);
-                callback.onError(t.getMessage());
-            }
-        });
-    }
-
-    public void searchPapers(SearchPapersRequest request, ApiCallback<List<PaperResearch>> callback) {
-        Log.d("PAPER_DATA", "searchPapers: " + request.toString());
-        
-        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.searchPapers(request);
-        call.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    var result = response.body().getData();
-                    callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
-                    Log.d("PAPER_DATA", "Search results: " + (result != null ? result.size() : 0) + " papers");
-                } else {
-                    Log.e("Server Error", "Error: " + response.message());
-                    if (response.errorBody() != null) {
-                        try {
-                            Log.e("Server Error", "Error body: " + response.errorBody().string());
-                        } catch (Exception e) {
-                            Log.e("Server Error", "Could not read error body", e);
-                        }
-                    }
-                    callback.onError(response.message());
+                Log.e("PAPER_DATA", "API call failed", t);
+                Log.e("PAPER_DATA", "Failure message: " + t.getMessage());
+                if (t.getCause() != null) {
+                    Log.e("PAPER_DATA", "Cause: " + t.getCause().getMessage());
                 }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
-                Log.e("API Error", "Error: " + t.getMessage(), t);
                 callback.onError(t.getMessage());
             }
         });

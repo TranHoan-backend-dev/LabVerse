@@ -1,7 +1,9 @@
 package com.se1853_jv.labverse.presentation.feed;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -65,5 +67,14 @@ public class FeedActivity extends BaseActivity {
                 new TypeToken<List<DiscoveryItem>>() {
                 }.getType()
         );
+    }
+    private void handleFilterPapers() {
+        View searchBar = findViewById(R.id.search_bar);
+        ImageButton btn = searchBar.findViewById(R.id.btn_filter);
+
+        btn.setOnClickListener(v -> {
+            var intent = new Intent(this, FilterActivity.class);
+            startActivity(intent);
+        });
     }
 }
