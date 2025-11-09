@@ -21,3 +21,15 @@ public class CollectionProgressStatisticsResponse {
     private List<TeamMemberProgressResponse> teamMemberProgress;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+

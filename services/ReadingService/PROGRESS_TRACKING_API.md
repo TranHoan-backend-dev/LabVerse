@@ -211,3 +211,15 @@ For frontend integration:
 3. Use `/progress/collection/{collectionId}/paper/{paperId}` for paper-specific progress
 4. Use `/workflows/collection/{collectionId}` to get all workflows for display in lists
 
+
+
+
+
+
+
+
+
+
+
+
+

@@ -71,3 +71,15 @@ Accept: application/json
 GET {{baseUrl}}/workflows/collection/{{collectionId}}?status=reading
 Accept: application/json
 
+
+
+
+
+
+
+
+
+
+
+
+

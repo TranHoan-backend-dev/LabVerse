@@ -17,3 +17,15 @@ public class TeamMemberProgressResponse {
     private Integer totalProgress; // Sum of all progress values
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
