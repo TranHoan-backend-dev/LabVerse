@@ -164,7 +164,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
 
         showLoading(true);
         
-        paperApiHandler.getAllPapers(query, currentPage, pageSize, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(query, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -210,7 +210,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        paperApiHandler.getAllPapers(null, currentPage, pageSize, new ApiCallback<>() {
+        paperApiHandler.getAllPapers(null, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
@@ -254,7 +254,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        readingListApiHandler.updatePapers(readingListId, request, new ApiCallback<>() {
+        readingListApiHandler.updatePapers(readingListId, request, new ApiCallback<ReadingListResponse>() {
             @Override
             public void onSuccess(ReadingListResponse response) {
                 runOnUiThread(() -> {

@@ -1,7 +1,10 @@
 package com.se1853_jv.labverse.presentation.feed;
 
+import static com.cloudinary.android.uploadwidget.UploadWidget.startActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
