@@ -29,7 +29,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusBottomEnd="8dp"
-            app:boxStrokeColor="@color/dark_gray"
+            app:boxStrokeColor="@color/gray_200"
             app:boxStrokeWidth="1dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -62,7 +62,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusBottomEnd="8dp"
-            app:boxStrokeColor="@color/dark_gray"
+            app:boxStrokeColor="@color/gray_200"
             app:boxStrokeWidth="1dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -95,7 +95,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusBottomEnd="8dp"
-            app:boxStrokeColor="@color/dark_gray"
+            app:boxStrokeColor="@color/gray_200"
             app:boxStrokeWidth="1dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -132,7 +132,7 @@
                 android:layout_height="wrap_content"
                 android:text="Save"
                 android:textColor="@color/white"
-                app:backgroundTint="@color/blue"
+                app:backgroundTint="@color/blue_400"
                 app:cornerRadius="8dp" />
         </LinearLayout>
 

@@ -106,7 +106,7 @@ public class TeamCreateActivity extends AppCompatActivity {
             public View getView(int position, View convertView, @NonNull android.view.ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView textView = (TextView) view;
-                textView.setTextColor(getResources().getColor(R.color.text_primary, null));
+                textView.setTextColor(getResources().getColor(R.color.light_black, null));
                 textView.setTextSize(16);
                 return view;
             }
@@ -115,7 +115,7 @@ public class TeamCreateActivity extends AppCompatActivity {
             public View getDropDownView(int position, View convertView, @NonNull android.view.ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView textView = (TextView) view;
-                textView.setTextColor(getResources().getColor(R.color.text_primary, null));
+                textView.setTextColor(getResources().getColor(R.color.light_black, null));
                 textView.setTextSize(16);
                 textView.setPadding(textView.getPaddingLeft(), 16, textView.getPaddingRight(), 16);
                 return view;

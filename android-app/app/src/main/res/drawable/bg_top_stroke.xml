@@ -11,7 +11,7 @@
     <item
         android:bottom="70dp"> <!-- đẩy phần stroke lên trên, không bao phủ nội dung -->
         <shape android:shape="rectangle">
-            <solid android:color="@color/gray" />
+            <solid android:color="@color/gray_50" />
             <size android:height="1dp" />
         </shape>
     </item>

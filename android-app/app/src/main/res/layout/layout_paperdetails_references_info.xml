@@ -28,7 +28,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_info_24"
-                app:tint="@color/blue" />
+                app:tint="@color/blue_400" />
 
             <TextView
                 android:id="@+id/tvHeader"
@@ -193,8 +193,8 @@
                     android:autoLink="web"
                     android:paddingStart="28dp"
                     android:text="https://doi.org/10.1038/s41591-024-0234-5"
-                    android:textColor="@color/blue"
-                    android:textColorLink="@color/blue"
+                    android:textColor="@color/blue_400"
+                    android:textColorLink="@color/blue_400"
                     tools:ignore="RtlSymmetry" />
             </LinearLayout>
         </LinearLayout>

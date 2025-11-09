@@ -54,10 +54,9 @@
     <string name="logout">Logout</string>
     <string name="user">User</string>
     <string name="new_paper_added">New paper added</string>
-    <string name="added_paper">Added papers</string>
-    <string name="read_paper">Read papers</string>
     <!-- Team -->
     <string name="team_logo">Team Logo</string>
+    <string name="team_projects">Team Projects</string>
     <string name="team_name">Team Name</string>
     <string name="team_description">Team Description</string>
     <string name="view_details">View Details</string>

@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.feed.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ import lombok.experimental.FieldDefaults;
 public class MyPaperFragment extends Fragment {
     MyPaperItem item;
     Button recentlyAdded, recentlyRead, favorites;
+    View view;
 
     @Nullable
     @Override
@@ -43,14 +45,15 @@ public class MyPaperFragment extends Fragment {
         favorites = view.findViewById(R.id.favorites);
         recentlyRead = view.findViewById(R.id.recently_read);
 
-        item = getMockData(view);
+        this.view = view;
+        item = getMockData();
 
-        buildStatisticCards(getLayoutInflater(), view);
-        buildMainContent(view);
-        handleSwitchTabs(view);
+        buildStatisticCards(getLayoutInflater());
+        buildMainContent();
+        handleSwitchTabs();
     }
 
-    private MyPaperItem getMockData(@NonNull View view) {
+    private MyPaperItem getMockData() {
         return ParseFileUtils.fromJsonAsset(
                 view.getContext(),
                 "feed/my-paper.json",
@@ -60,107 +63,120 @@ public class MyPaperFragment extends Fragment {
     }
 
     // <editor-fold> desc="Build statistic cards"
-    private void buildStatisticCards(@NonNull LayoutInflater inflater, @NonNull View view) {
+    private void buildStatisticCards(@NonNull LayoutInflater inflater) {
         LinearLayout container = view.findViewById(R.id.cards);
         container.removeAllViews();
 
-        buildAddedPaperCard(item.getSummary(), container, inflater);
-        buildRecentLyReadCard(item.getSummary(), container, inflater);
-        buildFavoritesCard(item.getSummary(), container, inflater);
+        var context = view.getContext();
 
+        buildPapersCard(item.getSummary(), container, inflater, context);
+        buildCollectionsCard(item.getSummary(), container, inflater, context);
+        buildTeamProjectsCard(item.getSummary(), container, inflater, context);
     }
 
-    private void buildAddedPaperCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildPapersCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.blue_50));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyAdded()));
+        statValue.setText(String.valueOf(summary.getPapers()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.blue_600));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.added_paper);
+        statLabel.setText(R.string.papers);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.blue_400));
         container.addView(card);
     }
 
-    private void buildRecentLyReadCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildCollectionsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.first_green));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyRead()));
+        statValue.setText(String.valueOf(summary.getCollections()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.seventh_green));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.read_paper);
+        statLabel.setText(R.string.collections);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.third_green));
         container.addView(card);
     }
 
-    private void buildFavoritesCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildTeamProjectsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.skin));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getFavorites()));
+        statValue.setText(String.valueOf(summary.getTeamProjects()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.yellow));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.favorites);
+        statLabel.setText(R.string.team_projects);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.brown));
         container.addView(card);
     }
     // </editor-fold>
 
-    private void buildMainContent(@NonNull View view) {
+    private void buildMainContent() {
         ViewPager2 mainContent = view.findViewById(R.id.main_content);
         var adapter = new MyPaperContentAdapter(requireActivity(), item.getPapers());
         mainContent.setAdapter(adapter);
     }
 
-    private void handleSwitchTabs(@NonNull View view) {
-        switchToRecentlyAdded(view);
-        switchToRecentlyRead(view);
-        switchToFavorites(view);
+    private void handleSwitchTabs() {
+        switchToRecentlyAdded();
+        switchToRecentlyRead();
+        switchToFavorites();
     }
 
-    private void switchToRecentlyAdded(View view) {
+    private void switchToRecentlyAdded() {
         recentlyAdded.setOnClickListener(v -> {
             Log.e("Hehe", "switchToRecentlyAdded");
-            recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             recentlyAdded.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
-            changeRecentlyReadTabColorIntoDefault(view);
-            changeFavoritesTabColorIntoDefault(view);
-            buildMainContent(view);
+            changeRecentlyReadTabColorIntoDefault();
+            changeFavoritesTabColorIntoDefault();
+            buildMainContent();
         });
     }
 
-    private void switchToRecentlyRead(View view) {
+    private void switchToRecentlyRead() {
         recentlyRead.setOnClickListener(v -> {
             Log.e("Hehe", "switchToRecentlyRead");
-            recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             recentlyRead.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
-            changeRecentlyAddedTabColorIntoDefault(view);
-            changeFavoritesTabColorIntoDefault(view);
-            buildMainContent(view);
+            changeRecentlyAddedTabColorIntoDefault();
+            changeFavoritesTabColorIntoDefault();
+            buildMainContent();
         });
     }
 
-    private void switchToFavorites(View view) {
+    private void switchToFavorites() {
         favorites.setOnClickListener(v -> {
             Log.e("Hehe", "switchToFavorites");
-            favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             favorites.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
-            changeRecentlyReadTabColorIntoDefault(view);
-            changeRecentlyAddedTabColorIntoDefault(view);
-            buildMainContent(view);
+            changeRecentlyReadTabColorIntoDefault();
+            changeRecentlyAddedTabColorIntoDefault();
+            buildMainContent();
         });
     }
 
-    private void changeRecentlyAddedTabColorIntoDefault(@NonNull View view) {
-        recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+    private void changeRecentlyAddedTabColorIntoDefault() {
+        recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         recentlyAdded.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 
-    private void changeRecentlyReadTabColorIntoDefault(@NonNull View view) {
-        recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+    private void changeRecentlyReadTabColorIntoDefault() {
+        recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         recentlyRead.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 
-    private void changeFavoritesTabColorIntoDefault(@NonNull View view) {
-        favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+    private void changeFavoritesTabColorIntoDefault() {
+        favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         favorites.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 }
