@@ -47,7 +47,7 @@ public class GatewayConfig {
         
         // Cache preflight response for 1 hour
         corsConfig.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
         
