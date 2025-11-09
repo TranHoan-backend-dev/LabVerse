@@ -7,7 +7,7 @@ import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 import org.springframework.cloud.openfeign.EnableFeignClients
 
-@SpringBootApplication(exclude = [DataSourceAutoConfiguration::class, HibernateJpaAutoConfiguration::class])
+@SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
 class PaperServiceApplication

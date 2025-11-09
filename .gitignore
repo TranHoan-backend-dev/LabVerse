@@ -48,6 +48,8 @@ Thumbs.db
 services/**/target/
 services/**/build/
 services/**/.mvn/
+!services/NotificationService/.mvn/
+
 
 **/src/main/resources/application-dev.yml
 **/src/main/resources/application-dev.yaml
