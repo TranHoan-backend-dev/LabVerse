@@ -126,7 +126,7 @@
                 android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:weightSum="3">
+                android:weightSum="4">
 
                 <ImageButton
                     android:id="@+id/btnMessage"
@@ -159,6 +159,30 @@
                     android:padding="10dp"
                     android:src="@drawable/ic_mail"
                     app:tint="@color/blue_500" />
+
+                <ImageButton
+                    android:id="@+id/btnEditRole"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_icon_container"
+                    android:contentDescription="Edit Role"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_edit_pencil"
+                    android:visibility="gone"
+                    app:tint="@color/primary" />
+
+                <ImageButton
+                    android:id="@+id/btnKick"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_icon_container"
+                    android:contentDescription="Remove Member"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone"
+                    app:tint="@android:color/holo_red_dark" />
 
             </LinearLayout>
 

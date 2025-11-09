@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test - Paper Service</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>CORS Test - Paper Service</h1>
+    <button onclick="testGet()">Test GET Request</button>
+    <button onclick="testOptions()">Test OPTIONS Preflight</button>
+    <div id="result"></div>
+
+    <script>
+        const GATEWAY_URL = 'http://localhost:8080';
+        const ENDPOINT = '/paper-service/papers/all?search=&index=1&size=12';
+
+        async function testGet() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing GET request...</p>';
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}${ENDPOINT}`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                const text = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <h3 class="${response.ok ? 'success' : 'error'}">GET Request: ${response.status} ${response.statusText}</h3>
+                    <h4>Response Headers:</h4>
+                    <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    <h4>CORS Headers Check:</h4>
+                    <pre>Access-Control-Allow-Origin: ${headers['access-control-allow-origin'] || 'MISSING ❌'}
+Access-Control-Allow-Credentials: ${headers['access-control-allow-credentials'] || 'MISSING ❌'}
+Access-Control-Allow-Methods: ${headers['access-control-allow-methods'] || 'MISSING ❌'}</pre>
+                    <h4>Response Body:</h4>
+                    <pre>${text.substring(0, 500)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3 class="error">Error: ${error.message}</h3>
+                    <pre>${error.stack}</pre>
+                    <p>Check browser console (F12) for more details.</p>
+                `;
+                console.error('CORS Error:', error);
+            }
+        }
+
+        async function testOptions() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing OPTIONS preflight request...</p>';
+            
+            try {
+                const response = await fetch(`${GATEWAY_URL}${ENDPOINT}`, {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'content-type',
+                    }
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                const hasCorsHeaders = headers['access-control-allow-origin'] !== undefined;
+                
+                resultDiv.innerHTML = `
+                    <h3 class="${hasCorsHeaders ? 'success' : 'error'}">OPTIONS Request: ${response.status} ${response.statusText}</h3>
+                    <h4>Response Headers:</h4>
+                    <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    <h4>CORS Headers Check:</h4>
+                    <pre>Access-Control-Allow-Origin: ${headers['access-control-allow-origin'] || 'MISSING ❌'}
+Access-Control-Allow-Methods: ${headers['access-control-allow-methods'] || 'MISSING ❌'}
+Access-Control-Allow-Headers: ${headers['access-control-allow-headers'] || 'MISSING ❌'}
+Access-Control-Allow-Credentials: ${headers['access-control-allow-credentials'] || 'MISSING ❌'}
+Access-Control-Max-Age: ${headers['access-control-max-age'] || 'MISSING ❌'}</pre>
+                    <p><strong>${hasCorsHeaders ? '✅ CORS headers present!' : '❌ CORS headers MISSING - This is the problem!'}</strong></p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3 class="error">Error: ${error.message}</h3>
+                    <pre>${error.stack}</pre>
+                    <p>This means the OPTIONS request was blocked before reaching the server.</p>
+                `;
+                console.error('OPTIONS Error:', error);
+            }
+        }
+
+        // Log current origin
+        console.log('Current Origin:', window.location.origin);
+        console.log('Gateway URL:', GATEWAY_URL);
+    </script>
+</body>
+</html>
+

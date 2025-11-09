@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.profile.ProfileActivity;
-import com.se1853_jv.labverse.presentation.team.TeamListActivity;
+import com.se1853_jv.labverse.presentation.readinglist.ReadingListsActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.appcompat.widget.PopupMenu;
@@ -365,7 +365,7 @@ public class HeaderHelper {
 
         if (navLists != null) {
             navLists.setOnClickListener(v -> {
-                Intent intent = new Intent(activity, TeamListActivity.class);
+                Intent intent = new Intent(activity, ReadingListsActivity.class);
                 activity.startActivity(intent);
             });
         }
