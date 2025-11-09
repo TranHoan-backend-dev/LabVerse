@@ -45,6 +45,11 @@ class PaperServiceImpl(
         return response
     }
 
+    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
+        // Delegate to the full method with null filters
+        return getAllPapers(searchQuery, pageIndex, pageSize, null, null, null, null)
+    }
+
     override fun getAllPapers(
         searchQuery: String?, pageIndex: Int, pageSize: Int?,
         author: String?, journal: String?, publicationYearFrom: Int?,
