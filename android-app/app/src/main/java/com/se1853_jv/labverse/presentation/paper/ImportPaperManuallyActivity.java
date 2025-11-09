@@ -143,7 +143,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         TextView fileName = new TextView(this);
         fileName.setText(item.fileName);
         fileName.setTextSize(16);
-        fileName.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        fileName.setTextColor(ContextCompat.getColor(this, R.color.light_black));
         fileName.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -152,7 +152,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         TextView metaInfo = new TextView(this);
         metaInfo.setText(item.timeAgo + " • " + item.fileSize);
         metaInfo.setTextSize(14);
-        metaInfo.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        metaInfo.setTextColor(ContextCompat.getColor(this, R.color.gray_400));
         metaInfo.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT

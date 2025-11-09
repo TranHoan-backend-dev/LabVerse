@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="light_blue">#DBEAFE</color>
-    <color name="semi_blue">#BFDBFE</color>
-    <color name="blue">#2563EB</color>
-    <color name="dark_blue">#4F46E5</color>
-    <color name="gray">#F3F4F6</color>
-    <color name="dark_gray">#D1D5DB</color>
-    <color name="skin">#FEF3C7</color>
-    <color name="brown">#B45309</color>
-    <color name="yellow">#FBBF24</color>
+    <!--  Blue  -->
+    <color name="blue_50">#DBEAFE</color>
+    <color name="blue_100">#BFDBFE</color>
+    <color name="cyan">#FF19C4D4</color>
+    <color name="blue_200">#2196F3</color>
+    <color name="blue_300">#1976D2</color>
+    <color name="blue_400">#2563EB</color>
+    <color name="blue_500">#FF4A4DE8</color>
+    <color name="blue_600">#4F46E5</color>
 
-    <!--  Mau xanh la cay dat ten theo do dam tang dan  -->
+    <!--  Warm colors  -->
+    <color name="skin">#FEF3C7</color>
+    <color name="yellow">#FBBF24</color>
+    <color name="red">#F44336</color>
+    <color name="brown">#B45309</color>
+
+    <!--  Green  -->
     <color name="first_green">#DCFCE7</color>
     <color name="second_green">#4ADE80</color>
     <color name="third_green">#22C55E</color>
-    <color name="fourth_green">#15803D</color>
+    <color name="fourth_green">#4CAF50</color>
+    <color name="fifth_green">#388E3C</color>
+    <color name="sixth_green">#2E7D32</color>
+    <color name="seventh_green">#15803D</color>
 
+    <!--  Purple  -->
     <color name="semi_purple">#F3E8FF</color>
     <color name="purple">#9333EA</color>
-    <color name="success_icon_color">#4CAF50</color>
-    <color name="success_text_color">#2E7D32</color>
 
-    <!--  Mau cua cac trang thai status/ priority cua paper -->
-    <color name="status_finished">#388E3C</color>
-    <color name="status_to_read">#757575</color>
-    <color name="priority_medium">#1976D2</color>
-    <color name="priority_low">#757575</color>
-    <color name="icon_blue_bg">#2196F3</color>
-    <color name="pdf_bg">#E0E0E0</color>
-    <color name="success">#4CAF50</color>
-    <color name="primary">#FF4A4DE8</color>
-
-    <color name="text_primary">#FF1D1D1F</color>
-    <color name="text_secondary">#FF8A8A8E</color>
-
-    <color name="border_color">#FFEBEBEB</color>
-    <color name="cyan">#FF19C4D4</color>
-    <color name="error">#F44336</color>
+    <!--  Dark level -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray_50">#F3F4F6</color>
+    <color name="gray_100">#FFEBEBEB</color>
+    <color name="gray_150">#E0E0E0</color>
+    <color name="gray_200">#D1D5DB</color>
+    <color name="gray_400">#FF8A8A8E</color>
+    <color name="gray_500">#757575</color>
+    <color name="light_black">#FF1D1D1F</color>
+    <color name="black">#FF000000</color>
 
 </resources>

@@ -64,39 +64,42 @@ public class MyPaperFragment extends Fragment {
         LinearLayout container = view.findViewById(R.id.cards);
         container.removeAllViews();
 
-        buildAddedPaperCard(item.getSummary(), container, inflater);
-        buildRecentLyReadCard(item.getSummary(), container, inflater);
-        buildFavoritesCard(item.getSummary(), container, inflater);
+        buildPapersCard(item.getSummary(), container, inflater, view);
+        buildCollectionsCard(item.getSummary(), container, inflater, view);
+        buildTeamProjectsCard(item.getSummary(), container, inflater, view);
 
     }
 
-    private void buildAddedPaperCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildPapersCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, View view) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_50));
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyAdded()));
+        statValue.setText(String.valueOf(summary.getPapers()));
+        statValue.setTextColor(ContextCompat.getColor(view.getContext(), R.color.blue_600));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.added_paper);
+        statLabel.setText(R.string.papers);
+        statLabel.setTextColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
         container.addView(card);
     }
 
-    private void buildRecentLyReadCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildCollectionsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, View view) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyRead()));
+        statValue.setText(String.valueOf(summary.getCollections()));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.read_paper);
+        statLabel.setText(R.string.collections);
         container.addView(card);
     }
 
-    private void buildFavoritesCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildTeamProjectsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, View view) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getFavorites()));
+        statValue.setText(String.valueOf(summary.getTeamProject()));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.favorites);
+        statLabel.setText(R.string.team_projects);
         container.addView(card);
     }
     // </editor-fold>
@@ -116,7 +119,7 @@ public class MyPaperFragment extends Fragment {
     private void switchToRecentlyAdded(View view) {
         recentlyAdded.setOnClickListener(v -> {
             Log.e("Hehe", "switchToRecentlyAdded");
-            recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             recentlyAdded.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
             changeRecentlyReadTabColorIntoDefault(view);
@@ -128,7 +131,7 @@ public class MyPaperFragment extends Fragment {
     private void switchToRecentlyRead(View view) {
         recentlyRead.setOnClickListener(v -> {
             Log.e("Hehe", "switchToRecentlyRead");
-            recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             recentlyRead.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
             changeRecentlyAddedTabColorIntoDefault(view);
@@ -140,7 +143,7 @@ public class MyPaperFragment extends Fragment {
     private void switchToFavorites(View view) {
         favorites.setOnClickListener(v -> {
             Log.e("Hehe", "switchToFavorites");
-            favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue));
+            favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.blue_400));
             favorites.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
 
             changeRecentlyReadTabColorIntoDefault(view);
@@ -150,17 +153,17 @@ public class MyPaperFragment extends Fragment {
     }
 
     private void changeRecentlyAddedTabColorIntoDefault(@NonNull View view) {
-        recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+        recentlyAdded.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         recentlyAdded.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 
     private void changeRecentlyReadTabColorIntoDefault(@NonNull View view) {
-        recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+        recentlyRead.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         recentlyRead.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 
     private void changeFavoritesTabColorIntoDefault(@NonNull View view) {
-        favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.dark_gray));
+        favorites.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.gray_200));
         favorites.setTextColor(ContextCompat.getColor(view.getContext(), R.color.black));
     }
 }

@@ -41,7 +41,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/light_blue"
+                android:background="@color/blue_50"
                 android:orientation="horizontal"
                 android:padding="12dp">
 
@@ -64,7 +64,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/import_from_bibtex_file"
-                        android:textColor="@color/blue"
+                        android:textColor="@color/blue_400"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -74,7 +74,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:text="@string/select_a_bib_file_from_zotero_mendeley_or_google_scholar_to_import_multiple_papers_at_once"
-                        android:textColor="@color/blue"
+                        android:textColor="@color/blue_400"
                         android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -135,7 +135,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:strokeColor="@color/gray"
+        app:strokeColor="@color/gray_50"
         app:strokeWidth="1dp">
 
         <com.google.android.material.button.MaterialButton
@@ -146,7 +146,7 @@
             android:text="@string/cancel"
             android:textAllCaps="false"
             android:textColor="@color/black"
-            app:backgroundTint="@color/gray"
+            app:backgroundTint="@color/gray_50"
             app:cornerRadius="10dp" />
 
         <Space
@@ -162,7 +162,7 @@
             android:text="@string/import_selected"
             android:textAllCaps="false"
             android:textColor="@color/black"
-            app:backgroundTint="@color/dark_gray"
+            app:backgroundTint="@color/gray_200"
             app:cornerRadius="10dp" />
     </LinearLayout>
 

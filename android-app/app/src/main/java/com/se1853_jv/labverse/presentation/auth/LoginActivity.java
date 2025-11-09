@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -122,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateTabSelection(boolean isLogin) {
         if (isLogin) {
-            btnLogin.setTextColor(getResources().getColor(R.color.blue, null));
+            btnLogin.setTextColor(getResources().getColor(R.color.blue_400, null));
             btnLogin.setTypeface(null, android.graphics.Typeface.BOLD);
             loginIndicator.setBackgroundResource(R.drawable.tab_indicator_selected);
 
@@ -130,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
             btnRegister.setTypeface(null, android.graphics.Typeface.NORMAL);
             registerIndicator.setBackgroundResource(R.drawable.tab_indicator_unselected);
         } else {
-            btnRegister.setTextColor(getResources().getColor(R.color.blue, null));
+            btnRegister.setTextColor(getResources().getColor(R.color.blue_400, null));
             btnRegister.setTypeface(null, android.graphics.Typeface.BOLD);
             registerIndicator.setBackgroundResource(R.drawable.tab_indicator_selected);
 
