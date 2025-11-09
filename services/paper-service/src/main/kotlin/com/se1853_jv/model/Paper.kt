@@ -16,4 +16,5 @@ data class Paper(
     val userWhoFavorite: String? = null,
     val collectionIds: List<String>? = emptyList(),
     val readingListIds: List<String>? = emptyList(),
+    val createdBy: String? = null, // User ID who uploaded/created this paper
 )

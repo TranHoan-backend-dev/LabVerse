@@ -1,0 +1,118 @@
+### LabVerse Android App - Collection API Test Suite
+### Base URL: http://10.0.2.2:8080/group-service/
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8080/group-service
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+@userId = YOUR_ENCODED_USER_ID_HERE
+@collectionId = YOUR_COLLECTION_ID_HERE
+@paperId = YOUR_PAPER_ID_HERE
+@memberId = YOUR_MEMBER_ID_HERE
+
+### 1. Get My Collections
+GET {{baseUrl}}/collections/my?userId={{userId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 2. Get Shared Collections
+GET {{baseUrl}}/collections/shared?userId={{userId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 3. Get Collection by ID
+GET {{baseUrl}}/collections/{{collectionId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 4. Create Collection
+POST {{baseUrl}}/collections
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "My Research Collection",
+  "description": "Collection for AI research papers",
+  "privacy": "PRIVATE"
+}
+
+### 5. Add Paper to Collection
+POST {{baseUrl}}/collections/papers
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "collectionId": "{{collectionId}}",
+  "paperId": "{{paperId}}",
+  "status": "TO_READ"
+}
+
+### 6. Get Papers in Collection
+GET {{baseUrl}}/collections/{{collectionId}}/papers
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 7. Update Paper Status
+PUT {{baseUrl}}/collections/papers/status
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "collectionId": "{{collectionId}}",
+  "paperId": "{{paperId}}",
+  "status": "READING"
+}
+
+### 8. Add Member to Collection
+POST {{baseUrl}}/collections/members
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "collectionId": "{{collectionId}}",
+  "memberId": "{{memberId}}",
+  "accessLevel": "READ"
+}
+
+### 9. Get Collection Members
+GET {{baseUrl}}/collections/members/{{collectionId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 10. Update Collection
+PUT {{baseUrl}}/collections/{{collectionId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Collection Name",
+  "description": "Updated description",
+  "privacy": "PUBLIC"
+}
+
+### 11. Update Member Access
+PUT {{baseUrl}}/collections/members/{{collectionId}}/{{memberId}}/access
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "accessLevel": "WRITE"
+}
+
+### 12. Remove Member from Collection
+DELETE {{baseUrl}}/collections/members/{{collectionId}}/{{memberId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 13. Remove Paper from Collection
+DELETE {{baseUrl}}/collections/{{collectionId}}/papers/{{paperId}}?userId={{userId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 14. Delete Collection
+DELETE {{baseUrl}}/collections/{{collectionId}}?userId={{userId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+

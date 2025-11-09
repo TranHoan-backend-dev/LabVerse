@@ -1,0 +1,48 @@
+### LabVerse Android App - User API Test Suite
+### Base URL: http://10.0.2.2:8081/api/users/
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8081/api/users
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+@userId = YOUR_USER_ID_HERE
+@email = test@example.com
+
+### 1. Get Current User
+GET {{baseUrl}}/me
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 2. Get User by ID
+GET {{baseUrl}}/{{userId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 3. Get User by Email
+GET {{baseUrl}}/email/{{email}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 4. Update Profile
+PATCH {{baseUrl}}/me
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "username": "updateduser",
+  "fullName": "Updated Name",
+  "avatarUrl": "https://example.com/avatar.png"
+}
+
+### 5. Change Password
+PATCH {{baseUrl}}/me/password
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "oldPassword": "password123",
+  "newPassword": "newpassword123"
+}
+

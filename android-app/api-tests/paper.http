@@ -1,0 +1,32 @@
+### LabVerse Android App - Paper API Test Suite
+### Base URL: http://10.0.2.2:8080/paper-service/papers/
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8080/paper-service/papers
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+@paperId = YOUR_PAPER_ID_HERE
+
+### 1. Get Paper Details
+GET {{baseUrl}}/details?id={{paperId}}
+Content-Type: {{contentType}}
+
+### 2. Get Citations of Paper
+GET {{baseUrl}}/citation?id={{paperId}}
+Content-Type: {{contentType}}
+
+### 3. Get All Papers (with pagination)
+GET {{baseUrl}}/all?search=machine%20learning&index=0&size=10
+Content-Type: {{contentType}}
+
+### 4. Get All Papers (no search)
+GET {{baseUrl}}/all?index=0&size=20
+Content-Type: {{contentType}}
+
+### 5. Delete Paper
+DELETE {{baseUrl}}/{{paperId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+

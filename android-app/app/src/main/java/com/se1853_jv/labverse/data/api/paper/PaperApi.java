@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.data.api.paper;
 
+import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -21,6 +22,12 @@ public interface PaperApi {
             @Query("size") int pageSize
     );
 
+    @GET("user/{userId}")
+    Call<BaseJsonResponse<List<PaperResearch>>> getPapersByUserId(@Path("userId") String userId);
+
     @HTTP(method = "DELETE", path = "{id}")
     Call<BaseJsonResponse<String>> deletePaper(@Path("id") String id);
+
+    @POST("pdf/upload")
+    Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request, @Header("X-User-Id") String userId);
 }

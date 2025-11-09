@@ -23,7 +23,7 @@ class PaperServiceImpl(
     private val paperRepo: PaperRepository,
     private val encoder: EncoderService,
     private val tagRepo: TagRepository,
-    private val db: Firestore,
+    private val db: Firestore?,
 ) : PaperService {
 
     override fun getPaperDetails(paperId: String): PaperResponse {
@@ -31,10 +31,23 @@ class PaperServiceImpl(
         val paper = paperRepo.findById(paperId).orElseThrow { IllegalArgumentException("Paper not found") }
         val response = convert(paper)
 
-        val data = storeData(response)
-        db.collection(COLLECTION_NAME).add(data)
+        if (db != null) {
+            try {
+                val data = storeData(response)
+                db.collection(COLLECTION_NAME).add(data)
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to send paper to Firebase: ${e.message}" }
+            }
+        } else {
+            logger.debug { "Firebase not available, skipping Firebase sync for paper" }
+        }
 
         return response
+    }
+
+    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
+        // Delegate to the full method with null filters
+        return getAllPapers(searchQuery, pageIndex, pageSize, null, null, null, null)
     }
 
     override fun getAllPapers(
@@ -89,11 +102,18 @@ class PaperServiceImpl(
         paperRepo.deleteById(id)
     }
 
-    override fun createNewPaper(req: UploadPdfRequest) {
-        logger.info { "Create new paper with title: ${req.title}" }
+    override fun createNewPaper(req: UploadPdfRequest, userId: String?) {
+        logger.info { "Create new paper with title: ${req.title}, userId: $userId" }
 
-        if (paperRepo.existsByMetadataDoi(req.doi)) {
-            throw IllegalArgumentException("Doi is existing")
+        // Generate DOI if not provided or empty
+        val finalDoi = if (req.doi.isNullOrBlank()) {
+            generateUniqueDoi()
+        } else {
+            // Check if DOI already exists
+            if (paperRepo.existsByMetadataDoi(req.doi)) {
+                throw IllegalArgumentException("Doi is existing")
+            }
+            req.doi
         }
 
         val tagIds = emptyList<String>()
@@ -110,11 +130,52 @@ class PaperServiceImpl(
             req.dataUrl,
             req.description,
             req.keywords,
-            Metadata(req.title, req.authors, req.journal, req.publicationYear, req.doi),
+            Metadata(req.title, req.authors, req.journal, req.publicationYear, finalDoi),
             tagIds,
+            userId,
         )
 
-        paperRepo.save(paper)
+        logger.info { "Saving paper with createdBy: ${paper.createdBy}, DOI: $finalDoi" }
+        val savedPaper = paperRepo.save(paper)
+        logger.info { "Paper saved successfully with id: ${savedPaper.id}, createdBy: ${savedPaper.createdBy}" }
+    }
+
+    /**
+     * Generate a unique DOI in format: 10.0000/{unique-id}
+     * Uses UUID and timestamp to ensure uniqueness
+     */
+    private fun generateUniqueDoi(): String {
+        val uniqueId = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+        val timestamp = System.currentTimeMillis().toString().takeLast(8)
+        // Format: 10.0000/{unique-id}
+        // Using 10.0000 as prefix for auto-generated DOIs
+        val doi = "10.0000/labverse.$uniqueId.$timestamp"
+        
+        // Ensure DOI doesn't already exist (very unlikely but check anyway)
+        var attempts = 0
+        var finalDoi = doi
+        while (paperRepo.existsByMetadataDoi(finalDoi) && attempts < 5) {
+            val newUniqueId = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+            finalDoi = "10.0000/labverse.$newUniqueId.${System.currentTimeMillis()}"
+            attempts++
+        }
+        
+        if (attempts >= 5) {
+            logger.warn { "Failed to generate unique DOI after 5 attempts, using timestamp-based DOI" }
+            finalDoi = "10.0000/labverse.${System.currentTimeMillis()}"
+        }
+        
+        return finalDoi
+    }
+
+    override fun getPapersByUserId(userId: String): List<PaperResponse> {
+        logger.info { "Getting papers for userId: $userId" }
+        val papers = paperRepo.findByCreatedByOrderByIdDesc(userId)
+        logger.info { "Found ${papers.size} papers in database for userId: $userId" }
+        papers.forEach { paper ->
+            logger.debug { "Paper: id=${paper.id}, title=${paper.metadata?.title}, createdBy=${paper.createdBy}" }
+        }
+        return papers.map { convert(it) }
     }
 
     private fun storeData(item: PaperResponse): MutableMap<String, Any> {
@@ -150,6 +211,7 @@ class PaperServiceImpl(
         keywords: List<String>?,
         metadata: Metadata,
         tagIds: List<String>?,
+        createdBy: String? = null,
     ) = Paper(
         id = UUID.randomUUID().toString(),
         dataUrl = dataUrl,
@@ -157,5 +219,6 @@ class PaperServiceImpl(
         keywords = keywords,
         metadata = metadata,
         tagIds = tagIds ?: emptyList(),
+        createdBy = createdBy,
     )
 }
