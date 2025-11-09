@@ -10,7 +10,5 @@ import lombok.NoArgsConstructor;
 public class Summary {
     private int papers, collections;
     private int teamProjects;
-    private int recentlyAdded;
-    private int recentlyRead;
-    private int favorites;
+
 }

@@ -34,6 +34,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
+import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
@@ -52,16 +53,20 @@ import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImportBibtexFragment extends Fragment {
-    MaterialButton chooseFileBtn, importBtn;
+    MaterialButton chooseFileBtn, importBtn, cancelBtn;
     ActivityResultLauncher<Intent> filePickerLauncher;
     List<BibEntry> entries;
+    List<BibEntry> selectedEntries; // Entries được chọn để import
     final CloudinaryService cloudinaryService;
     final UnpaywallService unpaywallService;
     final String TAG_NAME = "ImportBibtexFragment";
     View view;
+    com.se1853_jv.labverse.data.api.paper.PaperApiHandler paperApiHandler;
+    com.se1853_jv.labverse.data.utils.SessionManager sessionManager;
 
     public ImportBibtexFragment() {
         this.entries = new ArrayList<>();
+        this.selectedEntries = new ArrayList<>();
         this.cloudinaryService = new CloudinaryService();
         this.unpaywallService = new UnpaywallService();
     }
@@ -88,14 +93,29 @@ public class ImportBibtexFragment extends Fragment {
                 }
         );
         this.view = view;
+        
+        // Initialize API handlers
+        paperApiHandler = new com.se1853_jv.labverse.data.api.paper.PaperApiHandler(requireContext());
+        sessionManager = new com.se1853_jv.labverse.data.utils.SessionManager(requireContext());
+        
         bindView();
         openFilesCategory();
         handleImportEvent();
+        handleCancelEvent();
     }
 
     private void bindView() {
         chooseFileBtn = view.findViewById(R.id.btn_choose_file);
         importBtn = view.findViewById(R.id.btn_import);
+        cancelBtn = view.findViewById(R.id.btn_cancel);
+    }
+    
+    private void handleCancelEvent() {
+        if (cancelBtn != null) {
+            cancelBtn.setOnClickListener(v -> {
+                requireActivity().finish();
+            });
+        }
     }
 
     private void openFilesCategory() {
@@ -142,9 +162,12 @@ public class ImportBibtexFragment extends Fragment {
     private void displayPreview(@NonNull View view) {
         LinearLayout previewContainer = view.findViewById(R.id.pdfSummaryWrapper);
         previewContainer.removeAllViews();
+        
+        selectedEntries.clear(); // Reset selected entries
 
         for (var e : entries) {
             var card = buildCardView(view);
+            card.setTag(e); // Store BibEntry in card tag for later retrieval
 
             var body = buildParentForBibTexContent(view);
             body.addView(buildIcon(view));
@@ -155,16 +178,22 @@ public class ImportBibtexFragment extends Fragment {
 
             mainContent.addView(buildTitle(e, view));
             mainContent.addView(buildAuthorsAndYear(e, view));
+            
+            // Add journal/source if available
+            if (e.getSource() != null && !e.getSource().isEmpty()) {
+                mainContent.addView(buildJournal(e, view));
+            }
 
             body.addView(mainContent);
 
-            // Bọc nội dung và nút xóa trong FrameLayout
+            // Bọc nội dung, checkbox và nút xóa trong FrameLayout
             var wrapper = new FrameLayout(view.getContext());
             wrapper.setLayoutParams(new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT
             ));
             wrapper.addView(body);
+            wrapper.addView(buildCheckBox(card, e, view)); // Add checkbox
             wrapper.addView(buildDeleteBadge(card, view));
 
             card.addView(wrapper);
@@ -172,8 +201,64 @@ public class ImportBibtexFragment extends Fragment {
         }
 
         importBtn.setClickable(true);
+        importBtn.setEnabled(!selectedEntries.isEmpty());
         importBtn.bringToFront();
         importBtn.setElevation(10);
+        
+        updateImportButtonText();
+    }
+    
+    private TextView buildJournal(@NonNull BibEntry e, @NonNull View view) {
+        var journal = new TextView(view.getContext());
+        journal.setText(e.getSource());
+        journal.setTextSize(12);
+        journal.setTextColor(android.graphics.Color.GRAY);
+        journal.setPadding(0, 4, 0, 0);
+        return journal;
+    }
+    
+    private android.widget.CheckBox buildCheckBox(@NonNull MaterialCardView card, @NonNull BibEntry entry, @NonNull View view) {
+        var checkBox = new android.widget.CheckBox(view.getContext());
+        checkBox.setChecked(true); // Default: all selected
+        selectedEntries.add(entry); // Add to selected list
+        
+        var params = new FrameLayout.LayoutParams(
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics())
+        );
+        params.gravity = Gravity.START | Gravity.TOP;
+        params.setMargins(8, 8, 0, 0);
+        checkBox.setLayoutParams(params);
+        
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (!selectedEntries.contains(entry)) {
+                    selectedEntries.add(entry);
+                }
+            } else {
+                selectedEntries.remove(entry);
+            }
+            updateImportButtonText();
+        });
+        
+        return checkBox;
+    }
+    
+    private void updateImportButtonText() {
+        if (importBtn != null) {
+            int count = selectedEntries.size();
+            if (count > 0) {
+                importBtn.setEnabled(true);
+                importBtn.setText(getString(R.string.import_selected) + " (" + count + ")");
+                importBtn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                        android.graphics.Color.parseColor("#9333EA"))); // Purple
+            } else {
+                importBtn.setEnabled(false);
+                importBtn.setText(getString(R.string.import_selected));
+                importBtn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                        android.graphics.Color.parseColor("#D1D5DB"))); // Gray
+            }
+        }
     }
 
     @NonNull
@@ -274,40 +359,107 @@ public class ImportBibtexFragment extends Fragment {
 
     // <editor-fold> desc="import file module"
     private void handleImportEvent() {
-        var handler = new CrossRefApiHandler();
         importBtn.setOnClickListener(v -> {
-            if (entries == null || entries.isEmpty()) {
-                Toast.makeText(view.getContext(), "Chưa có file BibTex nào được chọn", Toast.LENGTH_SHORT).show();
+            if (selectedEntries == null || selectedEntries.isEmpty()) {
+                Toast.makeText(view.getContext(), "Vui lòng chọn ít nhất một paper để import", Toast.LENGTH_SHORT).show();
                 return;
             }
-//            var count = new AtomicInteger();
+            
+            // Disable button during import
+            importBtn.setEnabled(false);
+            importBtn.setText("Đang import...");
+            
+            // Import papers in background
             Executors.newSingleThreadExecutor().execute(() -> {
-//                for (BibEntry e : entries) {
-//                    count.incrementAndGet();
-//                    Log.e("DOI empty", e.getDoi() + " " + count.get());
-//                    if (e.getDoi() == null || e.getDoi().isEmpty()) {
-//                        runOnUiThread(() -> Toast.makeText(this, "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
-//                        return;
-//                    }
-//                    var object = handler.getArticleUrlFromDOI(e.getDoi());
-                var object = handler.getArticleUrlFromDOI("10.34190/iccws.20.1.3366");
-                uploadPdfToCloudinary("");
-
-                if (object != null) {
-                    Log.d(TAG_NAME, object.toString());
-                    var mapper = new ObjectMapper();
+                int successCount = 0;
+                int failCount = 0;
+                
+                for (BibEntry entry : selectedEntries) {
                     try {
-                        var paper = mapper.readValue(object.toString(), PaperResearch.class);
-                        Log.d(TAG_NAME, paper.toString());
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        importBibEntry(entry);
+                        successCount++;
+                    } catch (Exception e) {
+                        Log.e(TAG_NAME, "Error importing entry: " + entry.getTitle(), e);
+                        failCount++;
                     }
-                } else {
-                    requireActivity().runOnUiThread(() -> Toast.makeText(view.getContext(), "DOI không hợp lệ", Toast.LENGTH_SHORT).show());
                 }
-//                }
+                
+                final int finalSuccess = successCount;
+                final int finalFail = failCount;
+                
+                requireActivity().runOnUiThread(() -> {
+                    String message = String.format("Import hoàn tất: %d thành công, %d thất bại", finalSuccess, finalFail);
+                    Toast.makeText(view.getContext(), message, Toast.LENGTH_LONG).show();
+                    
+                    // Close activity if all successful
+                    if (finalFail == 0) {
+                        requireActivity().setResult(android.app.Activity.RESULT_OK);
+                        requireActivity().finish();
+                    } else {
+                        importBtn.setEnabled(true);
+                        importBtn.setText(getString(R.string.import_selected));
+                    }
+                });
             });
         });
+    }
+    
+    private void importBibEntry(BibEntry entry) {
+        // Parse year
+        Integer year = null;
+        try {
+            if (entry.getYear() != null && !entry.getYear().isEmpty()) {
+                year = Integer.parseInt(entry.getYear());
+            }
+        } catch (NumberFormatException e) {
+            Log.w(TAG_NAME, "Invalid year format: " + entry.getYear());
+        }
+        
+        // Create UploadPdfRequest
+        UploadPdfRequest request = new UploadPdfRequest();
+        request.setTitle(entry.getTitle() != null ? entry.getTitle() : "Untitled");
+        request.setAuthors(entry.getAuthor() != null ? entry.getAuthor() : "");
+        request.setJournal(entry.getSource() != null ? entry.getSource() : "");
+        request.setPublicationYear(year);
+        request.setDoi(entry.getDoi()); // Can be null - backend will auto-generate
+        request.setDataUrl(null); // No PDF URL for BibTeX import
+        request.setDescription(null);
+        request.setKeywords(null);
+        request.setTags(null);
+        
+        // Call API synchronously (we're already in background thread)
+        final boolean[] success = {false};
+        final String[] errorMessage = {null};
+        
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        
+        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
+            @Override
+            public void onSuccess(Object data) {
+                success[0] = true;
+                latch.countDown();
+            }
+            
+            @Override
+            public void onError(String error) {
+                success[0] = false;
+                errorMessage[0] = error;
+                latch.countDown();
+            }
+        });
+        
+        try {
+            latch.await(); // Wait for API call to complete
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Import interrupted", e);
+        }
+        
+        if (!success[0]) {
+            throw new RuntimeException("Failed to import: " + errorMessage[0]);
+        }
+        
+        Log.d(TAG_NAME, "Successfully imported: " + entry.getTitle());
     }
 
     private String getPdfLink(String doi, View view) {
