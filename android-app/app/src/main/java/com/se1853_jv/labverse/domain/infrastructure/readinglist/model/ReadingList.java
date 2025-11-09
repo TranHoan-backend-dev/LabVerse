@@ -2,6 +2,7 @@ package com.se1853_jv.labverse.domain.infrastructure.readinglist.model;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import lombok.AccessLevel;

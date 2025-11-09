@@ -63,6 +63,8 @@
     <string name="go_back">Go back</string>
     <string name="recently_read">Recently Read</string>
     <string name="favorites">Favorites</string>
+    <string name="added_paper">Added Papers</string>
+    <string name="read_paper">Read Papers</string>
     <string name="heart">❤️</string>
     <string name="in_progress">In Progress</string>
     <string name="continue_to_read">Continue to read</string>

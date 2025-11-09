@@ -18,7 +18,7 @@ private const val COLLECTION_NAME: String = "tag"
 class TagServiceImpl(
     private val repo: TagRepository,
     private val encoder: EncoderService,
-    private val db: Firestore,
+    private val db: Firestore?,
 ) : TagService {
 
     override fun getTagsByPaperId(id: String): List<TagResponse> {
@@ -58,11 +58,19 @@ class TagServiceImpl(
     }
 
     private fun sendDataToFirebase(response: List<TagResponse>) {
-        val dataList: MutableList<MutableMap<String, Any>> = ArrayList()
-        response.forEach { item ->
-            val result = storeData(item)
-            dataList.add(result)
+        if (db == null) {
+            logger.debug { "Firebase not available, skipping Firebase sync for tags" }
+            return
         }
-        dataList.forEach { item -> db.collection(COLLECTION_NAME).add(item) }
+        try {
+            val dataList: MutableList<MutableMap<String, Any>> = ArrayList()
+            response.forEach { item ->
+                val result = storeData(item)
+                dataList.add(result)
+            }
+            dataList.forEach { item -> db.collection(COLLECTION_NAME).add(item) }
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to send tags to Firebase: ${e.message}" }
+        }
     }
 }

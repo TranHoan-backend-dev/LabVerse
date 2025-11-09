@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class Summary {
     private int papers, collections;
     private int teamProjects;
+
 }

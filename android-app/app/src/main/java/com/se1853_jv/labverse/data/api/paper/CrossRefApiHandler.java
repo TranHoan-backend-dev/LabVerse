@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.Objects;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

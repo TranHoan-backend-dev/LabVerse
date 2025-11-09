@@ -6,8 +6,12 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_DOCUMENTS"
+        android:minSdkVersion="33" />
 
     <application
+        android:name=".LabVerseApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,7 +21,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LabVerse"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:replace="android:fullBackupContent">
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -77,6 +82,10 @@
             android:name=".presentation.team.TeamDetailActivity"
             android:exported="true" />
         <activity
+            android:name=".presentation.team.TeamEditActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.team.TeamDetailActivity" />
+        <activity
             android:name=".presentation.collection.CollectionDetailsActivity"
             android:exported="true" />
         <activity
@@ -90,6 +99,17 @@
             android:name=".presentation.collection.CollectionMembersActivity"
             android:exported="false"
             android:parentActivityName=".presentation.collection.CollectionsActivity" />
+        <activity
+            android:name=".presentation.readinglist.ReadingListsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".presentation.readinglist.ReadingListDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.readinglist.ReadingListsActivity" />
+        <activity
+            android:name=".presentation.readinglist.SelectPaperForReadingListActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.readinglist.ReadingListDetailActivity" />
     </application>
 
 </manifest>
