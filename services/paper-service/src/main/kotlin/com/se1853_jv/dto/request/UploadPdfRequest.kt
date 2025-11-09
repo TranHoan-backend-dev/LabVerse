@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern
 
 data class UploadPdfRequest(
     @field:Pattern(
-        regexp = "^(https?://)?([\\w\\-]+\\.)+[\\w\\-]+(/[\\w\\-.,@?^=%&:/~+#]*)?$",
+        regexp = "^(https://|http://)[\\w\\-]+(\\.[\\w\\-]+)+(/[\\w\\-.,@?^=%&:/~+#]*)?$",
         message = "URI must follow the format"
     )
     val dataUrl: String,
