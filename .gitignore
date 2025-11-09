@@ -49,8 +49,7 @@ services/**/target/
 services/**/build/
 services/**/.mvn/
 !services/NotificationService/.mvn/
-!services/**/.mvn/wrapper/maven-wrapper.jar
-!services/**/.mvn/wrapper/maven-wrapper.properties
+!services/**/.mvn/wrapper/
 
 
 **/src/main/resources/application-dev.yml
