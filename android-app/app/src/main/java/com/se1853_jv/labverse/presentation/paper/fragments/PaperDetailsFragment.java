@@ -225,7 +225,7 @@ public class PaperDetailsFragment extends Fragment {
             @Override
             public void onSuccess(List<Tag> data) {
                 int[] bg = {R.drawable.bg_tag_blue, R.drawable.bg_tag_purple, R.drawable.bg_tag_green, R.drawable.bg_tag_skin};
-                int[] textColor = {R.color.blue, R.color.purple, R.color.fourth_green, R.color.yellow};
+                int[] textColor = {R.color.blue_400, R.color.purple, R.color.seventh_green, R.color.yellow};
 
                 if (data == null) {
                     var tv = new TextView(requireActivity());

@@ -7,6 +7,12 @@ interface PaperService {
     fun getPaperDetails(paperId: String): PaperResponse
     fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse>
     fun getPapersByUserId(userId: String): List<PaperResponse>
+    fun getAllPapers(
+        searchQuery: String?, pageIndex: Int, pageSize: Int?,
+        author: String?, journal: String?, publicationYearFrom: Int?,
+        publicationYearTo: Int?
+    ): List<PaperResponse>
+
     fun deleteById(id: String)
     fun createNewPaper(req: UploadPdfRequest, userId: String?)
 }

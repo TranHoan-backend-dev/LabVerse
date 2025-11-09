@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Create Team"
-            app:titleTextColor="@color/text_primary"
+            app:titleTextColor="@color/light_black"
             app:navigationIcon="@drawable/ic_arrow_back_2"
             app:layout_scrollFlags="scroll|enterAlways|snap" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -88,7 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Team Name"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -102,7 +102,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/border_color"
+                app:boxStrokeColor="@color/gray_100"
                 app:boxStrokeWidth="1dp"
                 app:hintEnabled="false">
 
@@ -122,7 +122,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Description"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -136,7 +136,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/border_color"
+                app:boxStrokeColor="@color/gray_100"
                 app:boxStrokeWidth="1dp"
                 app:hintEnabled="false">
 
@@ -157,7 +157,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Research Field"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -171,7 +171,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/border_color"
+                app:boxStrokeColor="@color/gray_100"
                 app:boxStrokeWidth="1dp"
                 app:hintEnabled="false">
 
@@ -190,7 +190,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Privacy"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
@@ -225,7 +225,7 @@
                             android:layout_height="wrap_content"
                             android:text="Public"
                             android:textSize="16sp"
-                            android:textColor="@color/text_primary"
+                            android:textColor="@color/light_black"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -233,7 +233,7 @@
                             android:layout_height="wrap_content"
                             android:text="Anyone can find and join"
                             android:textSize="14sp"
-                            android:textColor="@color/text_secondary"/>
+                            android:textColor="@color/gray_400"/>
                     </LinearLayout>
                 </RelativeLayout>
 
@@ -262,7 +262,7 @@
                             android:layout_height="wrap_content"
                             android:text="Private"
                             android:textSize="16sp"
-                            android:textColor="@color/text_primary"
+                            android:textColor="@color/light_black"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -270,7 +270,7 @@
                             android:layout_height="wrap_content"
                             android:text="Invitation only"
                             android:textSize="14sp"
-                            android:textColor="@color/text_secondary"/>
+                            android:textColor="@color/gray_400"/>
                     </LinearLayout>
                 </RelativeLayout>
 
@@ -285,7 +285,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Add Members"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_centerVertical="true"
@@ -296,7 +296,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="+ Add"
-                    android:textColor="@color/primary"
+                    android:textColor="@color/blue_500"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_centerVertical="true"
@@ -315,7 +315,7 @@
                 android:text="Create Team"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:backgroundTint="@color/primary"
+                android:backgroundTint="@color/blue_500"
                 app:cornerRadius="12dp"
                 style="@style/Widget.MaterialComponents.Button" />
 

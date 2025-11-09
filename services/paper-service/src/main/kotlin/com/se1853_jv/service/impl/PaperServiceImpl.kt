@@ -45,12 +45,16 @@ class PaperServiceImpl(
         return response
     }
 
-    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
+    override fun getAllPapers(
+        searchQuery: String?, pageIndex: Int, pageSize: Int?,
+        author: String?, journal: String?, publicationYearFrom: Int?,
+        publicationYearTo: Int?
+    ): List<PaperResponse> {
         logger.info { "Getting all papers with search query: $searchQuery" }
         val allPapers: Page<Paper> = paperRepo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
-        val data = allPapers.content
+        var data = allPapers.content
 
-        val filteredPapers = if (searchQuery.isNullOrBlank()) {
+        data = if (searchQuery.isNullOrBlank()) {
             data
         } else {
             val query = searchQuery.lowercase()
@@ -62,7 +66,29 @@ class PaperServiceImpl(
             }
         }
 
-        return filteredPapers.map { convert(it) }
+        if (!author.isNullOrBlank()) {
+            data = data.filter {
+                val content = it.metadata?.authors
+                content != null && it.metadata.authors.lowercase().contains(author.lowercase())
+            }
+        }
+
+        if (!journal.isNullOrBlank()) {
+            data = data.filter {
+                val content = it.metadata?.journal?.lowercase()
+                content != null && it.metadata.journal.lowercase().contains(journal.lowercase())
+            }
+        }
+
+        if (publicationYearFrom != null || publicationYearTo != null) {
+            data = data.filter {
+                val year = it.metadata?.publicationYear ?: return@filter false
+                (publicationYearFrom == null || year >= publicationYearFrom) &&
+                        (publicationYearTo == null || year <= publicationYearTo)
+            }
+        }
+
+        return data.map { convert(it) }
     }
 
     override fun deleteById(id: String) {

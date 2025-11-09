@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="36dp"
     android:layout_marginHorizontal="4dp"
-    android:backgroundTint="@color/gray"
+    android:backgroundTint="@color/gray_50"
     android:text="@string/recently_added"
     android:textColor="@color/black"
     android:textSize="13sp"
