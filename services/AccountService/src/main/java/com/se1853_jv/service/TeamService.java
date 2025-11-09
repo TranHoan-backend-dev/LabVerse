@@ -3,6 +3,7 @@ package com.se1853_jv.service;
 import com.se1853_jv.dto.request.AddTeamMemberRequest;
 import com.se1853_jv.dto.request.CreateTeamRequest;
 import com.se1853_jv.dto.request.UpdateTeamRequest;
+import com.se1853_jv.dto.request.UpdateMemberRoleRequest;
 import com.se1853_jv.dto.response.TeamMemberResponse;
 import com.se1853_jv.dto.response.TeamResponse;
 import com.se1853_jv.exception.BadRequestException;
@@ -142,17 +143,6 @@ public class TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
 
-        // Check if user has permission (creator or PI member)
-        TeamMember requesterMember = teamMemberRepository.findMemberInTeam(teamId, userId)
-                .orElse(null);
-        
-        boolean isCreator = team.getCreatedBy().getId().equals(userId);
-        boolean isPI = requesterMember != null && requesterMember.getRole() == TeamMember.TeamRole.PI;
-
-        if (!isCreator && !isPI) {
-            throw new BadRequestException("Only team creator or PI members can add members");
-        }
-
         // Check if user to add exists
         User userToAdd = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
@@ -160,6 +150,35 @@ public class TeamService {
         // Check if user is already a member
         if (teamMemberRepository.existsByTeamIdAndUserId(teamId, request.getUserId())) {
             throw new BadRequestException("User is already a member of this team");
+        }
+
+        // Check permissions:
+        // 1. If user is adding themselves (self-join), allow only if team is PUBLIC
+        // 2. If user is adding someone else, require creator or PI permission
+        boolean isSelfJoin = userId.equals(request.getUserId());
+        
+        // Log for debugging
+        System.out.println("addMember - userId (requester): " + userId);
+        System.out.println("addMember - request.getUserId(): " + request.getUserId());
+        System.out.println("addMember - isSelfJoin: " + isSelfJoin);
+        System.out.println("addMember - team privacy: " + team.getPrivacy());
+        
+        if (isSelfJoin) {
+            // Self-join: only allowed for PUBLIC teams
+            if (team.getPrivacy() != Team.PrivacyType.PUBLIC) {
+                throw new BadRequestException("Cannot join private team. You need an invitation.");
+            }
+        } else {
+            // Adding someone else: require creator or PI permission
+            TeamMember requesterMember = teamMemberRepository.findMemberInTeam(teamId, userId)
+                    .orElse(null);
+            
+            boolean isCreator = team.getCreatedBy().getId().equals(userId);
+            boolean isPI = requesterMember != null && requesterMember.getRole() == TeamMember.TeamRole.PI;
+
+            if (!isCreator && !isPI) {
+                throw new BadRequestException("Only team creator or PI members can add other members");
+            }
         }
 
         TeamMember newMember = new TeamMember(team, userToAdd, request.getRole());
@@ -195,6 +214,38 @@ public class TeamService {
         }
 
         teamMemberRepository.deleteByTeamIdAndUserId(teamId, memberIdToRemove);
+    }
+
+    @Transactional
+    public TeamMemberResponse updateMemberRole(String teamId, String userId, String memberIdToUpdate, UpdateMemberRoleRequest request) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
+
+        // Check if user has permission (creator or PI member)
+        TeamMember requesterMember = teamMemberRepository.findMemberInTeam(teamId, userId)
+                .orElse(null);
+        
+        boolean isCreator = team.getCreatedBy().getId().equals(userId);
+        boolean isPI = requesterMember != null && requesterMember.getRole() == TeamMember.TeamRole.PI;
+
+        if (!isCreator && !isPI) {
+            throw new BadRequestException("Only team creator or PI members can update member roles");
+        }
+
+        // Check if member exists
+        TeamMember memberToUpdate = teamMemberRepository.findMemberInTeam(teamId, memberIdToUpdate)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in this team"));
+
+        // Cannot change creator's role
+        if (team.getCreatedBy().getId().equals(memberIdToUpdate)) {
+            throw new BadRequestException("Cannot change team creator's role");
+        }
+
+        // Update role
+        memberToUpdate.setRole(request.getRole());
+        TeamMember updatedMember = teamMemberRepository.save(memberToUpdate);
+        
+        return mapToTeamMemberResponse(updatedMember);
     }
 
     public List<TeamMemberResponse> getTeamMembers(String teamId, String userId) {

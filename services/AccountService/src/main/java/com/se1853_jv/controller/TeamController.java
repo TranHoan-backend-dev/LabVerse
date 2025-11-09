@@ -3,6 +3,7 @@ package com.se1853_jv.controller;
 import com.se1853_jv.dto.request.AddTeamMemberRequest;
 import com.se1853_jv.dto.request.CreateTeamRequest;
 import com.se1853_jv.dto.request.UpdateTeamRequest;
+import com.se1853_jv.dto.request.UpdateMemberRoleRequest;
 import com.se1853_jv.dto.response.TeamMemberResponse;
 import com.se1853_jv.dto.response.TeamResponse;
 import com.se1853_jv.dto.response.WrapperApiResponse;
@@ -136,6 +137,11 @@ public class TeamController {
             decodedUserId = request.getUserId(); // Try using as-is if not encoded
         }
         
+        // Log for debugging
+        System.out.println("addMember Controller - userPrincipal.getId(): " + userPrincipal.getId());
+        System.out.println("addMember Controller - request.getUserId() (original): " + request.getUserId());
+        System.out.println("addMember Controller - decodedUserId: " + decodedUserId);
+        
         AddTeamMemberRequest decodedRequest = new AddTeamMemberRequest();
         decodedRequest.setUserId(decodedUserId);
         decodedRequest.setRole(request.getRole());
@@ -179,6 +185,29 @@ public class TeamController {
         }
         java.util.List<TeamMemberResponse> members = teamService.getTeamMembers(decodedId, userPrincipal.getId());
         return ResponseEntity.ok(WrapperApiResponse.success(members));
+    }
+
+    @PutMapping("/{id}/members/{memberId}/role")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<WrapperApiResponse> updateMemberRole(
+            Authentication authentication,
+            @PathVariable String id,
+            @PathVariable String memberId,
+            @Valid @RequestBody UpdateMemberRoleRequest request) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        String decodedTeamId = IdEncoder.decode(id);
+        String decodedMemberId = IdEncoder.decode(memberId);
+        
+        if (decodedTeamId == null) {
+            return ResponseEntity.badRequest()
+                    .body(WrapperApiResponse.error(400, "Invalid team ID format"));
+        }
+        if (decodedMemberId == null) {
+            decodedMemberId = memberId; // Try using as-is if not encoded
+        }
+        
+        TeamMemberResponse member = teamService.updateMemberRole(decodedTeamId, userPrincipal.getId(), decodedMemberId, request);
+        return ResponseEntity.ok(WrapperApiResponse.success("Member role updated successfully", member));
     }
 }
 
