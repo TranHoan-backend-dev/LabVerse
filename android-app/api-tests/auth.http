@@ -1,0 +1,51 @@
+### LabVerse Android App - Auth API Test Suite
+### Base URL: http://10.0.2.2:8081/api/auth/
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8081/api/auth
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+
+### 1. Register User
+POST {{baseUrl}}/register
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "username": "testuser",
+  "fullName": "Test User"
+}
+
+### 2. Login
+POST {{baseUrl}}/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. Google Login
+POST {{baseUrl}}/google
+Content-Type: {{contentType}}
+
+{
+  "token": "GOOGLE_ID_TOKEN_HERE"
+}
+
+### 4. Forgot Password
+POST {{baseUrl}}/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com"
+}
+
+### 5. Logout
+POST {{baseUrl}}/logout
+Authorization: {{token}}
+Content-Type: {{contentType}}
+

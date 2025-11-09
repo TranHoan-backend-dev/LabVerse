@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Summary {
-    private int recentlyAdded, recentlyRead, favorites;
+    private int papers, collections;
+    private int teamProjects;
+
 }

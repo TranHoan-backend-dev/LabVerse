@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Create Team"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -85,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="Team Name"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -101,7 +101,7 @@
                 android:hint="Enter team name"
                 android:inputType="textCapWords"
                 android:padding="16dp"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Description"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -130,7 +130,7 @@
                 android:inputType="textMultiLine"
                 android:minLines="4"
                 android:padding="16dp"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Research Field"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -185,7 +185,10 @@
                     android:id="@+id/rl_public"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="8dp">
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <RadioButton
                         android:id="@+id/rb_public"
@@ -204,7 +207,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Public"
-                            android:textColor="@color/text_primary"
+                            android:textColor="@color/light_black"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
@@ -212,7 +215,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Anyone can find and join"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="@color/gray_400"
                             android:textSize="14sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -221,13 +224,15 @@
                     android:id="@+id/rl_private"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="8dp">
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <RadioButton
                         android:id="@+id/rb_private"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
                         android:layout_centerVertical="true"/>
 
                     <LinearLayout
@@ -241,7 +246,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Private"
-                            android:textColor="@color/text_primary"
+                            android:textColor="@color/light_black"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
@@ -249,7 +254,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Invitation only"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="@color/gray_400"
                             android:textSize="14sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -260,7 +265,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Add Members"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@id/tv_add_button"
@@ -288,7 +293,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:background="@color/blue"
+                android:background="@color/blue_400"
                 android:paddingVertical="16dp"
                 android:text="Create Team"
                 android:textAllCaps="false"

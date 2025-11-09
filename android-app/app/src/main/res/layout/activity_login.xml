@@ -78,7 +78,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/login"
                         android:textSize="16sp"
-                        android:textColor="@color/blue"
+                        android:textColor="@color/blue_400"
                         android:gravity="center"
                         android:paddingBottom="8dp"
                         android:textStyle="bold" />
@@ -127,7 +127,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusBottomEnd="8dp"
-            app:boxStrokeColor="@color/dark_gray"
+            app:boxStrokeColor="@color/gray_200"
             app:boxStrokeWidth="1dp"
             app:startIconDrawable="@drawable/ic_email"
             app:startIconTint="#9CA3AF">
@@ -154,7 +154,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusBottomEnd="8dp"
-            app:boxStrokeColor="@color/dark_gray"
+            app:boxStrokeColor="@color/gray_200"
             app:boxStrokeWidth="1dp"
             app:startIconDrawable="@drawable/ic_lock"
             app:startIconTint="#9CA3AF"
@@ -186,7 +186,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/forgot_password"
                 android:textSize="14sp"
-                android:textColor="@color/blue"
+                android:textColor="@color/blue_400"
                 android:clickable="true"
                 android:focusable="true" />
         </LinearLayout>
@@ -200,7 +200,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/blue"
+            app:backgroundTint="@color/blue_400"
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_login"
             app:iconGravity="textStart"
@@ -219,7 +219,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="@color/dark_gray" />
+                android:background="@color/gray_200" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -234,7 +234,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="@color/dark_gray" />
+                android:background="@color/gray_200" />
         </LinearLayout>
 
         <!-- Google Sign In Button -->
@@ -246,7 +246,7 @@
             android:textColor="@color/black"
             android:textSize="14sp"
             app:backgroundTint="@color/white"
-            app:strokeColor="@color/dark_gray"
+            app:strokeColor="@color/gray_200"
             app:strokeWidth="1dp"
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_google"
@@ -275,7 +275,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/create_one_here"
                 android:textSize="14sp"
-                android:textColor="@color/blue"
+                android:textColor="@color/blue_400"
                 android:textStyle="bold"
                 android:clickable="true"
                 android:focusable="true"

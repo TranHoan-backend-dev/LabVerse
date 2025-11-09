@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Bookmark Icon -->
+        <ImageButton
+            android:id="@+id/bookmark_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_bookmark"
+            android:contentDescription="@string/favorites"
+            app:tint="?attr/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Paper Title -->
+        <TextView
+            android:id="@+id/text_paper_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Paper Title"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/bookmark_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Publication Details (Journal • Year) -->
+        <TextView
+            android:id="@+id/text_publication_details"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Journal • Year"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_paper_title" />
+
+        <!-- Author and Affiliation -->
+        <TextView
+            android:id="@+id/text_author_affiliation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Author • Affiliation"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_publication_details" />
+
+        <!-- Keywords/Tags Container -->
+        <LinearLayout
+            android:id="@+id/tags_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_author_affiliation" />
+
+        <!-- Engagement Metrics -->
+        <LinearLayout
+            android:id="@+id/metrics_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tags_container">
+
+            <!-- Views Icon and Count -->
+            <ImageView
+                android:id="@+id/icon_views"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_view"
+                android:contentDescription="Views"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/text_views"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2.3k"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginStart="4dp" />
+
+            <!-- Citations Icon and Count -->
+            <ImageView
+                android:id="@+id/icon_citations"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_share"
+                android:contentDescription="Citations"
+                android:layout_marginStart="16dp"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/text_citations"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="156"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <!-- Read More Link -->
+        <TextView
+            android:id="@+id/text_read_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Read More"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tags_container"
+            app:layout_constraintBottom_toBottomOf="@id/metrics_container" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

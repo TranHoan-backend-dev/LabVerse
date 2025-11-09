@@ -73,6 +73,21 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ReadingWorkflowResponse> getWorkflowsByCollection(String collectionId, String status) {
+        List<ReadingWorkflow> workflows;
+        if (status != null && !status.isEmpty()) {
+            workflows = readingWorkflowRepository.findByCollectionIdAndStatus(collectionId, status);
+        } else {
+            workflows = readingWorkflowRepository.findById_CollectionId(collectionId);
+        }
+        
+        return workflows.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void updateProgress(ReadingWorkflowProgressRequest request) {
         ReadingWorkflowId id = new ReadingWorkflowId(
                 request.getCollectionId(),

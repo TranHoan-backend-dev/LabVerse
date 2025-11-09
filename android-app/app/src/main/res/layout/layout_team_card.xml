@@ -12,7 +12,7 @@
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="20dp"
     app:cardElevation="2dp"
-    app:strokeColor="@color/border_color"
+    app:strokeColor="@color/gray_100"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -52,7 +52,7 @@
                     android:id="@+id/tvTeamName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     tools:text="LabVerse – Research Paper Management" />
@@ -62,7 +62,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="14sp"
                     tools:text="Lead: Dr. Nguyen Van Minh" />
 
@@ -87,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/light_black"
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"
@@ -111,14 +111,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_people_24"
-                    app:tint="@color/primary" />
+                    app:tint="@color/blue_500" />
 
                 <TextView
                     android:id="@+id/tvTeamMembers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="8 Members" />
@@ -136,14 +136,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_collection"
-                    app:tint="@color/primary" />
+                    app:tint="@color/blue_500" />
 
                 <TextView
                     android:id="@+id/tvTeamDepartments"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="3 Departments" />
@@ -161,7 +161,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_location_on_24"
-                    app:tint="@color/primary"
+                    app:tint="@color/blue_500"
                     tools:ignore="VectorPath" />
 
                 <TextView
@@ -169,7 +169,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     tools:text="2 Locations" />
@@ -177,6 +177,23 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnJoinTeam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Join Team"
+            android:textAllCaps="false"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingVertical="10dp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_team"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:cornerRadius="8dp"
+            app:backgroundTint="@color/success" />
 
     </LinearLayout>
 

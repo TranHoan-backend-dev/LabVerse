@@ -2,6 +2,7 @@ package com.se1853_jv.labverse.data.api.paper;
 
 import static com.se1853_jv.labverse.data.Constants.PAPER_ENDPOINT_URL;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -9,14 +10,18 @@ import androidx.annotation.NonNull;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,18 +31,49 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PaperApiHandler {
     private final PaperApi apiService;
+    private final SessionManager sessionManager;
 
     public PaperApiHandler() {
+        this(null);
+    }
+
+    public PaperApiHandler(Context context) {
+        if (context != null) {
+            this.sessionManager = new SessionManager(context);
+        } else {
+            this.sessionManager = null;
+        }
+
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create();
 
-        var logging = new HttpLoggingInterceptor();
+        var logging = new HttpLoggingInterceptor(message -> Log.d("HTTP", message));
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        var client = new OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .build();
+        // Add token interceptor if sessionManager is available
+        Interceptor tokenInterceptor = chain -> {
+            Request original = chain.request();
+            Request.Builder requestBuilder = original.newBuilder();
+            
+            if (sessionManager != null) {
+                String token = sessionManager.getBearerToken();
+                if (token != null) {
+                    requestBuilder.header("Authorization", token);
+                }
+            }
+            
+            return chain.proceed(requestBuilder.build());
+        };
+
+        var clientBuilder = new OkHttpClient.Builder()
+                .addInterceptor(logging);
+        
+        if (sessionManager != null) {
+            clientBuilder.addInterceptor(tokenInterceptor);
+        }
+        
+        var client = clientBuilder.build();
 
         var retrofit = new Retrofit.Builder()
                 .baseUrl(PAPER_ENDPOINT_URL.concat("papers/"))
@@ -95,33 +131,133 @@ public class PaperApiHandler {
         });
     }
 
-    public void getAllPapers(String searchQuery, int currentPage, int pageSize, ApiCallback<List<PaperResearch>> callback) {
-        Log.d("PAPER_DATA", "getAllPapers: searchQuery=" + searchQuery);
+    public void getAllPapers(String searchQuery, int currentPage, int pageSize, 
+                             String author, String journal, Integer yearFrom, Integer yearTo,
+                             ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getAllPapers called with:");
+        Log.d("PAPER_DATA", "  searchQuery=" + searchQuery);
+        Log.d("PAPER_DATA", "  currentPage=" + currentPage);
+        Log.d("PAPER_DATA", "  pageSize=" + pageSize);
+        Log.d("PAPER_DATA", "  author=" + author);
+        Log.d("PAPER_DATA", "  journal=" + journal);
+        Log.d("PAPER_DATA", "  yearFrom=" + yearFrom);
+        Log.d("PAPER_DATA", "  yearTo=" + yearTo);
         
-        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(searchQuery, currentPage, pageSize);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(
+                searchQuery, currentPage, pageSize, author, journal, yearFrom, yearTo);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+                Log.d("PAPER_DATA", "Response received:");
+                Log.d("PAPER_DATA", "  isSuccessful: " + response.isSuccessful());
+                Log.d("PAPER_DATA", "  code: " + response.code());
+                Log.d("PAPER_DATA", "  message: " + response.message());
+                
+                if (response.isSuccessful()) {
+                    BaseJsonResponse<List<PaperResearch>> body = response.body();
+                    if (body != null) {
+                        Log.d("PAPER_DATA", "Response body:");
+                        Log.d("PAPER_DATA", "  status: " + body.getStatus());
+                        Log.d("PAPER_DATA", "  message: " + body.getMessage());
+                        
+                        var result = body.getData();
+                        if (result != null) {
+                            Log.d("PAPER_DATA", "Papers fetched: " + result.size());
+                            callback.onSuccess(new ArrayList<>(result));
+                        } else {
+                            Log.w("PAPER_DATA", "Response data is null");
+                            callback.onSuccess(new ArrayList<>());
+                        }
+                    } else {
+                        Log.e("PAPER_DATA", "Response body is null");
+                        callback.onError("Response body is null");
+                    }
+                } else {
+                    Log.e("PAPER_DATA", "Response not successful. Code: " + response.code());
+                    String errorMessage = "Server error: " + response.code();
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            Log.e("PAPER_DATA", "Error body: " + errorBody);
+                            errorMessage += " - " + errorBody;
+                        } catch (Exception e) {
+                            Log.e("PAPER_DATA", "Could not read error body", e);
+                        }
+                    }
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
+                Log.e("PAPER_DATA", "API call failed", t);
+                Log.e("PAPER_DATA", "Failure message: " + t.getMessage());
+                if (t.getCause() != null) {
+                    Log.e("PAPER_DATA", "Cause: " + t.getCause().getMessage());
+                }
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void getPapersByUserId(String userId, ApiCallback<List<PaperResearch>> callback) {
+        Log.d("PAPER_DATA", "getPapersByUserId called with encoded userId: " + userId);
+        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getPapersByUserId(userId);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     var result = response.body().getData();
                     callback.onSuccess(result != null ? new ArrayList<>(result) : new ArrayList<>());
-                    Log.d("PAPER_DATA", "Papers fetched: " + (result != null ? result.size() : 0));
+                    Log.d("PAPER_DATA", "Papers fetched for user: " + (result != null ? result.size() : 0));
                 } else {
-                    Log.e("Server Error", "Error: " + response.message());
+                    String errorMessage = "Failed to get papers by user";
                     if (response.errorBody() != null) {
                         try {
-                            Log.e("Server Error", "Error body: " + response.errorBody().string());
+                            errorMessage = response.errorBody().string();
                         } catch (Exception e) {
-                            Log.e("Server Error", "Could not read error body", e);
+                            Log.e("PAPER_DATA", "Error parsing error body", e);
                         }
                     }
-                    callback.onError(response.message());
+                    Log.e("PAPER_DATA", "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
-                Log.e("API Error", "Error: " + t.getMessage(), t);
+                Log.e("PAPER_DATA", "API Error: " + t.getMessage(), t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    public void uploadPdf(@NonNull UploadPdfRequest request, String userId, ApiCallback<Object> callback) {
+        Log.d("PAPER_UPLOAD", "uploadPdf: " + request.getDataUrl() + ", userId: " + userId);
+        Call<BaseJsonResponse<Object>> call = apiService.uploadPdf(request, userId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("PAPER_UPLOAD", "Paper uploaded successfully");
+                    callback.onSuccess(null);
+                } else {
+                    String errorMessage = "Failed to upload paper";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e("PAPER_UPLOAD", "Error parsing error body", e);
+                        }
+                    }
+                    Log.e("PAPER_UPLOAD", "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Throwable t) {
+                Log.e("PAPER_UPLOAD", "API Error: " + t.getMessage());
                 callback.onError(t.getMessage());
             }
         });

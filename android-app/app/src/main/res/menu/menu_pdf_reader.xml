@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/export_annotations"
+        android:title="Export Annotations"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/import_annotations"
+        android:title="Import Annotations"
+        app:showAsAction="never" />
+</menu>
+

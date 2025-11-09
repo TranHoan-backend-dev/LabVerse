@@ -16,6 +16,8 @@ import com.se1853_jv.labverse.presentation.collection.CollectionsActivity;
 import com.se1853_jv.labverse.presentation.feed.FeedActivity;
 import com.se1853_jv.labverse.presentation.profile.ProfileActivity;
 import com.se1853_jv.labverse.presentation.readinglist.ReadingListActivity;
+import com.se1853_jv.labverse.presentation.readinglist.ReadingListsActivity;
+import com.se1853_jv.labverse.presentation.search.SearchActivity;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -40,7 +42,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         profileBtn = parent.findViewById(R.id.profile_btn);
 
         handleNavigatingToHomeScreen();
-        // TODO: search modal
+        handleNavigatingToSearchScreen();
         handleNavigatingToReadingListScreen();
         handleNavigatingToCollectionScreen();
         handleNavigatingToProfileScreen();
@@ -56,11 +58,21 @@ public abstract class BaseActivity extends AppCompatActivity {
         });
     }
 
+    private void handleNavigatingToSearchScreen() {
+        searchBtn.setOnClickListener(v -> {
+            Log.e(TAG, "handleNavigatingToSearchScreen");
+            if (!(this instanceof SearchActivity)) {
+                var intent = new Intent(this, SearchActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
     private void handleNavigatingToReadingListScreen() {
         readingListBtn.setOnClickListener(v -> {
             Log.e(TAG, "handleNavigatingToReadingListScreen");
-            if (!(this instanceof ReadingListActivity)) {
-                var intent = new Intent(this, ReadingListActivity.class);
+            if (!this.getClass().equals(ReadingListsActivity.class)) {
+                var intent = new Intent(this, ReadingListsActivity.class);
                 startActivity(intent);
             }
         });

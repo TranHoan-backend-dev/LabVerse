@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
@@ -61,9 +62,12 @@ class PaperController(
         produces = [MediaType.APPLICATION_JSON_VALUE],
         consumes = [MediaType.APPLICATION_JSON_VALUE]
     )
-    fun uploadPdfFile(@Valid @RequestBody request: UploadPdfRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to uploadPdfFile controller" }
-        paperService.createNewPaper(request)
+    fun uploadPdfFile(
+        @Valid @RequestBody request: UploadPdfRequest,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to uploadPdfFile controller, userId: $userId" }
+        paperService.createNewPaper(request, userId)
 
         return ResponseEntity.ok(
             WrapperApiResponse(
@@ -102,15 +106,53 @@ class PaperController(
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int,
-        @RequestParam(value = "tagIds", required = false) tagIds: List<String>?
+        @RequestParam(value = "size", required = false) pageSize: Int?,
+        // filter
+        @RequestParam(value = "author", required = false) author: String?,
+        @RequestParam(value = "journal", required = false) journal: String?,
+        @RequestParam(value = "from", required = false) publicationYearFrom: Int?,
+        @RequestParam(value = "to", required = false) publicationYearTo: Int?
     ): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to getAllPapers with search: $searchQuery, tagIds: $tagIds" }
+        logger.info { "Request to getAllPapers with search: $searchQuery" }
+
+        if ((publicationYearFrom != null && publicationYearFrom > LocalDate.now().year) ||
+            (publicationYearTo != null && publicationYearTo < 1000)
+        ) {
+            return ResponseEntity.ok(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Get all papers failed. Publication year must be from 1000 and does not larger than the current year",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
-                paperService.getAllPapers(searchQuery, index, pageSize, tagIds),
+                paperService.getAllPapers(
+                    searchQuery, index, pageSize,
+                    author, journal, publicationYearFrom, publicationYearTo
+                ),
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @GetMapping("/user/{userId}")
+    fun getPapersByUserId(@PathVariable("userId") userId: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getPapersByUserId, encoded userId: $userId" }
+        val decodedUserId = encoder.decode(userId)
+        logger.info { "Decoded userId: $decodedUserId" }
+        val papers = paperService.getPapersByUserId(decodedUserId)
+        logger.info { "Found ${papers.size} papers for user $decodedUserId" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get papers by user successfully",
+                papers,
                 LocalDateTime.now()
             )
         )

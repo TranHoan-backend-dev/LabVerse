@@ -3,7 +3,7 @@
     android:id="@+id/toolbarPaperDetails"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/blue"
+    android:background="@color/blue_400"
     android:fitsSystemWindows="true"
     android:navigationIcon="@drawable/ic_arrow_back"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:layout_marginStart="20dp"
-        android:background="@color/blue"
+        android:background="@color/blue_400"
         android:contentDescription="@string/go_back"
         android:src="@drawable/ic_arrow_back" />
 

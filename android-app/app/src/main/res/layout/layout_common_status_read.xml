@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/read"
-        android:textColor="@color/fourth_green"
+        android:textColor="@color/seventh_green"
         android:textSize="11sp"
         android:textStyle="bold" />
 </LinearLayout>

@@ -8,7 +8,7 @@
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="18dp"
     app:cardElevation="1dp"
-    app:strokeColor="@color/border_color"
+    app:strokeColor="@color/gray_100"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -44,7 +44,7 @@
                     android:id="@+id/tvMemberName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="Dr. Nguyen Van Minh" />
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/gray_400"
                 android:textSize="14sp"
                 tools:text="Project Lead &amp; Senior Researcher" />
 
@@ -84,7 +84,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_university"
-                    app:tint="@color/text_secondary"
+                    app:tint="@color/gray_400"
                     tools:ignore="VectorPath" />
 
                 <TextView
@@ -92,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/gray_400"
                     android:textSize="13sp"
                     tools:text="Hanoi University" />
 
@@ -106,7 +106,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_location_on_24"
-                    app:tint="@color/text_secondary"
+                    app:tint="@color/gray_400"
                     tools:ignore="VectorPath" />
 
                 <TextView
@@ -114,7 +114,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/gray_400"
                     android:textSize="13sp"
                     tools:text="Hanoi" />
 
@@ -126,7 +126,7 @@
                 android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:weightSum="3">
+                android:weightSum="4">
 
                 <ImageButton
                     android:id="@+id/btnMessage"
@@ -136,7 +136,7 @@
                     android:contentDescription="Message"
                     android:padding="10dp"
                     android:src="@drawable/ic_message"
-                    app:tint="@color/primary" />
+                    app:tint="@color/blue_500" />
 
                 <ImageButton
                     android:id="@+id/btnCall"
@@ -147,7 +147,7 @@
                     android:contentDescription="Call"
                     android:padding="10dp"
                     android:src="@drawable/ic_call"
-                    app:tint="@color/primary" />
+                    app:tint="@color/blue_500" />
 
                 <ImageButton
                     android:id="@+id/btnMail"
@@ -158,7 +158,31 @@
                     android:contentDescription="Mail"
                     android:padding="10dp"
                     android:src="@drawable/ic_mail"
+                    app:tint="@color/blue_500" />
+
+                <ImageButton
+                    android:id="@+id/btnEditRole"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_icon_container"
+                    android:contentDescription="Edit Role"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_edit_pencil"
+                    android:visibility="gone"
                     app:tint="@color/primary" />
+
+                <ImageButton
+                    android:id="@+id/btnKick"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_icon_container"
+                    android:contentDescription="Remove Member"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone"
+                    app:tint="@android:color/holo_red_dark" />
 
             </LinearLayout>
 

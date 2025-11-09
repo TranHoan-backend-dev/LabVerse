@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/blue"
+                app:cardBackgroundColor="@color/blue_400"
                 app:cardElevation="4dp"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent">
 
@@ -190,7 +190,7 @@
                         android:text="Owner"
                         style="@style/Widget.Material3.Chip.Assist"
                         app:chipBackgroundColor="#7CCA97"
-                        android:textColor="@color/fourth_green"
+                        android:textColor="@color/seventh_green"
                         app:chipMinHeight="24dp"
                         android:textAppearance="?attr/textAppearanceLabelSmall"
                         android:layout_marginStart="8dp"
@@ -294,7 +294,7 @@
                         android:text="Collaborator"
                         style="@style/Widget.Material3.Chip.Assist"
                         app:chipBackgroundColor="#8CA5D3"
-                        android:textColor="@color/blue"
+                        android:textColor="@color/blue_400"
                         app:chipMinHeight="24dp"
                         android:textAppearance="?attr/textAppearanceLabelSmall"
                         android:layout_marginStart="8dp"

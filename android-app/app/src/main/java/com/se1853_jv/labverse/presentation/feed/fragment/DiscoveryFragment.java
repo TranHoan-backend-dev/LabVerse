@@ -139,6 +139,7 @@ public class DiscoveryFragment extends Fragment {
                     var tag = item.getTags().get(i);
                     tagsContainer.addView(buildChip(cardView.getContext(), tag.getName(), i));
                 }
+
             }
 
             buildTitle(item.getTitle(), cardView);
@@ -265,3 +266,4 @@ public class DiscoveryFragment extends Fragment {
     }
     // </editor-fold>
 }
+

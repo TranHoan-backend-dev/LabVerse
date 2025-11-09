@@ -53,8 +53,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/white"
-                    app:tabIndicatorColor="@color/blue"
-                    app:tabSelectedTextColor="@color/blue"
+                    app:tabIndicatorColor="@color/blue_400"
+                    app:tabSelectedTextColor="@color/blue_400"
                     app:tabTextColor="#777" />
 
                 <androidx.viewpager2.widget.ViewPager2
@@ -63,11 +63,9 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
             </LinearLayout>
-
             <include
                 android:id="@+id/search_bar"
                 layout="@layout/layout_common_component_search" />
-
             <!-- Content -->
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPager"
@@ -95,5 +93,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Floating Action Button for Import Paper -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabImportPaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="80dp"
+        android:contentDescription="Import Paper"
+        android:src="@drawable/ic_add"
+        app:backgroundTint="@color/primary"
+        app:tint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

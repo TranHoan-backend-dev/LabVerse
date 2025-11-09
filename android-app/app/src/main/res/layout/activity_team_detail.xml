@@ -51,25 +51,62 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_chip_purple"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
+                android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_info_24"
-                    app:tint="@color/white" />
-
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="Active Project"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:background="@drawable/bg_chip_purple"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_info_24"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="Active Project"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layoutPrivacyBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_chip_green"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:gravity="center_vertical"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_info_24"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:id="@+id/tvPrivacyStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="PUBLIC"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -161,9 +198,10 @@
                     android:padding="16dp">
 
                     <TextView
+                        android:id="@+id/tvTeamMembersCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="8"
+                        android:text="0"
                         android:textColor="@color/text_primary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -252,6 +290,21 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/btnEditTeam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_chip_purple"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="Edit"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
                     android:id="@+id/btnAddMember"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -261,9 +314,28 @@
                     android:text="+ Add"
                     android:textColor="@color/white"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
 
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnJoinTeam"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Join Team"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingVertical="14dp"
+                android:visibility="gone"
+                app:icon="@drawable/ic_team"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/success" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupMembers"
@@ -319,13 +391,12 @@
 
             </com.google.android.material.chip.ChipGroup>
 
-            <include layout="@layout/layout_team_member_item" />
-
-            <include layout="@layout/layout_team_member_item" />
-
-            <include layout="@layout/layout_team_member_item" />
-
-            <include layout="@layout/layout_team_member_item" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewMembers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
 

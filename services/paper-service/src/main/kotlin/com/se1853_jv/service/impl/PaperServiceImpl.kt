@@ -1,7 +1,6 @@
 package com.se1853_jv.service.impl
 
 import com.google.cloud.firestore.Firestore
-import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.PaperResponse
 import com.se1853_jv.model.*
@@ -12,10 +11,6 @@ import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
-import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.query.Criteria
-import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -28,8 +23,7 @@ class PaperServiceImpl(
     private val paperRepo: PaperRepository,
     private val encoder: EncoderService,
     private val tagRepo: TagRepository,
-    private val db: Firestore,
-    private val mongoTemplate: MongoTemplate,
+    private val db: Firestore?,
 ) : PaperService {
 
     override fun getPaperDetails(paperId: String): PaperResponse {
@@ -37,57 +31,35 @@ class PaperServiceImpl(
         val paper = paperRepo.findById(paperId).orElseThrow { IllegalArgumentException("Paper not found") }
         val response = convert(paper)
 
-        val data = storeData(response)
-        db.collection(COLLECTION_NAME).add(data)
+        if (db != null) {
+            try {
+                val data = storeData(response)
+                db.collection(COLLECTION_NAME).add(data)
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to send paper to Firebase: ${e.message}" }
+            }
+        } else {
+            logger.debug { "Firebase not available, skipping Firebase sync for paper" }
+        }
 
         return response
     }
 
-    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?, tagIds: List<String>?): List<PaperResponse> {
-        logger.info { "Getting all papers with search query: $searchQuery, tagIds: $tagIds" }
-        
-        // If tagIds is provided, use MongoTemplate for efficient querying
-        if (!tagIds.isNullOrEmpty()) {
-            val queryConditions = mutableListOf<Criteria>()
-            
-            // Tags filter - papers must have at least one of the provided tagIds
-            queryConditions.add(Criteria("tagIds").`in`(tagIds))
-            
-            // General query search (searches across multiple fields)
-            if (!searchQuery.isNullOrBlank()) {
-                val searchPattern = ".*${Regex.escape(searchQuery)}.*"
-                val regex = Regex(searchPattern, RegexOption.IGNORE_CASE)
-                queryConditions.add(
-                    Criteria().orOperator(
-                        Criteria("metadata.title").regex(regex.pattern, "i"),
-                        Criteria("metadata.authors").regex(regex.pattern, "i"),
-                        Criteria("metadata.journal").regex(regex.pattern, "i"),
-                        Criteria("keywords").regex(regex.pattern, "i"),
-                        Criteria("description").regex(regex.pattern, "i")
-                    )
-                )
-            }
-            
-            val mongoQuery = Query(Criteria().andOperator(*queryConditions.toTypedArray()))
-            
-            // Pagination
-            val pageRequest = PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE)
-            mongoQuery.with(pageRequest)
-            
-            // Default sort by publication year descending
-            mongoQuery.with(Sort.by(Sort.Direction.DESC, "metadata.publicationYear"))
-            
-            val papers = mongoTemplate.find(mongoQuery, Paper::class.java)
-            logger.info { "Found ${papers.size} papers matching filters" }
-            
-            return papers.map { convert(it) }
-        }
-        
-        // If no tagIds, use the original simple filtering approach
-        val allPapers: Page<Paper> = paperRepo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
-        val data = allPapers.content
+    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
+        // Delegate to the full method with null filters
+        return getAllPapers(searchQuery, pageIndex, pageSize, null, null, null, null)
+    }
 
-        val filteredPapers = if (searchQuery.isNullOrBlank()) {
+    override fun getAllPapers(
+        searchQuery: String?, pageIndex: Int, pageSize: Int?,
+        author: String?, journal: String?, publicationYearFrom: Int?,
+        publicationYearTo: Int?
+    ): List<PaperResponse> {
+        logger.info { "Getting all papers with search query: $searchQuery" }
+        val allPapers: Page<Paper> = paperRepo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
+        var data = allPapers.content
+
+        data = if (searchQuery.isNullOrBlank()) {
             data
         } else {
             val query = searchQuery.lowercase()
@@ -99,123 +71,29 @@ class PaperServiceImpl(
             }
         }
 
-        return filteredPapers.map { convert(it) }
-    }
+        if (!author.isNullOrBlank()) {
+            data = data.filter {
+                val content = it.metadata?.authors
+                content != null && it.metadata.authors.lowercase().contains(author.lowercase())
+            }
+        }
 
-    override fun searchPapersWithFilters(request: SearchPapersRequest): List<PaperResponse> {
-        logger.info { "Searching papers with filters: $request" }
-        
-        // Validate that if string fields are provided, they are not blank
-        validateSearchRequest(request)
-        
-        val queryConditions = mutableListOf<Criteria>()
-        
-        // General query search (searches across multiple fields)
-        if (!request.query.isNullOrBlank()) {
-            val searchPattern = ".*${Regex.escape(request.query)}.*"
-            val regex = Regex(searchPattern, RegexOption.IGNORE_CASE)
-            queryConditions.add(
-                Criteria().orOperator(
-                    Criteria("metadata.title").regex(regex.pattern, "i"),
-                    Criteria("metadata.authors").regex(regex.pattern, "i"),
-                    Criteria("metadata.journal").regex(regex.pattern, "i"),
-                    Criteria("keywords").regex(regex.pattern, "i"),
-                    Criteria("description").regex(regex.pattern, "i")
-                )
-            )
-        }
-        
-        // Specific field filters
-        if (!request.title.isNullOrBlank()) {
-            queryConditions.add(
-                Criteria("metadata.title").regex(".*${Regex.escape(request.title)}.*", "i")
-            )
-        }
-        
-        if (!request.authors.isNullOrBlank()) {
-            queryConditions.add(
-                Criteria("metadata.authors").regex(".*${Regex.escape(request.authors)}.*", "i")
-            )
-        }
-        
-        if (!request.journal.isNullOrBlank()) {
-            queryConditions.add(
-                Criteria("metadata.journal").regex(".*${Regex.escape(request.journal)}.*", "i")
-            )
-        }
-        
-        if (!request.doi.isNullOrBlank()) {
-            queryConditions.add(
-                Criteria("metadata.doi").regex(".*${Regex.escape(request.doi)}.*", "i")
-            )
-        }
-        
-        // Keywords filter (at least one keyword in request must match at least one keyword in paper)
-        if (!request.keywords.isNullOrEmpty()) {
-            val keywordCriteria = request.keywords.map { keyword ->
-                Criteria("keywords").regex(".*${Regex.escape(keyword)}.*", "i")
-            }
-            if (keywordCriteria.isNotEmpty()) {
-                queryConditions.add(Criteria().orOperator(*keywordCriteria.toTypedArray()))
+        if (!journal.isNullOrBlank()) {
+            data = data.filter {
+                val content = it.metadata?.journal?.lowercase()
+                content != null && it.metadata.journal.lowercase().contains(journal.lowercase())
             }
         }
-        
-        // Year range filter
-        if (request.yearFrom != null || request.yearTo != null) {
-            val yearCriteria = Criteria("metadata.publicationYear")
-            if (request.yearFrom != null && request.yearTo != null) {
-                yearCriteria.gte(request.yearFrom).lte(request.yearTo)
-            } else if (request.yearFrom != null) {
-                yearCriteria.gte(request.yearFrom)
-            } else if (request.yearTo != null) {
-                yearCriteria.lte(request.yearTo)
+
+        if (publicationYearFrom != null || publicationYearTo != null) {
+            data = data.filter {
+                val year = it.metadata?.publicationYear ?: return@filter false
+                (publicationYearFrom == null || year >= publicationYearFrom) &&
+                        (publicationYearTo == null || year <= publicationYearTo)
             }
-            queryConditions.add(yearCriteria)
         }
-        
-        // Tags filter
-        if (!request.tagIds.isNullOrEmpty()) {
-            queryConditions.add(Criteria("tagIds").`in`(request.tagIds))
-        }
-        
-        // Combine all conditions with AND operator
-        val mongoQuery = if (queryConditions.isNotEmpty()) {
-            val finalCriteria = Criteria().andOperator(*queryConditions.toTypedArray())
-            Query(finalCriteria)
-        } else {
-            // No filters, return all papers
-            Query()
-        }
-        
-        // Pagination
-        val pageRequest = PageRequest.of(request.pageIndex, request.pageSize)
-        mongoQuery.with(pageRequest)
-        
-        // Sorting
-        if (!request.sortBy.isNullOrBlank()) {
-            val sortDirection = if (request.sortOrder == "desc") {
-                Sort.Direction.DESC
-            } else {
-                Sort.Direction.ASC
-            }
-            
-            when (request.sortBy.lowercase()) {
-                "title" -> mongoQuery.with(Sort.by(sortDirection, "metadata.title"))
-                "publicationyear", "year" -> mongoQuery.with(Sort.by(sortDirection, "metadata.publicationYear"))
-                "authors" -> mongoQuery.with(Sort.by(sortDirection, "metadata.authors"))
-                "journal" -> mongoQuery.with(Sort.by(sortDirection, "metadata.journal"))
-                else -> mongoQuery.with(Sort.by(Sort.Direction.DESC, "metadata.publicationYear"))
-            }
-        } else {
-            // Default sort by publication year descending
-            mongoQuery.with(Sort.by(Sort.Direction.DESC, "metadata.publicationYear"))
-        }
-        
-        val papers = mongoTemplate.find(mongoQuery, Paper::class.java)
-        
-        logger.info { "Found ${papers.size} papers matching filters" }
-        
-        return papers.map { convert(it) }
+
+        return data.map { convert(it) }
     }
 
     override fun deleteById(id: String) {
@@ -224,19 +102,26 @@ class PaperServiceImpl(
         paperRepo.deleteById(id)
     }
 
-    override fun createNewPaper(req: UploadPdfRequest) {
-        logger.info { "Create new paper with title: ${req.title}" }
+    override fun createNewPaper(req: UploadPdfRequest, userId: String?) {
+        logger.info { "Create new paper with title: ${req.title}, userId: $userId" }
 
-        if (paperRepo.existsByMetadataDoi(req.doi)) {
-            throw IllegalArgumentException("Doi is existing")
+        // Generate DOI if not provided or empty
+        val finalDoi = if (req.doi.isNullOrBlank()) {
+            generateUniqueDoi()
+        } else {
+            // Check if DOI already exists
+            if (paperRepo.existsByMetadataDoi(req.doi)) {
+                throw IllegalArgumentException("Doi is existing")
+            }
+            req.doi
         }
 
-        val tagIds = emptyList<String>()
+        val tagIds = mutableListOf<String>()
         if (!req.tags.isNullOrEmpty()) {
             req.tags.forEach {
                 val tag = tagRepo.findByName(it)
-                if (tag != null) {
-                    tagIds.plus(tag.id)
+                tag?.id?.let { tagId ->
+                    tagIds.add(tagId)
                 }
             }
         }
@@ -245,11 +130,52 @@ class PaperServiceImpl(
             req.dataUrl,
             req.description,
             req.keywords,
-            Metadata(req.title, req.authors, req.journal, req.publicationYear, req.doi),
+            Metadata(req.title, req.authors, req.journal, req.publicationYear, finalDoi),
             tagIds,
+            userId,
         )
 
-        paperRepo.save(paper)
+        logger.info { "Saving paper with createdBy: ${paper.createdBy}, DOI: $finalDoi" }
+        val savedPaper = paperRepo.save(paper)
+        logger.info { "Paper saved successfully with id: ${savedPaper.id}, createdBy: ${savedPaper.createdBy}" }
+    }
+
+    /**
+     * Generate a unique DOI in format: 10.0000/{unique-id}
+     * Uses UUID and timestamp to ensure uniqueness
+     */
+    private fun generateUniqueDoi(): String {
+        val uniqueId = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+        val timestamp = System.currentTimeMillis().toString().takeLast(8)
+        // Format: 10.0000/{unique-id}
+        // Using 10.0000 as prefix for auto-generated DOIs
+        val doi = "10.0000/labverse.$uniqueId.$timestamp"
+
+        // Ensure DOI doesn't already exist (very unlikely but check anyway)
+        var attempts = 0
+        var finalDoi = doi
+        while (paperRepo.existsByMetadataDoi(finalDoi) && attempts < 5) {
+            val newUniqueId = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+            finalDoi = "10.0000/labverse.$newUniqueId.${System.currentTimeMillis()}"
+            attempts++
+        }
+
+        if (attempts >= 5) {
+            logger.warn { "Failed to generate unique DOI after 5 attempts, using timestamp-based DOI" }
+            finalDoi = "10.0000/labverse.${System.currentTimeMillis()}"
+        }
+
+        return finalDoi
+    }
+
+    override fun getPapersByUserId(userId: String): List<PaperResponse> {
+        logger.info { "Getting papers for userId: $userId" }
+        val papers = paperRepo.findByCreatedByOrderByIdDesc(userId)
+        logger.info { "Found ${papers.size} papers in database for userId: $userId" }
+        papers.forEach { paper ->
+            logger.debug { "Paper: id=${paper.id}, title=${paper.metadata?.title}, createdBy=${paper.createdBy}" }
+        }
+        return papers.map { convert(it) }
     }
 
     private fun storeData(item: PaperResponse): MutableMap<String, Any> {
@@ -279,57 +205,13 @@ class PaperServiceImpl(
         )
     }
 
-    private fun validateSearchRequest(request: SearchPapersRequest) {
-        // Validate string fields: if provided, must not be blank
-        if (request.query != null && request.query.isBlank()) {
-            throw IllegalArgumentException("Query cannot be blank if provided")
-        }
-        if (request.title != null && request.title.isBlank()) {
-            throw IllegalArgumentException("Title cannot be blank if provided")
-        }
-        if (request.authors != null && request.authors.isBlank()) {
-            throw IllegalArgumentException("Authors cannot be blank if provided")
-        }
-        if (request.journal != null && request.journal.isBlank()) {
-            throw IllegalArgumentException("Journal cannot be blank if provided")
-        }
-        
-        // Validate keywords: if provided, must not be empty and each keyword must not be blank
-        if (!request.keywords.isNullOrEmpty()) {
-            if (request.keywords.any { it.isBlank() }) {
-                throw IllegalArgumentException("Keywords cannot contain blank values")
-            }
-        }
-        
-        // Validate tagIds: if provided, must not be empty and each tagId must not be blank
-        if (!request.tagIds.isNullOrEmpty()) {
-            if (request.tagIds.any { it.isBlank() }) {
-                throw IllegalArgumentException("Tag IDs cannot contain blank values")
-            }
-        }
-        
-        // Validate year range: yearTo must be >= yearFrom
-        if (request.yearFrom != null && request.yearTo != null) {
-            if (request.yearTo < request.yearFrom) {
-                throw IllegalArgumentException("Year to must be greater than or equal to year from")
-            }
-        }
-        
-        // Validate sortOrder
-        if (!request.sortOrder.isNullOrBlank()) {
-            val sortOrder = request.sortOrder.lowercase()
-            if (sortOrder != "asc" && sortOrder != "desc") {
-                throw IllegalArgumentException("Sort order must be 'asc' or 'desc'")
-            }
-        }
-    }
-
     private fun buildEntity(
         dataUrl: String,
         description: String?,
         keywords: List<String>?,
         metadata: Metadata,
         tagIds: List<String>?,
+        createdBy: String? = null,
     ) = Paper(
         id = UUID.randomUUID().toString(),
         dataUrl = dataUrl,
@@ -337,5 +219,6 @@ class PaperServiceImpl(
         keywords = keywords,
         metadata = metadata,
         tagIds = tagIds ?: emptyList(),
+        createdBy = createdBy,
     )
 }

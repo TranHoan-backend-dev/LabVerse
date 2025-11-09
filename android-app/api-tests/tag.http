@@ -1,0 +1,24 @@
+### LabVerse Android App - Tag API Test Suite
+### Base URL: http://10.0.2.2:8080/v1/api/tags/
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8080/v1/api/tags
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+@paperId = YOUR_PAPER_ID_HERE
+@tagId = YOUR_TAG_ID_HERE
+
+### 1. Get Tags by Paper ID
+GET {{baseUrl}}/paper/{{paperId}}
+Content-Type: {{contentType}}
+
+### 2. Get Tag by ID
+GET {{baseUrl}}/{{tagId}}
+Content-Type: {{contentType}}
+
+### 3. Get All Tags
+GET {{baseUrl}}/all
+Content-Type: {{contentType}}
+

@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PaperRepository : MongoRepository<Paper, String> {
     fun existsByMetadataDoi(doi: String): Boolean
+    fun findByCreatedBy(userId: String): List<Paper>
+    fun findByCreatedByOrderByIdDesc(userId: String): List<Paper>
 }

@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.presentation.profile.ProfileActivity;
-import com.se1853_jv.labverse.presentation.team.TeamListActivity;
+import com.se1853_jv.labverse.presentation.readinglist.ReadingListsActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.appcompat.widget.PopupMenu;
@@ -178,6 +178,176 @@ public class HeaderHelper {
     }
 
     /**
+     * Setup notification button click listener to navigate to NotificationListActivity
+     * @param activity The activity that contains the header
+     */
+    public static void setupNotificationClickListener(@NonNull AppCompatActivity activity) {
+        View headerView = activity.findViewById(R.id.header);
+        android.widget.ImageButton btnNotification = null;
+        android.view.View notificationContainer = null;
+
+        if (headerView != null) {
+            notificationContainer = headerView.findViewById(R.id.notification_container);
+            btnNotification = headerView.findViewById(R.id.btn_notification);
+        } else {
+            notificationContainer = activity.findViewById(R.id.notification_container);
+            btnNotification = activity.findViewById(R.id.btn_notification);
+        }
+
+        if (btnNotification != null) {
+            // Make button clickable
+            btnNotification.setClickable(true);
+            btnNotification.setFocusable(true);
+            
+            btnNotification.setOnClickListener(v -> {
+                android.util.Log.d("HeaderHelper", "Notification button clicked");
+                Intent intent = new Intent(activity, com.se1853_jv.labverse.presentation.notification.NotificationListActivity.class);
+                activity.startActivity(intent);
+            });
+            
+            // Also setup click listener on container if exists
+            if (notificationContainer != null) {
+                notificationContainer.setOnClickListener(v -> {
+                    android.util.Log.d("HeaderHelper", "Notification container clicked");
+                    Intent intent = new Intent(activity, com.se1853_jv.labverse.presentation.notification.NotificationListActivity.class);
+                    activity.startActivity(intent);
+                });
+            }
+        } else {
+            android.util.Log.w("HeaderHelper", "Notification button not found");
+        }
+    }
+
+    /**
+     * Setup notification button click listener with a custom view root
+     * @param activity The activity
+     * @param rootView The root view that contains the header
+     */
+    public static void setupNotificationClickListener(AppCompatActivity activity, @NonNull View rootView) {
+        android.view.View notificationContainer = rootView.findViewById(R.id.notification_container);
+        android.widget.ImageButton btnNotification = rootView.findViewById(R.id.btn_notification);
+        
+        if (btnNotification != null) {
+            // Make button clickable
+            btnNotification.setClickable(true);
+            btnNotification.setFocusable(true);
+            
+            btnNotification.setOnClickListener(v -> {
+                android.util.Log.d("HeaderHelper", "Notification button clicked");
+                Intent intent = new Intent(activity, com.se1853_jv.labverse.presentation.notification.NotificationListActivity.class);
+                activity.startActivity(intent);
+            });
+            
+            // Also setup click listener on container if exists
+            if (notificationContainer != null) {
+                notificationContainer.setOnClickListener(v -> {
+                    android.util.Log.d("HeaderHelper", "Notification container clicked");
+                    Intent intent = new Intent(activity, com.se1853_jv.labverse.presentation.notification.NotificationListActivity.class);
+                    activity.startActivity(intent);
+                });
+            }
+        } else {
+            android.util.Log.w("HeaderHelper", "Notification button not found in rootView");
+        }
+    }
+
+    /**
+     * Update notification badge count
+     * @param activity The activity that contains the header
+     * @param unreadCount Number of unread notifications
+     */
+    public static void updateNotificationBadge(@NonNull AppCompatActivity activity, int unreadCount) {
+        View headerView = activity.findViewById(R.id.header);
+        android.widget.TextView badge = null;
+
+        if (headerView != null) {
+            badge = headerView.findViewById(R.id.notification_badge);
+        } else {
+            badge = activity.findViewById(R.id.notification_badge);
+        }
+
+        if (badge != null) {
+            if (unreadCount > 0) {
+                badge.setVisibility(android.view.View.VISIBLE);
+                if (unreadCount > 99) {
+                    badge.setText("99+");
+                } else {
+                    badge.setText(String.valueOf(unreadCount));
+                }
+            } else {
+                badge.setVisibility(android.view.View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Update notification badge count with a custom view root
+     * @param rootView The root view that contains the header
+     * @param unreadCount Number of unread notifications
+     */
+    public static void updateNotificationBadge(@NonNull View rootView, int unreadCount) {
+        android.widget.TextView badge = rootView.findViewById(R.id.notification_badge);
+        if (badge != null) {
+            if (unreadCount > 0) {
+                badge.setVisibility(android.view.View.VISIBLE);
+                if (unreadCount > 99) {
+                    badge.setText("99+");
+                } else {
+                    badge.setText(String.valueOf(unreadCount));
+                }
+            } else {
+                badge.setVisibility(android.view.View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Load and update notification badge count
+     * @param activity The activity that contains the header
+     */
+    public static void loadNotificationBadge(@NonNull AppCompatActivity activity) {
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
+            new com.se1853_jv.labverse.data.utils.SessionManager(activity);
+        String jwtToken = sessionManager.getToken();
+        
+        if (jwtToken == null) {
+            updateNotificationBadge(activity, 0);
+            return;
+        }
+        
+        com.se1853_jv.labverse.data.api.notification.NotificationApiHandler apiHandler = 
+            new com.se1853_jv.labverse.data.api.notification.NotificationApiHandler();
+        
+        apiHandler.getNotifications(jwtToken, new com.se1853_jv.labverse.data.api.ApiCallback<java.util.List<com.se1853_jv.labverse.data.api.notification.NotificationApi.NotificationResponse>>() {
+            @Override
+            public void onSuccess(java.util.List<com.se1853_jv.labverse.data.api.notification.NotificationApi.NotificationResponse> notifications) {
+                activity.runOnUiThread(() -> {
+                    if (notifications == null) {
+                        updateNotificationBadge(activity, 0);
+                        return;
+                    }
+                    
+                    // Count unread notifications
+                    int unreadCount = 0;
+                    for (com.se1853_jv.labverse.data.api.notification.NotificationApi.NotificationResponse notification : notifications) {
+                        if (notification.read == null || !notification.read) {
+                            unreadCount++;
+                        }
+                    }
+                    
+                    updateNotificationBadge(activity, unreadCount);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("HeaderHelper", "Error loading notification badge: " + error);
+                activity.runOnUiThread(() -> updateNotificationBadge(activity, 0));
+            }
+        });
+    }
+
+    /**
      * Setup Lists navigation click listener in bottom navigation
      * @param activity The activity that contains the bottom navigation
      */
@@ -195,7 +365,7 @@ public class HeaderHelper {
 
         if (navLists != null) {
             navLists.setOnClickListener(v -> {
-                Intent intent = new Intent(activity, TeamListActivity.class);
+                Intent intent = new Intent(activity, ReadingListsActivity.class);
                 activity.startActivity(intent);
             });
         }
