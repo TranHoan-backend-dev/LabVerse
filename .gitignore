@@ -49,6 +49,8 @@ services/**/target/
 services/**/build/
 services/**/.mvn/
 !services/NotificationService/.mvn/
+!services/**/.mvn/wrapper/maven-wrapper.jar
+!services/**/.mvn/wrapper/maven-wrapper.properties
 
 
 **/src/main/resources/application-dev.yml
@@ -56,3 +58,6 @@ services/**/.mvn/
 **/src/main/resources/application-dev.properties
 **/src/main/resources/firebase-service-account.json
 **/src/main/resources/labverse-*-firebase-adminsdk-*.json
+
+#androidpdfveiwer
+AndroidPdfViewer/.git
