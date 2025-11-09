@@ -15,12 +15,14 @@ File `LabVerseApplication.java` hiện đang chứa **API Secret** của Cloudin
 ```kotlin
 android {
     defaultConfig {
-        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"dfhshcbbi\"")
-        buildConfigField("String", "CLOUDINARY_API_KEY", "\"891126784452614\"")
-        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"MreyfnfUdQlDsix37K8gzVoZLmc\"")
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"your_cloud_name\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"your_api_key\"")
+        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"your_api_secret\"")
     }
 }
 ```
+
+**⚠️ LƯU Ý:** Thay thế các giá trị placeholder bằng credentials thực tế từ Cloudinary Dashboard.
 
 2. Sử dụng trong code:
 ```java
@@ -35,10 +37,12 @@ CloudinaryStorageHelper.init(
 ### Option 2: Sử dụng local.properties (Khuyến nghị cho Development)
 1. Thêm vào `local.properties`:
 ```properties
-cloudinary.cloud.name=dfhshcbbi
-cloudinary.api.key=891126784452614
-cloudinary.api.secret=MreyfnfUdQlDsix37K8gzVoZLmc
+cloudinary.cloud.name=your_cloud_name
+cloudinary.api.key=your_api_key
+cloudinary.api.secret=your_api_secret
 ```
+
+**⚠️ LƯU Ý:** Thay thế các giá trị placeholder bằng credentials thực tế từ Cloudinary Dashboard.
 
 2. Đảm bảo `local.properties` đã có trong `.gitignore` (đã có sẵn)
 
