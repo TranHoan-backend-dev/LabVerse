@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
@@ -49,6 +50,18 @@ public class FeedActivity extends BaseActivity {
         setupImportPaperButton();
         getMockData();
         handleFilterPapers();
+        
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private TabLayoutMediator mediator;
@@ -98,7 +111,7 @@ public class FeedActivity extends BaseActivity {
                         } catch (Exception e) {
                             Log.e("FeedActivity", "Error detaching mediator: " + e.getMessage());
                         }
-                        
+
                         // Get current page before navigation
                         final int currentPage;
                         if (pager != null) {
@@ -107,24 +120,24 @@ public class FeedActivity extends BaseActivity {
                         } else {
                             currentPage = 0;
                         }
-                        
+
                         // Navigate to TeamListActivity
                         Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
                         startActivity(intent);
-                        
+
                         // Reset ViewPager and tab selection after navigation
                         if (tabLayout != null && pager != null) {
                             final ViewPager2 finalPager = pager;
                             final TabLayout finalTabLayout = tabLayout;
                             final TabLayoutMediator finalMediator = mediator;
-                            
+
                             tabLayout.post(() -> {
                                 try {
                                     // Reset ViewPager to previous page
                                     if (finalPager != null) {
                                         finalPager.setCurrentItem(currentPage, false);
                                     }
-                                    
+
                                     // Reset tab selection to previous tab
                                     if (finalTabLayout != null) {
                                         TabLayout.Tab prevTab = finalTabLayout.getTabAt(currentPage);
@@ -132,7 +145,7 @@ public class FeedActivity extends BaseActivity {
                                             finalTabLayout.selectTab(prevTab, false);
                                         }
                                     }
-                                    
+
                                     // Reattach mediator
                                     if (finalMediator != null) {
                                         finalMediator.attach();
@@ -182,11 +195,11 @@ public class FeedActivity extends BaseActivity {
                         } catch (Exception e) {
                             Log.e("FeedActivity", "Error detaching mediator in page callback: " + e.getMessage());
                         }
-                        
+
                         // Navigate to TeamListActivity
                         Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
                         startActivity(intent);
-                        
+
                         // Go back to previous page
                         if (pager != null && tabLayout != null) {
                             pager.post(() -> {
@@ -194,7 +207,7 @@ public class FeedActivity extends BaseActivity {
                                     if (pager != null) {
                                         pager.setCurrentItem(0, false);
                                     }
-                                    
+
                                     // Reset tab selection
                                     if (tabLayout != null) {
                                         TabLayout.Tab prevTab = tabLayout.getTabAt(0);
@@ -202,7 +215,7 @@ public class FeedActivity extends BaseActivity {
                                             tabLayout.selectTab(prevTab, false);
                                         }
                                     }
-                                    
+
                                     // Reattach mediator
                                     if (mediator != null) {
                                         mediator.attach();
@@ -240,7 +253,7 @@ public class FeedActivity extends BaseActivity {
     }
 
     private static final int REQUEST_CODE_IMPORT_PAPER = 1001;
-    
+
     private void setupImportPaperButton() {
         FloatingActionButton fabImportPaper = findViewById(R.id.fabImportPaper);
         if (fabImportPaper != null) {

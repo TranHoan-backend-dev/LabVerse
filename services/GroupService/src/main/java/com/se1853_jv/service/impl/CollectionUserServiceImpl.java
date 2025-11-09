@@ -13,7 +13,9 @@ import com.se1853_jv.model.*;
 import com.se1853_jv.model.Collection;
 import com.se1853_jv.model.enumerate.AccessLevel;
 import com.se1853_jv.repository.*;
+import com.se1853_jv.dto.NotificationRequestEvent;
 import com.se1853_jv.service.CollectionUserService;
+import com.se1853_jv.service.NotificationServiceClient;
 import com.se1853_jv.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ public class CollectionUserServiceImpl implements CollectionUserService {
     private final CollectionRepository collectionRepository;
     private final CollectionUserRepository collectionUserRepository;
     private final Firestore firestore;
+    private final NotificationServiceClient notificationServiceClient;
 
     private static final String FIRESTORE_COLLECTION = "collection_members";
 
@@ -74,6 +77,10 @@ public class CollectionUserServiceImpl implements CollectionUserService {
         CollectionUserResponse response = CollectionUserResponse.fromEntity(saved);
 
         syncToFirestore(response);
+        
+        // Send notification to the new member
+        sendAddMemberNotification(memberId, collection);
+        
         return response;
     }
 
@@ -163,6 +170,31 @@ public class CollectionUserServiceImpl implements CollectionUserService {
             log.info("Synced member [{}] to Firestore: {}", response.getMemberId(), future.get().getId());
         } catch (InterruptedException | ExecutionException e) {
             throw new DatabaseException("Error syncing to Firestore", e);
+        }
+    }
+
+    /**
+     * Send notification to user when they are added to a collection
+     */
+    private void sendAddMemberNotification(String memberId, Collection collection) {
+        try {
+            // Convert String ID to UUID
+            UUID targetUserId = UUID.fromString(memberId);
+            
+            // Create notification event
+            NotificationRequestEvent event = new NotificationRequestEvent();
+            event.setTargetUserId(targetUserId);
+            event.setTitle("You have been added to collection");
+            event.setMessage(String.format("You have been added to collection \"%s\"", collection.getName()));
+            event.setLinkTo("/collections/" + IdEncoder.encode(collection.getId()));
+            
+            // Send notification via Feign Client
+            notificationServiceClient.createNotificationEvent(event);
+            
+            log.info("Sent notification to user [{}] for being added to collection [{}]", memberId, collection.getName());
+        } catch (Exception e) {
+            // Log error but don't fail the add member operation
+            log.error("Failed to send notification to user [{}]: {}", memberId, e.getMessage(), e);
         }
     }
 }

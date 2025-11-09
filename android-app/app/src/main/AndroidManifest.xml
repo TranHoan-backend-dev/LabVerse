@@ -54,6 +54,11 @@
             android:exported="true"
             tools:targetApi="34" />
         <activity
+            android:name=".presentation.paper.PDFReaderActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".presentation.paper.ImportPaperByBibtexActivity"
             android:exported="true" />
         <activity
@@ -107,6 +112,9 @@
             android:name=".presentation.readinglist.SelectPaperForReadingListActivity"
             android:exported="false"
             android:parentActivityName=".presentation.readinglist.ReadingListDetailActivity" />
+        <activity
+            android:name=".presentation.notification.NotificationListActivity"
+            android:exported="true" />
     </application>
 
 </manifest>
