@@ -25,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,11 +35,13 @@ import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
@@ -56,13 +59,13 @@ public class ImportBibtexFragment extends Fragment {
     MaterialButton chooseFileBtn, importBtn, cancelBtn;
     ActivityResultLauncher<Intent> filePickerLauncher;
     List<BibEntry> entries;
-    List<BibEntry> selectedEntries; // Entries được chọn để import
+    final List<BibEntry> selectedEntries; // Entries được chọn để import
     final CloudinaryService cloudinaryService;
     final UnpaywallService unpaywallService;
     final String TAG_NAME = "ImportBibtexFragment";
     View view;
-    com.se1853_jv.labverse.data.api.paper.PaperApiHandler paperApiHandler;
-    com.se1853_jv.labverse.data.utils.SessionManager sessionManager;
+    PaperApiHandler paperApiHandler;
+    SessionManager sessionManager;
 
     public ImportBibtexFragment() {
         this.entries = new ArrayList<>();
@@ -193,7 +196,7 @@ public class ImportBibtexFragment extends Fragment {
                     FrameLayout.LayoutParams.WRAP_CONTENT
             ));
             wrapper.addView(body);
-            wrapper.addView(buildCheckBox(card, e, view)); // Add checkbox
+            wrapper.addView(buildCheckBox(e, view)); // Add checkbox
             wrapper.addView(buildDeleteBadge(card, view));
 
             card.addView(wrapper);
@@ -201,6 +204,7 @@ public class ImportBibtexFragment extends Fragment {
         }
 
         importBtn.setClickable(true);
+        importBtn.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
         importBtn.setEnabled(!selectedEntries.isEmpty());
         importBtn.bringToFront();
         importBtn.setElevation(10);
@@ -208,6 +212,7 @@ public class ImportBibtexFragment extends Fragment {
         updateImportButtonText();
     }
     
+    @NonNull
     private TextView buildJournal(@NonNull BibEntry e, @NonNull View view) {
         var journal = new TextView(view.getContext());
         journal.setText(e.getSource());
@@ -217,7 +222,8 @@ public class ImportBibtexFragment extends Fragment {
         return journal;
     }
     
-    private android.widget.CheckBox buildCheckBox(@NonNull MaterialCardView card, @NonNull BibEntry entry, @NonNull View view) {
+    @NonNull
+    private android.widget.CheckBox buildCheckBox(@NonNull BibEntry entry, @NonNull View view) {
         var checkBox = new android.widget.CheckBox(view.getContext());
         checkBox.setChecked(true); // Default: all selected
         selectedEntries.add(entry); // Add to selected list
@@ -244,6 +250,7 @@ public class ImportBibtexFragment extends Fragment {
         return checkBox;
     }
     
+    @SuppressLint("SetTextI18n")
     private void updateImportButtonText() {
         if (importBtn != null) {
             int count = selectedEntries.size();
@@ -388,7 +395,7 @@ public class ImportBibtexFragment extends Fragment {
                 final int finalFail = failCount;
                 
                 requireActivity().runOnUiThread(() -> {
-                    String message = String.format("Import hoàn tất: %d thành công, %d thất bại", finalSuccess, finalFail);
+                    @SuppressLint("DefaultLocale") String message = String.format("Import hoàn tất: %d thành công, %d thất bại", finalSuccess, finalFail);
                     Toast.makeText(view.getContext(), message, Toast.LENGTH_LONG).show();
                     
                     // Close activity if all successful
@@ -404,7 +411,7 @@ public class ImportBibtexFragment extends Fragment {
         });
     }
     
-    private void importBibEntry(BibEntry entry) {
+    private void importBibEntry(@NonNull BibEntry entry) {
         // Parse year
         Integer year = null;
         try {
@@ -433,20 +440,20 @@ public class ImportBibtexFragment extends Fragment {
         
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         
-        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
-            @Override
-            public void onSuccess(Object data) {
-                success[0] = true;
-                latch.countDown();
-            }
-            
-            @Override
-            public void onError(String error) {
-                success[0] = false;
-                errorMessage[0] = error;
-                latch.countDown();
-            }
-        });
+//        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
+//            @Override
+//            public void onSuccess(Object data) {
+//                success[0] = true;
+//                latch.countDown();
+//            }
+//
+//            @Override
+//            public void onError(String error) {
+//                success[0] = false;
+//                errorMessage[0] = error;
+//                latch.countDown();
+//            }
+//        });
         
         try {
             latch.await(); // Wait for API call to complete

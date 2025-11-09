@@ -166,7 +166,7 @@ public class PaperApiHandler {
     public void getPapersByUserId(String userId, ApiCallback<List<PaperResearch>> callback) {
         Log.d("PAPER_DATA", "getPapersByUserId called with encoded userId: " + userId);
         Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getPapersByUserId(userId);
-        call.enqueue(new Callback<BaseJsonResponse<List<PaperResearch>>>() {
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -195,10 +195,10 @@ public class PaperApiHandler {
         });
     }
 
-    public void uploadPdf(UploadPdfRequest request, String userId, ApiCallback<Object> callback) {
+    public void uploadPdf(@NonNull UploadPdfRequest request, String userId, ApiCallback<Object> callback) {
         Log.d("PAPER_UPLOAD", "uploadPdf: " + request.getDataUrl() + ", userId: " + userId);
         Call<BaseJsonResponse<Object>> call = apiService.uploadPdf(request, userId);
-        call.enqueue(new Callback<BaseJsonResponse<Object>>() {
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Response<BaseJsonResponse<Object>> response) {
                 if (response.isSuccessful() && response.body() != null) {
