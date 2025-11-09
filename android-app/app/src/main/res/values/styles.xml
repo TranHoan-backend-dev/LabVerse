@@ -41,4 +41,8 @@
         <item name="android:lineSpacingMultiplier">1.2</item>
         <item name="android:textColor">@color/radio_text_selector</item>
     </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.MaterialComponents.BottomSheet</item>
+    </style>
 </resources>

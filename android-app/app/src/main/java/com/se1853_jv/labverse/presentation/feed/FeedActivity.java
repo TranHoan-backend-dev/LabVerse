@@ -4,20 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-import androidx.appcompat.widget.PopupMenu;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.reflect.TypeToken;
@@ -50,7 +44,7 @@ public class FeedActivity extends BaseActivity {
         setupImportPaperButton();
         getMockData();
         handleFilterPapers();
-        
+
         // Setup notification button click listener
         HeaderHelper.setupNotificationClickListener(this);
         // Load and update notification badge
@@ -137,7 +131,7 @@ public class FeedActivity extends BaseActivity {
                                     if (finalPager != null) {
                                         finalPager.setCurrentItem(currentPage, false);
                                     }
-
+                                    
                                     // Reset tab selection to previous tab
                                     if (finalTabLayout != null) {
                                         TabLayout.Tab prevTab = finalTabLayout.getTabAt(currentPage);
@@ -145,7 +139,7 @@ public class FeedActivity extends BaseActivity {
                                             finalTabLayout.selectTab(prevTab, false);
                                         }
                                     }
-
+                                    
                                     // Reattach mediator
                                     if (finalMediator != null) {
                                         finalMediator.attach();
@@ -195,11 +189,11 @@ public class FeedActivity extends BaseActivity {
                         } catch (Exception e) {
                             Log.e("FeedActivity", "Error detaching mediator in page callback: " + e.getMessage());
                         }
-
+                        
                         // Navigate to TeamListActivity
                         Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
                         startActivity(intent);
-
+                        
                         // Go back to previous page
                         if (pager != null && tabLayout != null) {
                             pager.post(() -> {
@@ -207,7 +201,7 @@ public class FeedActivity extends BaseActivity {
                                     if (pager != null) {
                                         pager.setCurrentItem(0, false);
                                     }
-
+                                    
                                     // Reset tab selection
                                     if (tabLayout != null) {
                                         TabLayout.Tab prevTab = tabLayout.getTabAt(0);
@@ -215,7 +209,7 @@ public class FeedActivity extends BaseActivity {
                                             tabLayout.selectTab(prevTab, false);
                                         }
                                     }
-
+                                    
                                     // Reattach mediator
                                     if (mediator != null) {
                                         mediator.attach();
@@ -253,7 +247,7 @@ public class FeedActivity extends BaseActivity {
     }
 
     private static final int REQUEST_CODE_IMPORT_PAPER = 1001;
-
+    
     private void setupImportPaperButton() {
         FloatingActionButton fabImportPaper = findViewById(R.id.fabImportPaper);
         if (fabImportPaper != null) {

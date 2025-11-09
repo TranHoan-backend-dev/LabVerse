@@ -41,10 +41,11 @@
         </LinearLayout>
 
         <!-- Author -->
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/input_author"
@@ -54,12 +55,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Journal -->
-        <TextView
-            android:id="@+id/journal_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textSize="14sp" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -73,17 +68,11 @@
                 android:layout_height="wrap_content"
                 android:dropDownVerticalOffset="8dp"
                 android:hint="@string/filter_by_journal"
-                android:inputType="none"
-                android:labelFor="@+id/journal_label" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Year -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/publication_year"
-            android:textSize="14sp" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -124,12 +113,7 @@
         </LinearLayout>
 
         <!-- Tags -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/keywords_tags"
-            android:textSize="14sp" />
+
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"

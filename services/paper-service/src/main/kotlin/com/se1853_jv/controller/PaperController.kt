@@ -1,5 +1,6 @@
 package com.se1853_jv.controller
 
+import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService

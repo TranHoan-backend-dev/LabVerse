@@ -63,11 +63,9 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
             </LinearLayout>
-
             <include
                 android:id="@+id/search_bar"
                 layout="@layout/layout_common_component_search" />
-
             <!-- Content -->
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPager"

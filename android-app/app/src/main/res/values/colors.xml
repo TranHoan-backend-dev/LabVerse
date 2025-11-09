@@ -51,4 +51,12 @@
     <color name="gray">#757575</color>
     <color name="dark_gray">#D1D5DB</color>
 
+    <!-- Tag colors for keywords -->
+    <color name="tag_color_1">#FFE0B2</color>
+    <color name="tag_color_2">#B2DFDB</color>
+    <color name="tag_color_3">#C5CAE9</color>
+    <color name="tag_color_4">#FFCCBC</color>
+    <color name="tag_color_5">#DCEDC8</color>
+    <color name="tag_color_6">#E1BEE7</color>
+
 </resources>
