@@ -26,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class NotificationApiHandler {
     private static final String TAG = "NotificationApiHandler";
-    private static final String BASE_URL = Constants.BASE_URL + "notification-service/";
+    private static final String BASE_URL = Constants.NOTIFICATION_ENDPOINT_URL;
     private final NotificationApi apiService;
 
     public NotificationApiHandler() {

@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.feed.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,7 +57,7 @@ public class MyPaperFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         rootView = view;
-        
+
         recentlyAdded = view.findViewById(R.id.recently_added);
         favorites = view.findViewById(R.id.favorites);
         recentlyRead = view.findViewById(R.id.recently_read);
@@ -84,8 +85,8 @@ public class MyPaperFragment extends Fragment {
                 }
             });
         } else {
-            Log.w("MyPaperFragment", "Cannot reload: rootView=" + (rootView != null) + 
-                    ", paperApiHandler=" + (paperApiHandler != null) + 
+            Log.w("MyPaperFragment", "Cannot reload: rootView=" + (rootView != null) +
+                    ", paperApiHandler=" + (paperApiHandler != null) +
                     ", sessionManager=" + (sessionManager != null));
         }
     }
@@ -117,28 +118,27 @@ public class MyPaperFragment extends Fragment {
         }
 
         Log.d("MyPaperFragment", "Loading papers for userId: " + userId);
-        
+
         // Encode userId for API call
-        String encodedUserId = EncoderUtils.encode(userId);
-        Log.d("MyPaperFragment", "Encoded userId: " + encodedUserId);
-        
+        Log.d("MyPaperFragment", "Encoded userId: " + userId);
+
         // Load papers by user ID from API
-        paperApiHandler.getPapersByUserId(encodedUserId, new ApiCallback<List<PaperResearch>>() {
+        paperApiHandler.getPapersByUserId(userId, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> paperResearchList) {
                 if (getActivity() == null) return;
-                
+
                 Log.d("MyPaperFragment", "Papers loaded successfully: " + (paperResearchList != null ? paperResearchList.size() : 0) + " papers");
-                
+
                 getActivity().runOnUiThread(() -> {
                     // Convert PaperResearch to Paper entity
                     papers = convertToPaperList(paperResearchList);
                     Log.d("MyPaperFragment", "Converted to Paper list: " + papers.size() + " papers");
-                    
+
                     // Create summary from papers
                     Summary summary = createSummary(papers);
                     item = new MyPaperItem(papers, null, summary);
-                    
+
                     // Update UI
                     buildStatisticCards(getLayoutInflater(), view);
                     buildMainContent(view);
@@ -148,7 +148,7 @@ public class MyPaperFragment extends Fragment {
             @Override
             public void onError(String error) {
                 if (getActivity() == null) return;
-                
+
                 getActivity().runOnUiThread(() -> {
                     Log.e("MyPaperFragment", "Error loading papers: " + error);
                     Log.e("MyPaperFragment", "userId used: " + sessionManager.getUserId());
@@ -165,13 +165,14 @@ public class MyPaperFragment extends Fragment {
         if (paperResearchList == null || paperResearchList.isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         return paperResearchList.stream()
                 .map(this::convertToPaper)
                 .collect(Collectors.toList());
     }
 
-    private Paper convertToPaper(PaperResearch paperResearch) {
+    @NonNull
+    private Paper convertToPaper(@NonNull PaperResearch paperResearch) {
         Paper paper = new Paper();
         paper.setId(paperResearch.getId());
         paper.setTitle(paperResearch.getTitle() != null ? paperResearch.getTitle() : "Untitled");
@@ -184,9 +185,9 @@ public class MyPaperFragment extends Fragment {
 
     private Summary createSummary(List<Paper> papers) {
         Summary summary = new Summary();
-        summary.setRecentlyAdded(papers.size());
-        summary.setRecentlyRead(0); // TODO: Track read papers
-        summary.setFavorites(0); // TODO: Track favorite papers
+        summary.setPapers(papers.size());
+        summary.setCollections(0); // TODO: Track read papers
+        summary.setTeamProjects(0); // TODO: Track favorite papers
         return summary;
     }
 
@@ -214,39 +215,53 @@ public class MyPaperFragment extends Fragment {
         // Get summary from item or create default
         Summary summary = (item != null && item.getSummary() != null) ? item.getSummary() : createSummary(papers);
 
-        buildAddedPaperCard(summary, container, inflater);
-        buildRecentLyReadCard(summary, container, inflater);
-        buildFavoritesCard(summary, container, inflater);
+        var context = rootView.getContext();
+
+        buildPapersCard(summary, container, inflater, context);
+        buildCollectionsCard(summary, container, inflater, context);
+        buildTeamProjectsCard(summary, container, inflater, context);
 
     }
 
-    private void buildAddedPaperCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildPapersCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.blue_50));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyAdded()));
+        statValue.setText(String.valueOf(summary.getPapers()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.blue_600));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.added_paper);
+        statLabel.setText(R.string.papers);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.blue_400));
         container.addView(card);
     }
 
-    private void buildRecentLyReadCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildCollectionsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.first_green));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getRecentlyRead()));
+        statValue.setText(String.valueOf(summary.getCollections()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.seventh_green));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.read_paper);
+        statLabel.setText(R.string.collections);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.third_green));
         container.addView(card);
     }
 
-    private void buildFavoritesCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater) {
+    private void buildTeamProjectsCard(@NonNull Summary summary, LinearLayout container, @NonNull LayoutInflater inflater, @NonNull Context context) {
         View card = inflater.inflate(R.layout.layout_mypaper_stat_card, container, false);
+        card.setBackgroundColor(ContextCompat.getColor(context, R.color.skin));
+
         TextView statValue = card.findViewById(R.id.tv_stat_value);
-        statValue.setText(String.valueOf(summary.getFavorites()));
+        statValue.setText(String.valueOf(summary.getTeamProjects()));
+        statValue.setTextColor(ContextCompat.getColor(context, R.color.yellow));
 
         TextView statLabel = card.findViewById(R.id.tv_stat_label);
-        statLabel.setText(R.string.favorites);
+        statLabel.setText(R.string.team_projects);
+        statLabel.setTextColor(ContextCompat.getColor(context, R.color.brown));
         container.addView(card);
     }
     // </editor-fold>
@@ -254,7 +269,7 @@ public class MyPaperFragment extends Fragment {
     private void buildMainContent(@NonNull View view) {
         ViewPager2 mainContent = view.findViewById(R.id.main_content);
         // Use papers from API or mock data
-        List<Paper> papersToDisplay = papers != null && !papers.isEmpty() ? papers : 
+        List<Paper> papersToDisplay = papers != null && !papers.isEmpty() ? papers :
                 (item != null && item.getPapers() != null ? item.getPapers() : new ArrayList<>());
         var adapter = new MyPaperContentAdapter(requireActivity(), papersToDisplay);
         mainContent.setAdapter(adapter);

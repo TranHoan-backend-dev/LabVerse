@@ -25,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,11 +35,13 @@ import com.google.android.material.card.MaterialCardView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService;
 import com.se1853_jv.labverse.data.service.cloudinary.CloudinaryService.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.BibEntry;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
@@ -56,13 +59,13 @@ public class ImportBibtexFragment extends Fragment {
     MaterialButton chooseFileBtn, importBtn, cancelBtn;
     ActivityResultLauncher<Intent> filePickerLauncher;
     List<BibEntry> entries;
-    List<BibEntry> selectedEntries; // Entries được chọn để import
+    final List<BibEntry> selectedEntries; // Entries được chọn để import
     final CloudinaryService cloudinaryService;
     final UnpaywallService unpaywallService;
     final String TAG_NAME = "ImportBibtexFragment";
     View view;
-    com.se1853_jv.labverse.data.api.paper.PaperApiHandler paperApiHandler;
-    com.se1853_jv.labverse.data.utils.SessionManager sessionManager;
+    PaperApiHandler paperApiHandler;
+    SessionManager sessionManager;
 
     public ImportBibtexFragment() {
         this.entries = new ArrayList<>();
@@ -93,11 +96,11 @@ public class ImportBibtexFragment extends Fragment {
                 }
         );
         this.view = view;
-        
+
         // Initialize API handlers
         paperApiHandler = new com.se1853_jv.labverse.data.api.paper.PaperApiHandler(requireContext());
         sessionManager = new com.se1853_jv.labverse.data.utils.SessionManager(requireContext());
-        
+
         bindView();
         openFilesCategory();
         handleImportEvent();
@@ -109,7 +112,7 @@ public class ImportBibtexFragment extends Fragment {
         importBtn = view.findViewById(R.id.btn_import);
         cancelBtn = view.findViewById(R.id.btn_cancel);
     }
-    
+
     private void handleCancelEvent() {
         if (cancelBtn != null) {
             cancelBtn.setOnClickListener(v -> {
@@ -162,7 +165,7 @@ public class ImportBibtexFragment extends Fragment {
     private void displayPreview(@NonNull View view) {
         LinearLayout previewContainer = view.findViewById(R.id.pdfSummaryWrapper);
         previewContainer.removeAllViews();
-        
+
         selectedEntries.clear(); // Reset selected entries
 
         for (var e : entries) {
@@ -178,7 +181,7 @@ public class ImportBibtexFragment extends Fragment {
 
             mainContent.addView(buildTitle(e, view));
             mainContent.addView(buildAuthorsAndYear(e, view));
-            
+
             // Add journal/source if available
             if (e.getSource() != null && !e.getSource().isEmpty()) {
                 mainContent.addView(buildJournal(e, view));
@@ -193,7 +196,7 @@ public class ImportBibtexFragment extends Fragment {
                     FrameLayout.LayoutParams.WRAP_CONTENT
             ));
             wrapper.addView(body);
-            wrapper.addView(buildCheckBox(card, e, view)); // Add checkbox
+            wrapper.addView(buildCheckBox(e, view)); // Add checkbox
             wrapper.addView(buildDeleteBadge(card, view));
 
             card.addView(wrapper);
@@ -201,13 +204,15 @@ public class ImportBibtexFragment extends Fragment {
         }
 
         importBtn.setClickable(true);
+        importBtn.setTextColor(ContextCompat.getColor(view.getContext(), R.color.white));
         importBtn.setEnabled(!selectedEntries.isEmpty());
         importBtn.bringToFront();
         importBtn.setElevation(10);
-        
+
         updateImportButtonText();
     }
-    
+
+    @NonNull
     private TextView buildJournal(@NonNull BibEntry e, @NonNull View view) {
         var journal = new TextView(view.getContext());
         journal.setText(e.getSource());
@@ -216,12 +221,13 @@ public class ImportBibtexFragment extends Fragment {
         journal.setPadding(0, 4, 0, 0);
         return journal;
     }
-    
-    private android.widget.CheckBox buildCheckBox(@NonNull MaterialCardView card, @NonNull BibEntry entry, @NonNull View view) {
+
+    @NonNull
+    private android.widget.CheckBox buildCheckBox(@NonNull BibEntry entry, @NonNull View view) {
         var checkBox = new android.widget.CheckBox(view.getContext());
         checkBox.setChecked(true); // Default: all selected
         selectedEntries.add(entry); // Add to selected list
-        
+
         var params = new FrameLayout.LayoutParams(
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()),
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics())
@@ -229,7 +235,7 @@ public class ImportBibtexFragment extends Fragment {
         params.gravity = Gravity.START | Gravity.TOP;
         params.setMargins(8, 8, 0, 0);
         checkBox.setLayoutParams(params);
-        
+
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 if (!selectedEntries.contains(entry)) {
@@ -240,10 +246,11 @@ public class ImportBibtexFragment extends Fragment {
             }
             updateImportButtonText();
         });
-        
+
         return checkBox;
     }
-    
+
+    @SuppressLint("SetTextI18n")
     private void updateImportButtonText() {
         if (importBtn != null) {
             int count = selectedEntries.size();
@@ -364,16 +371,16 @@ public class ImportBibtexFragment extends Fragment {
                 Toast.makeText(view.getContext(), "Vui lòng chọn ít nhất một paper để import", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
+
             // Disable button during import
             importBtn.setEnabled(false);
             importBtn.setText("Đang import...");
-            
+
             // Import papers in background
             Executors.newSingleThreadExecutor().execute(() -> {
                 int successCount = 0;
                 int failCount = 0;
-                
+
                 for (BibEntry entry : selectedEntries) {
                     try {
                         importBibEntry(entry);
@@ -383,14 +390,14 @@ public class ImportBibtexFragment extends Fragment {
                         failCount++;
                     }
                 }
-                
+
                 final int finalSuccess = successCount;
                 final int finalFail = failCount;
-                
+
                 requireActivity().runOnUiThread(() -> {
-                    String message = String.format("Import hoàn tất: %d thành công, %d thất bại", finalSuccess, finalFail);
+                    @SuppressLint("DefaultLocale") String message = String.format("Import hoàn tất: %d thành công, %d thất bại", finalSuccess, finalFail);
                     Toast.makeText(view.getContext(), message, Toast.LENGTH_LONG).show();
-                    
+
                     // Close activity if all successful
                     if (finalFail == 0) {
                         requireActivity().setResult(android.app.Activity.RESULT_OK);
@@ -403,8 +410,8 @@ public class ImportBibtexFragment extends Fragment {
             });
         });
     }
-    
-    private void importBibEntry(BibEntry entry) {
+
+    private void importBibEntry(@NonNull BibEntry entry) {
         // Parse year
         Integer year = null;
         try {
@@ -414,7 +421,7 @@ public class ImportBibtexFragment extends Fragment {
         } catch (NumberFormatException e) {
             Log.w(TAG_NAME, "Invalid year format: " + entry.getYear());
         }
-        
+
         // Create UploadPdfRequest
         UploadPdfRequest request = new UploadPdfRequest();
         request.setTitle(entry.getTitle() != null ? entry.getTitle() : "Untitled");
@@ -426,39 +433,39 @@ public class ImportBibtexFragment extends Fragment {
         request.setDescription(null);
         request.setKeywords(null);
         request.setTags(null);
-        
+
         // Call API synchronously (we're already in background thread)
         final boolean[] success = {false};
         final String[] errorMessage = {null};
-        
+
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
-        
-        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
-            @Override
-            public void onSuccess(Object data) {
-                success[0] = true;
-                latch.countDown();
-            }
-            
-            @Override
-            public void onError(String error) {
-                success[0] = false;
-                errorMessage[0] = error;
-                latch.countDown();
-            }
-        });
-        
+
+//        paperApiHandler.uploadPdf(request, new ApiCallback<Object>() {
+//            @Override
+//            public void onSuccess(Object data) {
+//                success[0] = true;
+//                latch.countDown();
+//            }
+//
+//            @Override
+//            public void onError(String error) {
+//                success[0] = false;
+//                errorMessage[0] = error;
+//                latch.countDown();
+//            }
+//        });
+
         try {
             latch.await(); // Wait for API call to complete
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Import interrupted", e);
         }
-        
+
         if (!success[0]) {
             throw new RuntimeException("Failed to import: " + errorMessage[0]);
         }
-        
+
         Log.d(TAG_NAME, "Successfully imported: " + entry.getTitle());
     }
 

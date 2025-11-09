@@ -117,6 +117,10 @@ public class TeamDetailActivity extends AppCompatActivity {
         super.onResume();
         // Refresh notification badge when returning to this activity
         HeaderHelper.loadNotificationBadge(this);
+        // Also refresh team members list
+        if (currentTeamId != null) {
+            loadTeamMembers(currentTeamId);
+        }
     }
 
     private void bindViews() {
@@ -888,12 +892,4 @@ public class TeamDetailActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Reload members when returning to this activity
-        if (currentTeamId != null) {
-            loadTeamMembers(currentTeamId);
-        }
-    }
 }

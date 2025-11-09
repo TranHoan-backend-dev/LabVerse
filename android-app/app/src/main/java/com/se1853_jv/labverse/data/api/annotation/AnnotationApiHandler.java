@@ -26,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class AnnotationApiHandler {
     private static final String TAG = "AnnotationApiHandler";
-    private static final String BASE_URL = Constants.GROUP_ENDPOINT_GATEWAY_URL + "annotations/";
+    private static final String BASE_URL = Constants.GROUP_ENDPOINT_URL;
     private final AnnotationApi apiService;
 
     public AnnotationApiHandler() {

@@ -23,7 +23,7 @@ import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.annotation.AnnotationApiHandler;
-import com.se1853_jv.labverse.data.service.firebase.FirebaseService;
+import com.se1853_jv.labverse.data.service.storage.RemotePdfService;
 import com.se1853_jv.labverse.data.sync.OfflineSyncHelper;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
@@ -51,7 +51,7 @@ public class PDFReaderActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private OfflineSyncHelper syncHelper;
     private AnnotationApiHandler apiHandler;
-    private FirebaseService firebaseService;
+    private RemotePdfService remotePdfService;
     
     private String paperId;
     private String collectionId;
@@ -96,7 +96,7 @@ public class PDFReaderActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         syncHelper = new OfflineSyncHelper(this);
         apiHandler = new AnnotationApiHandler();
-        firebaseService = new FirebaseService();
+        remotePdfService = new RemotePdfService();
     }
 
     private void setupToolbar() {
@@ -114,11 +114,11 @@ public class PDFReaderActivity extends AppCompatActivity {
         }
         
         // Download PDF from Firebase Storage and cache locally
-        firebaseService.downloadPdfFromFirebase(
+        remotePdfService.downloadPdfFromUrl(
             pdfUrl,
             paperId,
             this,
-            new FirebaseService.DownloadCallback() {
+            new RemotePdfService.DownloadCallback() {
                 @Override
                 public void onSuccess(File localFile) {
                     // Hide progress bar
