@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Team List  /  Team Details"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/gray_400"
                 android:textSize="12sp" />
 
             <LinearLayout
@@ -164,7 +164,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="8"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -173,7 +173,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Team Members"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/gray_400"
                         android:textSize="12sp" />
 
                 </LinearLayout>
@@ -191,7 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="3"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -200,7 +200,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Departments"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/gray_400"
                         android:textSize="12sp" />
 
                 </LinearLayout>
@@ -218,7 +218,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="2"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -227,7 +227,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Locations"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/gray_400"
                         android:textSize="12sp" />
 
                 </LinearLayout>
@@ -247,7 +247,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Team Members"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/light_black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -280,9 +280,9 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:text="All Members"
-                    android:textColor="@color/blue"
-                    app:chipBackgroundColor="@color/light_blue"
-                    app:chipStrokeColor="@color/blue"
+                    android:textColor="@color/blue_400"
+                    app:chipBackgroundColor="@color/blue_50"
+                    app:chipStrokeColor="@color/blue_400"
                     app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
@@ -290,32 +290,32 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="PIs"
-                    android:textColor="@color/text_primary"
-                    app:chipBackgroundColor="@color/gray" />
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
 
                 <com.google.android.material.chip.Chip
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Researchers"
-                    android:textColor="@color/text_primary"
-                    app:chipBackgroundColor="@color/gray" />
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
 
                 <com.google.android.material.chip.Chip
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Designers"
-                    android:textColor="@color/text_primary"
-                    app:chipBackgroundColor="@color/gray" />
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
 
                 <com.google.android.material.chip.Chip
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Developers"
-                    android:textColor="@color/text_primary"
-                    app:chipBackgroundColor="@color/gray" />
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
 
             </com.google.android.material.chip.ChipGroup>
 

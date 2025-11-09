@@ -27,7 +27,7 @@
         android:textColor="#555"
         android:textSize="14sp"
         app:drawableStartCompat="@drawable/ic_people_24"
-        app:drawableTint="@color/blue" />
+        app:drawableTint="@color/blue_400" />
 
     <TextView
         android:id="@+id/tvPaperJournal"
@@ -39,7 +39,7 @@
         android:textColor="#777"
         android:textSize="13sp"
         app:drawableStartCompat="@drawable/ic_calendar_today_24"
-        app:drawableTint="@color/blue" />
+        app:drawableTint="@color/blue_400" />
 
     <LinearLayout
         android:id="@+id/layoutTags"

@@ -174,7 +174,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/blue"
+                android:backgroundTint="@color/blue_400"
                 android:text="@string/apply_filters" />
         </LinearLayout>
 

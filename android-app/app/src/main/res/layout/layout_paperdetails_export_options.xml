@@ -16,7 +16,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:drawableStartCompat="@drawable/ic_file_download_24"
-        app:drawableTint="@color/blue" />
+        app:drawableTint="@color/blue_400" />
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"
@@ -34,12 +34,12 @@
             android:backgroundTint="@color/white"
             android:paddingHorizontal="45dp"
             android:text="@string/export_all"
-            android:textColor="@color/blue"
+            android:textColor="@color/blue_400"
             app:cornerRadius="5dp"
             app:icon="@drawable/ic_export_file"
             app:iconSize="22dp"
-            app:iconTint="@color/blue"
-            app:strokeColor="@color/blue"
+            app:iconTint="@color/blue_400"
+            app:strokeColor="@color/blue_400"
             app:strokeWidth="2dp" />
 
         <Button
