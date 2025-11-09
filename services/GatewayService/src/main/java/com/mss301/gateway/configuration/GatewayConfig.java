@@ -19,28 +19,28 @@ public class GatewayConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        
+
         // Allow all origins
         corsConfig.setAllowedOriginPatterns(List.of(frontendUrl));
-        
+
         // Allow all HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        
+
         // Allow all headers
         corsConfig.setAllowedHeaders(List.of("*"));
-        
+
         // Expose all headers
         corsConfig.setExposedHeaders(List.of("*"));
-        
+
         // Allow credentials (set to false when using wildcard origin)
         corsConfig.setAllowCredentials(false);
-        
+
         // Cache preflight response
         corsConfig.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
-        
+
         return new CorsWebFilter(source);
     }
 }

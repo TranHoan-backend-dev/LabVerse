@@ -26,5 +26,24 @@ public interface ReadingWorkflowRepository extends JpaRepository<ReadingWorkflow
     
     boolean existsById_CollectionIdAndId_PaperIdAndId_Usersid(
             String collectionId, String paperId, String usersid);
+    
+    // Collection-based queries for progress tracking
+    List<ReadingWorkflow> findById_CollectionId(String collectionId);
+    
+    @Query("SELECT r FROM ReadingWorkflow r WHERE r.id.collectionId = :collectionId AND " +
+           "(:status IS NULL OR r.status = :status)")
+    List<ReadingWorkflow> findByCollectionIdAndStatus(
+            @Param("collectionId") String collectionId,
+            @Param("status") String status);
+    
+    @Query("SELECT r FROM ReadingWorkflow r WHERE r.id.collectionId = :collectionId AND r.id.paperId = :paperId")
+    List<ReadingWorkflow> findByCollectionIdAndPaperId(
+            @Param("collectionId") String collectionId,
+            @Param("paperId") String paperId);
+    
+    @Query("SELECT r FROM ReadingWorkflow r WHERE r.id.collectionId = :collectionId AND r.id.usersid = :usersid")
+    List<ReadingWorkflow> findByCollectionIdAndUsersid(
+            @Param("collectionId") String collectionId,
+            @Param("usersid") String usersid);
 }
 
