@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WrapperApiResponse {
+public class WrapperApiResponse<T> {
     private int status;
     private String message;
     private Object data;

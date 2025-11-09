@@ -1,12 +1,11 @@
 package com.se1853_jv.labverse.presentation.feed;
 
-import static com.cloudinary.android.uploadwidget.UploadWidget.startActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -19,6 +18,7 @@ import com.google.gson.reflect.TypeToken;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
+import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
@@ -43,6 +43,19 @@ public class FeedActivity extends BaseActivity {
         setupTabs();
         setupImportPaperButton();
         getMockData();
+        handleFilterPapers();
+
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
     }
 
     private TabLayoutMediator mediator;
@@ -92,7 +105,7 @@ public class FeedActivity extends BaseActivity {
                         } catch (Exception e) {
                             Log.e("FeedActivity", "Error detaching mediator: " + e.getMessage());
                         }
-                        
+
                         // Get current page before navigation
                         final int currentPage;
                         if (pager != null) {
@@ -101,17 +114,17 @@ public class FeedActivity extends BaseActivity {
                         } else {
                             currentPage = 0;
                         }
-                        
+
                         // Navigate to TeamListActivity
                         Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
                         startActivity(intent);
-                        
+
                         // Reset ViewPager and tab selection after navigation
                         if (tabLayout != null && pager != null) {
                             final ViewPager2 finalPager = pager;
                             final TabLayout finalTabLayout = tabLayout;
                             final TabLayoutMediator finalMediator = mediator;
-                            
+
                             tabLayout.post(() -> {
                                 try {
                                     // Reset ViewPager to previous page
@@ -222,6 +235,7 @@ public class FeedActivity extends BaseActivity {
                 }.getType()
         );
     }
+
     private void handleFilterPapers() {
         View searchBar = findViewById(R.id.search_bar);
         ImageButton btn = searchBar.findViewById(R.id.btn_filter);

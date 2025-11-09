@@ -79,6 +79,17 @@ public class TeamListActivity extends AppCompatActivity {
         // Setup avatar and profile navigation click listeners
         HeaderHelper.setupProfileClickListeners(this);
         HeaderHelper.setupListsNavigationClickListener(this);
+        // Setup notification button click listener
+        HeaderHelper.setupNotificationClickListener(this);
+        // Load and update notification badge
+        HeaderHelper.loadNotificationBadge(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh notification badge when returning to this activity
+        HeaderHelper.loadNotificationBadge(this);
 
         // Load teams from API or database
         loadTeams();
@@ -135,23 +146,23 @@ public class TeamListActivity extends AppCompatActivity {
 
     private void loadTeamsFromAPI() {
         Log.d(TAG, "Loading teams from API...");
-        
+
         teamApiHandler.getTeams(null, null, null, 0, 100, new ApiCallback<TeamsPageResponse>() {
             @Override
             public void onSuccess(TeamsPageResponse response) {
                 isLoading = false;
                 if (response != null && response.getContent() != null) {
                     allTeams = response.getContent();
-                    
+
                     // Save to database
                     saveTeamsToDatabase(allTeams);
-                    
+
                     // Categorize teams
                     categorizeTeams();
-                    
+
                     // Display teams
                     displayTeams();
-                    
+
                     Log.d(TAG, "Teams loaded from API: " + allTeams.size());
                 } else {
                     // If API returns empty, try loading from database
@@ -164,7 +175,7 @@ public class TeamListActivity extends AppCompatActivity {
                 isLoading = false;
                 Log.e(TAG, "Error loading teams from API: " + error);
                 Toast.makeText(TeamListActivity.this, "Failed to load teams: " + error, Toast.LENGTH_SHORT).show();
-                
+
                 // Try loading from database as fallback
                 loadTeamsFromDatabase();
             }
@@ -173,23 +184,23 @@ public class TeamListActivity extends AppCompatActivity {
 
     private void loadTeamsFromDatabase() {
         Log.d(TAG, "Loading teams from database...");
-        
+
         new Thread(() -> {
             try {
                 List<Team> teams = teamRepository.getAll();
-                
+
                 runOnUiThread(() -> {
                     isLoading = false;
                     if (teams != null && !teams.isEmpty()) {
                         // Convert Team entities to TeamResponse
                         allTeams = convertToTeamResponses(teams);
-                        
+
                         // Categorize teams
                         categorizeTeams();
-                        
+
                         // Display teams
                         displayTeams();
-                        
+
                         Log.d(TAG, "Teams loaded from database: " + allTeams.size());
                     } else {
                         Toast.makeText(TeamListActivity.this, "No teams found", Toast.LENGTH_SHORT).show();
@@ -246,13 +257,13 @@ public class TeamListActivity extends AppCompatActivity {
         } else {
             // Filter by research field
             for (TeamResponse team : activeTeams) {
-                if (filterText.equalsIgnoreCase(team.getResearchField()) || 
+                if (filterText.equalsIgnoreCase(team.getResearchField()) ||
                     (team.getResearchField() != null && team.getResearchField().contains(filterText))) {
                     filteredActive.add(team);
                 }
             }
             for (TeamResponse team : recommendedTeams) {
-                if (filterText.equalsIgnoreCase(team.getResearchField()) || 
+                if (filterText.equalsIgnoreCase(team.getResearchField()) ||
                     (team.getResearchField() != null && team.getResearchField().contains(filterText))) {
                     filteredRecommended.add(team);
                 }
@@ -390,7 +401,7 @@ public class TeamListActivity extends AppCompatActivity {
         if (btnJoinTeam != null) {
             boolean isPublic = "PUBLIC".equalsIgnoreCase(team.getPrivacy());
             boolean isMember = team.getIsMember() != null && team.getIsMember();
-            
+
             if (isPublic && !isMember) {
                 btnJoinTeam.setVisibility(View.VISIBLE);
                 btnJoinTeam.setOnClickListener(v -> {
@@ -506,12 +517,5 @@ public class TeamListActivity extends AppCompatActivity {
             responses.add(response);
         }
         return responses;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Reload teams when returning to this activity (e.g., after creating a team)
-        loadTeams();
     }
 }
