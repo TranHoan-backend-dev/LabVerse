@@ -38,9 +38,6 @@ public class SearchPapersRequest {
     @SerializedName("yearTo")
     private Integer yearTo;
 
-    @SerializedName("tagIds")
-    private List<String> tagIds;
-
     @SerializedName("pageIndex")
     private Integer pageIndex = 0;
 
