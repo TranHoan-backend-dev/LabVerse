@@ -40,12 +40,15 @@
     <color name="light_black">#FF1D1D1F</color>
     <color name="black">#FF000000</color>
 
-    <!-- Tag colors for keywords -->
-    <color name="tag_color_1">#3B82F6</color>
-    <color name="tag_color_2">#10B981</color>
-    <color name="tag_color_3">#8B5CF6</color>
-    <color name="tag_color_4">#F59E0B</color>
-    <color name="tag_color_5">#EF4444</color>
-    <color name="tag_color_6">#06B6D4</color>
+    <!--  App Theme Colors  -->
+    <color name="primary">#FF4A4DE8</color>
+    <color name="text_primary">#FF000000</color>
+    <color name="text_secondary">#757575</color>
+    <color name="border_color">#E0E0E0</color>
+    <color name="success">#22C55E</color>
+    <color name="blue">#2196F3</color>
+    <color name="light_blue">#DBEAFE</color>
+    <color name="gray">#757575</color>
+    <color name="dark_gray">#D1D5DB</color>
 
 </resources>

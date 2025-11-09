@@ -1,0 +1,79 @@
+### LabVerse Android App - Team API Test Suite
+### Base URL: http://10.0.2.2:8081/api/teams
+### Note: 10.0.2.2 is the Android emulator's alias for localhost
+
+@baseUrl = http://10.0.2.2:8081/api/teams
+@contentType = application/json
+
+### Variables
+@token = Bearer YOUR_JWT_TOKEN_HERE
+@teamId = YOUR_TEAM_ID_HERE
+@userId = YOUR_USER_ID_HERE
+@memberId = YOUR_MEMBER_ID_HERE
+
+### 1. Create Team
+POST {{baseUrl}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "AI Research Lab",
+  "description": "Research team focused on artificial intelligence",
+  "researchField": "Artificial Intelligence",
+  "privacy": "PRIVATE",
+  "iconUrl": "https://example.com/icon.png"
+}
+
+### 2. Get Team by ID
+GET {{baseUrl}}/{{teamId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 3. List Teams (with filters)
+GET {{baseUrl}}?search=AI&researchField=Artificial%20Intelligence&privacy=PUBLIC&page=0&size=10
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 4. List Teams (no filters)
+GET {{baseUrl}}?page=0&size=10
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 5. Update Team
+PUT {{baseUrl}}/{{teamId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Team Name",
+  "description": "Updated description",
+  "researchField": "Machine Learning",
+  "privacy": "PUBLIC",
+  "iconUrl": "https://example.com/new-icon.png"
+}
+
+### 6. Delete Team
+DELETE {{baseUrl}}/{{teamId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 7. Add Team Member
+POST {{baseUrl}}/{{teamId}}/members
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "role": "RESEARCHER"
+}
+
+### 8. Get Team Members
+GET {{baseUrl}}/{{teamId}}/members
+Authorization: {{token}}
+Content-Type: {{contentType}}
+
+### 9. Remove Team Member
+DELETE {{baseUrl}}/{{teamId}}/members/{{memberId}}
+Authorization: {{token}}
+Content-Type: {{contentType}}
+

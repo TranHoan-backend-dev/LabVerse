@@ -63,9 +63,12 @@ class PaperController(
         produces = [MediaType.APPLICATION_JSON_VALUE],
         consumes = [MediaType.APPLICATION_JSON_VALUE]
     )
-    fun uploadPdfFile(@Valid @RequestBody request: UploadPdfRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to uploadPdfFile controller" }
-        paperService.createNewPaper(request)
+    fun uploadPdfFile(
+        @Valid @RequestBody request: UploadPdfRequest,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to uploadPdfFile controller, userId: $userId" }
+        paperService.createNewPaper(request, userId)
 
         return ResponseEntity.ok(
             WrapperApiResponse(
@@ -139,7 +142,22 @@ class PaperController(
         )
     }
 
-
+    @GetMapping("/user/{userId}")
+    fun getPapersByUserId(@PathVariable("userId") userId: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getPapersByUserId, encoded userId: $userId" }
+        val decodedUserId = encoder.decode(userId)
+        logger.info { "Decoded userId: $decodedUserId" }
+        val papers = paperService.getPapersByUserId(decodedUserId)
+        logger.info { "Found ${papers.size} papers for user $decodedUserId" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get papers by user successfully",
+                papers,
+                LocalDateTime.now()
+            )
+        )
+    }
 
     @DeleteMapping("/{id}")
     fun deletePaper(@PathVariable("id") paperId: String): ResponseEntity<WrapperApiResponse> {
