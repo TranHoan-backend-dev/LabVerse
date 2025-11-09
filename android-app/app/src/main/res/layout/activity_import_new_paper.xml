@@ -138,7 +138,7 @@
                         android:text="Upload PDF Document"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:layout_marginBottom="8dp" />
 
                     <!-- Description -->
@@ -147,7 +147,7 @@
                         android:layout_height="wrap_content"
                         android:text="Select a research paper from your device storage"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/gray_400"
                         android:gravity="center"
                         android:layout_marginBottom="24dp" />
 
@@ -161,7 +161,7 @@
                         android:textAllCaps="false"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
-                        app:backgroundTint="@color/blue"
+                        app:backgroundTint="@color/blue_400"
                         app:cornerRadius="12dp"
                         app:icon="@drawable/ic_file"
                         app:iconGravity="textStart"
@@ -193,7 +193,7 @@
                         android:text="Recent Uploads"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:layout_marginBottom="16dp" />
 
                     <LinearLayout
@@ -225,7 +225,7 @@
                         android:text="Other Import Options"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/light_black"
                         android:layout_marginBottom="16dp" />
 
                     <!-- Import from URL Option -->
@@ -241,7 +241,7 @@
                         app:cardElevation="1dp"
                         app:cardUseCompatPadding="true"
                         app:strokeWidth="1dp"
-                        app:strokeColor="@color/border_color">
+                        app:strokeColor="@color/gray_100">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -256,7 +256,7 @@
                                 android:src="@drawable/ic_link"
                                 android:contentDescription="URL icon"
                                 android:padding="8dp"
-                                app:tint="@color/blue" />
+                                app:tint="@color/blue_400" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -271,14 +271,14 @@
                                     android:text="Import from URL"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="@color/light_black" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Add paper from DOI or URL"
                                     android:textSize="14sp"
-                                    android:textColor="@color/text_secondary"
+                                    android:textColor="@color/gray_400"
                                     android:layout_marginTop="4dp" />
                             </LinearLayout>
 
@@ -287,7 +287,7 @@
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_right"
                                 android:contentDescription="Arrow right"
-                                app:tint="@color/text_secondary" />
+                                app:tint="@color/gray_400" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -303,7 +303,7 @@
                         app:cardElevation="1dp"
                         app:cardUseCompatPadding="true"
                         app:strokeWidth="1dp"
-                        app:strokeColor="@color/border_color">
+                        app:strokeColor="@color/gray_100">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -333,14 +333,14 @@
                                     android:text="Import BibTeX"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="@color/light_black" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Bulk import from reference file"
                                     android:textSize="14sp"
-                                    android:textColor="@color/text_secondary"
+                                    android:textColor="@color/gray_400"
                                     android:layout_marginTop="4dp" />
                             </LinearLayout>
 
@@ -349,7 +349,7 @@
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_right"
                                 android:contentDescription="Arrow right"
-                                app:tint="@color/text_secondary" />
+                                app:tint="@color/gray_400" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>

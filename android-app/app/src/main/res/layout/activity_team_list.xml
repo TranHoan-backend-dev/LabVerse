@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Active Teams"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Monitor progress across your research teams"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/gray_400"
                 android:textSize="14sp" />
 
             <!-- Create Team Button -->
@@ -77,7 +77,7 @@
                 app:icon="@drawable/ic_team"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-                android:backgroundTint="@color/primary"
+                android:backgroundTint="@color/blue_500"
                 app:cornerRadius="12dp" />
 
             <LinearLayout
@@ -102,9 +102,9 @@
                         android:layout_height="wrap_content"
                         android:checked="true"
                         android:text="All"
-                        android:textColor="@color/blue"
-                        app:chipBackgroundColor="@color/light_blue"
-                        app:chipStrokeColor="@color/blue"
+                        android:textColor="@color/blue_400"
+                        app:chipBackgroundColor="@color/blue_50"
+                        app:chipStrokeColor="@color/blue_400"
                         app:chipStrokeWidth="1dp" />
 
                     <com.google.android.material.chip.Chip
@@ -112,24 +112,24 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="AI Labs"
-                        android:textColor="@color/text_primary"
-                        app:chipBackgroundColor="@color/gray" />
+                        android:textColor="@color/light_black"
+                        app:chipBackgroundColor="@color/gray_50" />
 
                     <com.google.android.material.chip.Chip
                         style="@style/Widget.MaterialComponents.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Biomedical"
-                        android:textColor="@color/text_primary"
-                        app:chipBackgroundColor="@color/gray" />
+                        android:textColor="@color/light_black"
+                        app:chipBackgroundColor="@color/gray_50" />
 
                     <com.google.android.material.chip.Chip
                         style="@style/Widget.MaterialComponents.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Environment"
-                        android:textColor="@color/text_primary"
-                        app:chipBackgroundColor="@color/gray" />
+                        android:textColor="@color/light_black"
+                        app:chipBackgroundColor="@color/gray_50" />
 
                 </com.google.android.material.chip.ChipGroup>
 
@@ -142,7 +142,7 @@
                     android:contentDescription="Open filters"
                     android:padding="8dp"
                     android:src="@drawable/ic_filter"
-                    app:tint="@color/primary" />
+                    app:tint="@color/blue_500" />
 
             </LinearLayout>
 
@@ -164,7 +164,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Recommended Teams"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/light_black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 

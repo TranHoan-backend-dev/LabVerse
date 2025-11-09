@@ -6,7 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginEnd="5dp"
-    android:backgroundTint="@color/blue"
+    android:backgroundTint="@color/blue_400"
     android:gravity="center"
     android:text="@string/continue_label"
     android:textColor="@color/white"

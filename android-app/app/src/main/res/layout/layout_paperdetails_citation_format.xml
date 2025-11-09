@@ -46,7 +46,7 @@
             android:backgroundTint="@color/first_green"
             android:paddingHorizontal="17dp"
             android:text="@string/mla_style"
-            android:textColor="@color/fourth_green"
+            android:textColor="@color/seventh_green"
             android:textSize="13sp"
             app:cornerRadius="20dp"
             app:icon="@drawable/baseline_circle_24"
