@@ -118,6 +118,9 @@
         <activity
             android:name=".presentation.notification.NotificationListActivity"
             android:exported="true" />
+        <activity
+            android:name=".presentation.library.LibraryActivity"
+            android:exported="true" />
     </application>
 
 </manifest>
