@@ -5,10 +5,12 @@
 ## Android SDK Location
 sdk.dir=C\:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
 
-## Cloudinary Configuration
-## Get these values from: https://console.cloudinary.com/
-## Dashboard → Account Details
-cloudinary.cloud.name=your_cloud_name
-cloudinary.api.key=your_api_key
-cloudinary.api.secret=your_api_secret
+## AWS S3 Configuration
+## Get these values from: https://console.aws.amazon.com/
+## IAM → Users → Security credentials → Access keys
+## S3 → Buckets → Your bucket name
+aws.access.key=your_access_key
+aws.secret.key=your_secret_key
+aws.region=us-east-1
+aws.s3.bucket=your_bucket_name
 

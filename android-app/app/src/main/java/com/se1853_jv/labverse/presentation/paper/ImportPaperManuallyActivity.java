@@ -30,7 +30,7 @@ import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
-import com.se1853_jv.labverse.data.utils.CloudinaryStorageHelper;
+import com.se1853_jv.labverse.data.utils.S3StorageHelper;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.data.utils.TestPdfGenerator;
@@ -47,7 +47,7 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
     private LinearLayout recentUploadsContainer;
     private final List<RecentUploadItem> recentUploads = new ArrayList<>();
     
-    private CloudinaryStorageHelper storageHelper;
+    private S3StorageHelper storageHelper;
     private PaperApiHandler paperApiHandler;
     private SessionManager sessionManager;
     private Uri selectedFileUri;
@@ -82,10 +82,10 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         });
 
         // Initialize helpers
-        storageHelper = new CloudinaryStorageHelper();
+        storageHelper = new S3StorageHelper();
         paperApiHandler = new PaperApiHandler(this);
         sessionManager = new SessionManager(this);
-        // Cloudinary đã được khởi tạo trong LabVerseApplication
+        // S3 đã được khởi tạo trong LabVerseApplication
         
         filePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -371,14 +371,14 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
             progressBar.setVisibility(ProgressBar.VISIBLE);
         }
         
-        // Step 1: Upload file to Cloudinary
+        // Step 1: Upload file to S3
         // Pass context để hỗ trợ content:// URI (Google Drive, etc.)
-        storageHelper.uploadPdfFile(this, selectedFileUri, new CloudinaryStorageHelper.StorageUploadCallback() {
+        storageHelper.uploadPdfFile(this, selectedFileUri, new S3StorageHelper.StorageUploadCallback() {
             @Override
             public void onSuccess(String downloadUrl) {
-                Log.d(TAG, "✅ File uploaded to Cloudinary successfully!");
+                Log.d(TAG, "✅ File uploaded to S3 successfully!");
                 Log.d(TAG, "📎 Download URL: " + downloadUrl);
-                Log.d(TAG, "💡 Check Cloudinary Console → Media Library → papers/ to see the file");
+                Log.d(TAG, "💡 Check S3 bucket to see the file");
                 
                 // Step 2: Create paper metadata via API
                 UploadPdfRequest request = new UploadPdfRequest();
