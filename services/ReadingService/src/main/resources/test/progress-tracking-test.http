@@ -209,18 +209,3 @@ Accept: application/json
 # - Status values: "unread", "reading", "finished"
 # - Progress: 0-100 (integer)
 # ===========================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
