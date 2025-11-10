@@ -16,18 +16,3 @@ public class TeamMemberProgressResponse {
     private Double averageProgress; // Average progress for this user
     private Integer totalProgress; // Sum of all progress values
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
