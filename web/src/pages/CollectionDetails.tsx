@@ -1,6 +1,6 @@
 import {useParams, useNavigate} from "react-router-dom";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
-import {useState, useMemo} from "react";
+import {useState, useMemo, useEffect} from "react";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
@@ -47,10 +47,15 @@ const CollectionDetails = () => {
     const [newMemberAccessLevel, setNewMemberAccessLevel] = useState<'READ_ONLY' | 'CONTRIBUTOR' | 'AUTHOR'>('CONTRIBUTOR');
     const [activeTab, setActiveTab] = useState<'papers' | 'members'>('papers');
     
+    // Papers list pagination
+    const [papersPage, setPapersPage] = useState(0);
+    const papersPageSize = 10;
+    
     // Paper search states
     const [paperSearchQuery, setPaperSearchQuery] = useState('');
-    const [paperSearchPage, setPaperSearchPage] = useState(0);
-    const paperSearchPageSize = 10;
+    const [paperSearchDialogPage, setPaperSearchDialogPage] = useState(0); // Client-side pagination for dialog
+    const paperSearchDialogPageSize = 10; // 10 papers per page in dialog
+    const paperSearchApiPageSize = 100; // Maximum allowed by backend API
 
     const {data: collection, isLoading: isLoadingCollection} = useQuery({
         queryKey: ['collection', id],
@@ -111,25 +116,81 @@ const CollectionDetails = () => {
     const canManageMembers = effectiveAccessLevel === 'AUTHOR' || isOwner;
     const canSetPriority = effectiveAccessLevel === 'AUTHOR' || isOwner;
 
-    // Paper search query
+    // Paper search query - fetch all papers
     const {data: paperSearchData, isLoading: isLoadingPaperSearch} = useQuery({
-        queryKey: ['paper-search', paperSearchQuery, paperSearchPage],
+        queryKey: ['paper-search-all', paperSearchQuery],
         queryFn: async () => {
-            const result = await getPaginatedPapers(paperSearchPage, paperSearchPageSize, paperSearchQuery || undefined);
-            return result;
+            // First, get the first page to know total pages
+            const firstPage = await getPaginatedPapers(0, paperSearchApiPageSize, paperSearchQuery || undefined);
+            const totalPages = firstPage?.data?.totalPages || 1;
+            const allPapers = [...(firstPage?.data?.content || [])];
+            
+            // Fetch remaining pages if there are more
+            if (totalPages > 1) {
+                const remainingPromises = [];
+                for (let page = 1; page < totalPages; page++) {
+                    remainingPromises.push(
+                        getPaginatedPapers(page, paperSearchApiPageSize, paperSearchQuery || undefined)
+                    );
+                }
+                const remainingResults = await Promise.all(remainingPromises);
+                remainingResults.forEach(result => {
+                    if (result?.data?.content) {
+                        allPapers.push(...result.data.content);
+                    }
+                });
+            }
+            
+            return {
+                data: {
+                    content: allPapers,
+                    totalElements: allPapers.length,
+                    totalPages: 1,
+                }
+            };
         },
         enabled: isAddPaperOpen,
     });
 
-    const availablePapers = useMemo(() => {
+    // Filter out papers that are already in the collection
+    const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
-        // Filter out papers that are already in the collection
         // Note: paper.id from getAllPapers is already encoded, paper.paperId in collection is also encoded
         const existingPaperIds = papers?.map(p => p.paperId) || [];
         return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
 
-    const totalPaperPages = paperSearchData?.data?.totalPages || 1;
+    // Client-side pagination for dialog (10 papers per page)
+    const paginatedAvailablePapers = useMemo(() => {
+        if (!allAvailablePapers || allAvailablePapers.length === 0) return [];
+        const startIndex = paperSearchDialogPage * paperSearchDialogPageSize;
+        const endIndex = startIndex + paperSearchDialogPageSize;
+        return allAvailablePapers.slice(startIndex, endIndex);
+    }, [allAvailablePapers, paperSearchDialogPage, paperSearchDialogPageSize]);
+
+    const totalDialogPages = Math.ceil((allAvailablePapers?.length || 0) / paperSearchDialogPageSize);
+
+    // Client-side pagination for papers list
+    const paginatedPapers = useMemo(() => {
+        if (!papers || papers.length === 0) return [];
+        const startIndex = papersPage * papersPageSize;
+        const endIndex = startIndex + papersPageSize;
+        return papers.slice(startIndex, endIndex);
+    }, [papers, papersPage, papersPageSize]);
+
+    const totalPapersPages = Math.ceil((papers?.length || 0) / papersPageSize);
+
+    // Reset pagination when papers list changes
+    useEffect(() => {
+        if (papers && papers.length > 0) {
+            const maxPage = Math.max(0, totalPapersPages - 1);
+            if (papersPage > maxPage) {
+                setPapersPage(maxPage);
+            }
+        } else if (papers && papers.length === 0) {
+            setPapersPage(0);
+        }
+    }, [papers?.length, totalPapersPages, papersPage]);
 
     const addPaperMutation = useMutation({
         mutationFn: async (paperId: string) => {
@@ -371,11 +432,11 @@ const CollectionDetails = () => {
                                     </TabsTrigger>
                                 </TabsList>
                                 {activeTab === 'papers' && canAddPaper && (
-                                    <Dialog open={isAddPaperOpen} onOpenChange={(open) => {
+                                    <Dialog open={isAddPaperOpen}                                     onOpenChange={(open) => {
                                         setIsAddPaperOpen(open);
                                         if (!open) {
                                             setPaperSearchQuery('');
-                                            setPaperSearchPage(0);
+                                            setPaperSearchDialogPage(0);
                                         }
                                     }}>
                                         <DialogTrigger asChild>
@@ -396,7 +457,7 @@ const CollectionDetails = () => {
                                                         value={paperSearchQuery}
                                                         onChange={(e) => {
                                                             setPaperSearchQuery(e.target.value);
-                                                            setPaperSearchPage(0);
+                                                            setPaperSearchDialogPage(0);
                                                         }}
                                                         className="pl-10"
                                                     />
@@ -407,9 +468,9 @@ const CollectionDetails = () => {
                                                         <div className="flex justify-center items-center py-12">
                                                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground"/>
                                                         </div>
-                                                    ) : availablePapers && availablePapers.length > 0 ? (
+                                                    ) : allAvailablePapers && allAvailablePapers.length > 0 ? (
                                                         <>
-                                                            {availablePapers.map((paper: any) => (
+                                                            {paginatedAvailablePapers.map((paper: any) => (
                                                                 <Card key={paper.id} className="hover:shadow-md transition-shadow">
                                                                     <CardHeader>
                                                                         <CardTitle className="text-base line-clamp-2">{paper.title}</CardTitle>
@@ -441,24 +502,29 @@ const CollectionDetails = () => {
                                                                     </CardContent>
                                                                 </Card>
                                                             ))}
-                                                            {totalPaperPages > 1 && (
-                                                                <div className="flex items-center justify-center gap-2 pt-4">
+                                                            {allAvailablePapers && allAvailablePapers.length > 0 && (
+                                                                <div className="flex items-center justify-center gap-3 pt-4 border-t">
                                                                     <Button
                                                                         variant="outline"
                                                                         size="sm"
-                                                                        onClick={() => setPaperSearchPage(p => Math.max(0, p - 1))}
-                                                                        disabled={paperSearchPage === 0 || isLoadingPaperSearch}
+                                                                        onClick={() => setPaperSearchDialogPage(p => Math.max(0, p - 1))}
+                                                                        disabled={paperSearchDialogPage === 0 || isLoadingPaperSearch || totalDialogPages <= 1}
                                                                     >
                                                                         Previous
                                                                     </Button>
-                                                                    <span className="text-sm text-muted-foreground">
-                                                                        Page {paperSearchPage + 1} of {totalPaperPages}
+                                                                    <span className="text-sm text-muted-foreground min-w-[140px] text-center">
+                                                                        Page {paperSearchDialogPage + 1} of {totalDialogPages}
+                                                                        {allAvailablePapers.length > 0 && (
+                                                                            <span className="block text-xs mt-1">
+                                                                                ({allAvailablePapers.length} total papers)
+                                                                            </span>
+                                                                        )}
                                                                     </span>
                                                                     <Button
                                                                         variant="outline"
                                                                         size="sm"
-                                                                        onClick={() => setPaperSearchPage(p => Math.min(totalPaperPages - 1, p + 1))}
-                                                                        disabled={paperSearchPage >= totalPaperPages - 1 || isLoadingPaperSearch}
+                                                                        onClick={() => setPaperSearchDialogPage(p => Math.min(totalDialogPages - 1, p + 1))}
+                                                                        disabled={paperSearchDialogPage >= totalDialogPages - 1 || isLoadingPaperSearch || totalDialogPages <= 1}
                                                                     >
                                                                         Next
                                                                     </Button>
@@ -572,50 +638,78 @@ const CollectionDetails = () => {
                                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                                     </div>
                                 ) : papers && papers.length > 0 ? (
-                                    <div className="grid gap-4">
-                                        {papers.map((paper) => (
-                                            <Card key={paper.paperId} className="hover:shadow-md transition-shadow">
-                                                <CardHeader>
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <CardTitle className="text-lg mb-2">{paper.title}</CardTitle>
-                                                            <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
-                                                                <span>{paper.authors}</span>
-                                                                {paper.journal && <span>• {paper.journal}</span>}
-                                                                {paper.publicationYear && <span>• {paper.publicationYear}</span>}
+                                    <>
+                                        <div className="grid gap-4">
+                                            {paginatedPapers.map((paper) => (
+                                                <Card key={paper.paperId} className="hover:shadow-md transition-shadow">
+                                                    <CardHeader>
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <CardTitle className="text-lg mb-2">{paper.title}</CardTitle>
+                                                                <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
+                                                                    <span>{paper.authors}</span>
+                                                                    {paper.journal && <span>• {paper.journal}</span>}
+                                                                    {paper.publicationYear && <span>• {paper.publicationYear}</span>}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                {paper.status && (
+                                                                    <Badge
+                                                                        className={`${getStatusColor(paper.status)} text-white cursor-pointer`}
+                                                                        onClick={() => handleStatusClick(paper)}
+                                                                    >
+                                                                        {paper.status}
+                                                                    </Badge>
+                                                                )}
+                                                                {paper.priority && (
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={`${getPriorityColor(paper.priority)} text-white cursor-pointer`}
+                                                                        onClick={() => canSetPriority && handleStatusClick(paper)}
+                                                                    >
+                                                                        {paper.priority}
+                                                                    </Badge>
+                                                                )}
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => handleRemovePaper(paper)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4"/>
+                                                                </Button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex gap-2">
-                                                            {paper.status && (
-                                                                <Badge
-                                                                    className={`${getStatusColor(paper.status)} text-white cursor-pointer`}
-                                                                    onClick={() => handleStatusClick(paper)}
-                                                                >
-                                                                    {paper.status}
-                                                                </Badge>
-                                                            )}
-                                                            {paper.priority && (
-                                                                <Badge
-                                                                    variant="outline"
-                                                                    className={`${getPriorityColor(paper.priority)} text-white cursor-pointer`}
-                                                                    onClick={() => canSetPriority && handleStatusClick(paper)}
-                                                                >
-                                                                    {paper.priority}
-                                                                </Badge>
-                                                            )}
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => handleRemovePaper(paper)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4"/>
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </CardHeader>
-                                            </Card>
-                                        ))}
-                                    </div>
+                                                    </CardHeader>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                        {papers && papers.length > 0 && (
+                                            <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setPapersPage(p => Math.max(0, p - 1))}
+                                                    disabled={papersPage === 0 || totalPapersPages <= 1}
+                                                >
+                                                    Previous
+                                                </Button>
+                                                <span className="text-sm text-muted-foreground min-w-[120px] text-center">
+                                                    Page {papersPage + 1} of {totalPapersPages}
+                                                    <span className="block text-xs mt-1">
+                                                        ({papers.length} total papers)
+                                                    </span>
+                                                </span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setPapersPage(p => Math.min(totalPapersPages - 1, p + 1))}
+                                                    disabled={papersPage >= totalPapersPages - 1 || totalPapersPages <= 1}
+                                                >
+                                                    Next
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <Card className="text-center py-12">
                                         <CardContent>
