@@ -15,7 +15,7 @@ import { getAuthHeaders, tokenStorage } from "@/utils/token";
  */
 export const register = async (request: RegisterRequest): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/auth/register`, {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,9 +23,26 @@ export const register = async (request: RegisterRequest): Promise<AuthResponse> 
       body: JSON.stringify(request),
     });
 
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Registration failed" }));
-      throw new Error(errorData.message || `Registration failed: ${response.statusText} (${response.status})`);
+      let errorMessage = `Registration failed: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
     }
 
     const apiResponse: WrapperApiResponse<AuthResponse> = await response.json();
@@ -59,7 +76,7 @@ export const register = async (request: RegisterRequest): Promise<AuthResponse> 
  */
 export const login = async (request: LoginRequest): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/auth/login`, {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,9 +84,26 @@ export const login = async (request: LoginRequest): Promise<AuthResponse> => {
       body: JSON.stringify(request),
     });
 
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Login failed" }));
-      throw new Error(errorData.message || `Login failed: ${response.statusText} (${response.status})`);
+      let errorMessage = `Login failed: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
     }
 
     const apiResponse: WrapperApiResponse<AuthResponse> = await response.json();
@@ -106,10 +140,15 @@ export const logout = async (): Promise<void> => {
   
   if (token) {
     try {
-      await fetch(`${ACCOUNT_SERVICE_URL}/api/auth/logout`, {
+      const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/logout`, {
         method: "POST",
         headers: getAuthHeaders(),
       });
+      
+      // Logout should succeed even if API call fails
+      if (!response.ok) {
+        console.warn("Logout API call returned error, but continuing with local logout");
+      }
     } catch (error) {
       console.error("Logout API call failed:", error);
       // Continue with local logout even if API call fails
@@ -125,10 +164,13 @@ export const logout = async (): Promise<void> => {
  */
 export const getCurrentUser = async (): Promise<User> => {
   try {
-    const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/users/me`, {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/users/me`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
+
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -136,8 +178,23 @@ export const getCurrentUser = async (): Promise<User> => {
         tokenStorage.removeToken();
         throw new Error("Session expired. Please login again.");
       }
-      const errorData = await response.json().catch(() => ({ message: "Failed to get user" }));
-      throw new Error(errorData.message || `Failed to get user: ${response.statusText} (${response.status})`);
+      
+      let errorMessage = `Failed to get user: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
     }
 
     const apiResponse: WrapperApiResponse<User> = await response.json();
@@ -163,19 +220,37 @@ export const getCurrentUser = async (): Promise<User> => {
  */
 export const updateProfile = async (request: UpdateProfileRequest): Promise<User> => {
   try {
-    const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/users/me`, {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/users/me`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
     });
+
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
 
     if (!response.ok) {
       if (response.status === 401) {
         tokenStorage.removeToken();
         throw new Error("Session expired. Please login again.");
       }
-      const errorData = await response.json().catch(() => ({ message: "Failed to update profile" }));
-      throw new Error(errorData.message || `Failed to update profile: ${response.statusText} (${response.status})`);
+      
+      let errorMessage = `Failed to update profile: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
     }
 
     const apiResponse: WrapperApiResponse<User> = await response.json();
@@ -201,19 +276,41 @@ export const updateProfile = async (request: UpdateProfileRequest): Promise<User
  */
 export const changePassword = async (request: ChangePasswordRequest): Promise<void> => {
   try {
-    const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/users/me/password`, {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/users/me/password`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(request),
     });
+
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
 
     if (!response.ok) {
       if (response.status === 401) {
         tokenStorage.removeToken();
         throw new Error("Session expired. Please login again.");
       }
-      const errorData = await response.json().catch(() => ({ message: "Failed to change password" }));
-      throw new Error(errorData.message || `Failed to change password: ${response.statusText} (${response.status})`);
+      
+      let errorMessage = `Failed to change password: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      // Some successful responses might not have JSON body
+      if (response.status === 200 || response.status === 204) {
+        return;
+      }
+      throw new Error("Invalid response format from server");
     }
 
     const apiResponse: WrapperApiResponse<void> = await response.json();
@@ -233,23 +330,51 @@ export const changePassword = async (request: ChangePasswordRequest): Promise<vo
  * Forgot password - request password reset
  */
 export const forgotPassword = async (email: string): Promise<void> => {
-  const response = await fetch(`${ACCOUNT_SERVICE_URL}/api/auth/forgot-password`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
+  try {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: "Failed to send password reset" }));
-    throw new Error(errorData.message || `Failed to send password reset: ${response.statusText}`);
-  }
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
 
-  const apiResponse: WrapperApiResponse<void> = await response.json();
-  
-  if (apiResponse.status !== 200) {
-    throw new Error(apiResponse.message || "Failed to send password reset");
+    if (!response.ok) {
+      let errorMessage = `Failed to send password reset: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      // Some successful responses might not have JSON body
+      if (response.status === 200 || response.status === 204) {
+        return;
+      }
+      throw new Error("Invalid response format from server");
+    }
+
+    const apiResponse: WrapperApiResponse<void> = await response.json();
+    
+    if (apiResponse.status !== 200) {
+      throw new Error(apiResponse.message || "Failed to send password reset");
+    }
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(`Cannot connect to Account Service at ${ACCOUNT_SERVICE_URL}. Please make sure the service is running.`);
+    }
+    throw error;
   }
 };
 

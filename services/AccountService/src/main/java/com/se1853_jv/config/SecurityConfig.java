@@ -16,12 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -59,46 +53,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow frontend web origins (CORS chỉ áp dụng cho browser requests)
-        // Android app không bị ảnh hưởng bởi CORS vì không phải browser
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173"
-        ));
-        
-        // Allow all HTTP methods (bao gồm cả PATCH cho update profile)
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
-        
-        // Allow all headers (bao gồm Authorization cho JWT)
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // Expose headers để browser có thể đọc
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        
-        // Allow credentials (cookies, authorization headers) - cần cho JWT
-        configuration.setAllowCredentials(true);
-        
-        // Cache preflight requests for 1 hour
-        configuration.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Disable CORS in AccountService - Gateway handles CORS
+            .cors(cors -> cors.disable())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/v1/api/auth/**").permitAll()
                 .requestMatchers("/internal/**").permitAll() // Allow service-to-service communication
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()

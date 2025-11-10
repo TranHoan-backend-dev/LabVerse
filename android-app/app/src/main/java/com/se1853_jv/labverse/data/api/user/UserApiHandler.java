@@ -7,12 +7,15 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
+import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.ChangePasswordRequest;
 import com.se1853_jv.labverse.data.dto.request.UpdateProfileRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
+
+import org.yaml.snakeyaml.scanner.Constant;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -26,7 +29,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApiHandler {
     private static final String TAG = "UserApiHandler";
-    private static final String BASE_URL = "http://10.0.2.2:8081/api/users/";
+    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL + "users/";
     
     private final UserApi userApi;
     private final SessionManager sessionManager;

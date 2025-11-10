@@ -4,6 +4,7 @@ import {BookOpen, Users, BookMarked, Compass} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {useAuth} from "@/contexts/AuthContext.tsx";
 import AppNavigation from "@/components/AppNavigation.tsx";
+import NotificationBell from "@/components/NotificationBell.tsx";
 import {cn} from "@/lib/utils";
 
 const Header = () => {
@@ -23,6 +24,7 @@ const Header = () => {
                         <AppNavigation />
 
                         <div className="flex items-center gap-4">
+                            <NotificationBell />
                             <Link to="/profile">
                                 <Button variant="outline" size="sm">Profile</Button>
                             </Link>
