@@ -1,12 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("io.freefair.lombok") version "9.0.0"
-    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.se1853_jv.labverse"
     compileSdk = 36
+
+    // Đọc Cloudinary credentials từ local.properties
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { localProperties.load(it) }
+    }
 
     defaultConfig {
         applicationId = "com.se1853_jv.labverse"
@@ -16,6 +24,23 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Inject Cloudinary credentials vào BuildConfig từ local.properties
+        buildConfigField(
+            "String",
+            "CLOUDINARY_CLOUD_NAME",
+            "\"${localProperties.getProperty("cloudinary.cloud.name", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "CLOUDINARY_API_KEY",
+            "\"${localProperties.getProperty("cloudinary.api.key", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "CLOUDINARY_API_SECRET",
+            "\"${localProperties.getProperty("cloudinary.api.secret", "")}\""
+        )
     }
 
     buildTypes {
@@ -30,6 +55,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -55,17 +84,12 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
-    implementation(libs.googleServices)
     implementation(libs.googleSignIn)
 
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.storage)
-    implementation(libs.firebase.messaging)
-    implementation(libs.firebase.firestore)
+    implementation(libs.cloudinary.android)
 
     implementation(libs.android.pdf.viewer)
 
@@ -76,6 +100,8 @@ dependencies {
     implementation(libs.lottie)
 
     implementation(libs.snake.yaml)
+
+    implementation(libs.work.manager)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

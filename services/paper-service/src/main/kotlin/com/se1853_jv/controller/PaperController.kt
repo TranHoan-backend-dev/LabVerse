@@ -1,6 +1,5 @@
 package com.se1853_jv.controller
 
-import com.se1853_jv.dto.request.SearchPapersRequest
 import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
@@ -63,9 +62,12 @@ class PaperController(
         produces = [MediaType.APPLICATION_JSON_VALUE],
         consumes = [MediaType.APPLICATION_JSON_VALUE]
     )
-    fun uploadPdfFile(@Valid @RequestBody request: UploadPdfRequest): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to uploadPdfFile controller" }
-        paperService.createNewPaper(request)
+    fun uploadPdfFile(
+        @Valid @RequestBody request: UploadPdfRequest,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to uploadPdfFile controller, userId: $userId" }
+        paperService.createNewPaper(request, userId)
 
         return ResponseEntity.ok(
             WrapperApiResponse(
@@ -104,12 +106,12 @@ class PaperController(
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam index: Int,
-        @RequestParam(value = "size", required = false) pageSize: Int,
+        @RequestParam(value = "size", required = false) pageSize: Int?,
         // filter
         @RequestParam(value = "author", required = false) author: String?,
         @RequestParam(value = "journal", required = false) journal: String?,
         @RequestParam(value = "from", required = false) publicationYearFrom: Int?,
-        @RequestParam(value = "to", required = false) publicationYearTo: Int?,
+        @RequestParam(value = "to", required = false) publicationYearTo: Int?
     ): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to getAllPapers with search: $searchQuery" }
 
@@ -139,7 +141,22 @@ class PaperController(
         )
     }
 
-
+    @GetMapping("/user/{userId}")
+    fun getPapersByUserId(@PathVariable("userId") userId: String): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getPapersByUserId, encoded userId: $userId" }
+        val decodedUserId = encoder.decode(userId)
+        logger.info { "Decoded userId: $decodedUserId" }
+        val papers = paperService.getPapersByUserId(decodedUserId)
+        logger.info { "Found ${papers.size} papers for user $decodedUserId" }
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get papers by user successfully",
+                papers,
+                LocalDateTime.now()
+            )
+        )
+    }
 
     @DeleteMapping("/{id}")
     fun deletePaper(@PathVariable("id") paperId: String): ResponseEntity<WrapperApiResponse> {

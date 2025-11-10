@@ -73,7 +73,7 @@ public class FilterDialogFragment extends BottomSheetDialogFragment {
         journalDropdown = view.findViewById(R.id.spinner_journal);
         yearFromInput = view.findViewById(R.id.input_year_from);
         yearToInput = view.findViewById(R.id.input_year_to);
-        keywordsInput = view.findViewById(R.id.input_tags);
+
 
         ImageButton closeBtn = view.findViewById(R.id.btn_close);
         Button resetBtn = view.findViewById(R.id.btn_reset);
@@ -103,7 +103,7 @@ public class FilterDialogFragment extends BottomSheetDialogFragment {
         if (journalDropdown != null) journalDropdown.setText(journalItems[0], false);
         if (yearFromInput != null) yearFromInput.setText("");
         if (yearToInput != null) yearToInput.setText("");
-        if (keywordsInput != null) keywordsInput.setText("");
+
     }
 
     private void applyFilters() {
@@ -170,7 +170,7 @@ public class FilterDialogFragment extends BottomSheetDialogFragment {
                 String trimmed = keyword.trim();
                 if (!trimmed.isEmpty()) {
                     filterData.keywords.add(trimmed);
-                }
+                }   
             }
         }
 

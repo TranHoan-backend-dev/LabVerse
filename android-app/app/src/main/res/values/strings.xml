@@ -27,7 +27,7 @@
     <string name="home">Home</string>
     <string name="search">Search</string>
     <string name="lists">Lists</string>
-    <string name="collections">Collections</string>
+    <string name="collections">Collection</string>
     <string name="profile">Profile</string>
     <string name="discovery">Discovery</string>
     <string name="my_papers">My papers</string>
@@ -63,6 +63,8 @@
     <string name="go_back">Go back</string>
     <string name="recently_read">Recently Read</string>
     <string name="favorites">Favorites</string>
+    <string name="added_paper">Added Papers</string>
+    <string name="read_paper">Read Papers</string>
     <string name="heart">❤️</string>
     <string name="in_progress">In Progress</string>
     <string name="continue_to_read">Continue to read</string>
@@ -122,7 +124,10 @@
     <string name="my_library">My Library</string>
     <string name="page_info">Page %1$d of %2$d</string>
     <string name="showing_papers">Showing %1$d-%2$d of %3$d papers</string>
-    
+    <string name="library">Library</string>
+    <string name="import_paper">Import Paper</string>
+
+    <string name="close">Close</string>
     <!-- Google Sign-In Configuration -->
     <!-- Replace this with your Web Client ID from Google Cloud Console -->
     <!-- The Web Client ID is different from Android Client ID -->

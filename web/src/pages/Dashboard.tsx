@@ -1,31 +1,33 @@
-import {useState} from "react";
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
-import {supabase} from "@/integrations/supabase/client";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
-import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
-import {Search, Plus, Filter, BookOpen, Users, BookMarked, Compass} from "lucide-react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, Plus, Filter, BookOpen, Users, BookMarked, Compass } from "lucide-react";
 import PaperCard from "@/components/PaperCard";
-import {Link} from "react-router-dom";
-import {useAuth} from "@/contexts/AuthContext";
-import {toast} from "sonner";
-import {Helmet} from "react-helmet-async";
-import {getPaginatedPapers} from "@/services/paper.service.ts";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+// import {toast} from "sonner";
+import { Helmet } from "react-helmet-async";
+import { getPaginatedPapers } from "@/services/paper.service.ts";
 
 const Dashboard = () => {
-    const {user, signOut} = useAuth();
+    const { user, signOut } = useAuth();
     const queryClient = useQueryClient();
     const [isImportOpen, setIsImportOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [newPaper, setNewPaper] = useState({
-        title: '',
         authors: '',
-        journal: '',
-        year: new Date().getFullYear(),
-        abstract: '',
+        dataUrl: '',
+        description: '',
         doi: '',
+        id: '',
+        journal: '',
+        keywords: [],
+        publicationYear: new Date().getFullYear(),
+        title: '',
     });
     const [page, setPage] = useState(1);
     const pageSize = 12;
@@ -36,48 +38,15 @@ const Dashboard = () => {
         yearTo: '',
     });
 
-    const {data, isLoading} = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ['papers', user?.id, searchQuery, page],
         queryFn: async () => await getPaginatedPapers(page, pageSize, searchQuery),
         enabled: !!user,
     });
 
-    // const papers = data?.data ?? [];
-    // const total = data?.total ?? 0;
-    // const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-    // Mock data
-    const papers = [
-        {
-            id: "1",
-            title: "Deep Learning for Natural Language Processing",
-            authors: ["John Doe", "Jane Smith"],
-            journal: "Journal of AI Research",
-            year: 2023,
-            abstract: "An overview of deep learning methods in NLP.",
-            doi: "10.1234/dlnlp.2023"
-        },
-        {
-            id: "2",
-            title: "Blockchain Applications in Healthcare",
-            authors: ["Alice Nguyen", "Bob Tran"],
-            journal: "Health Informatics Review",
-            year: 2022,
-            abstract: "Explores blockchain use for secure medical data sharing.",
-            doi: "10.5678/health.blockchain.2022"
-        },
-        {
-            id: "3",
-            title: "A Survey on Generative AI Models",
-            authors: ["David Pham"],
-            journal: "Computational Intelligence Journal",
-            year: 2024,
-            abstract: "Survey of current generative models and architectures.",
-            doi: "10.9876/genai.survey.2024"
-        }
-    ];
-    const total = papers.length;
-    const totalPages = 2;
+    const papers = data?.data.content ?? [];
+    const total = data?.data.totalElements ?? 0;
+    const totalPages = data?.data.pageable.pageSize ?? Math.max(1, Math.ceil(total / pageSize));
 
     const importMutation = useMutation({
         // TODO: xu ly import paper
@@ -122,10 +91,10 @@ const Dashboard = () => {
         <>
             <Helmet>
                 <title>My Library – LabVerse</title>
-                <meta name="description" content="Manage and organize your research papers in LabVerse."/>
-                <meta property="og:title" content="My Library – LabVerse"/>
-                <meta property="og:description" content="Manage and organize your research papers easily."/>
-                <meta property="og:type" content="website"/>
+                <meta name="description" content="Manage and organize your research papers in LabVerse." />
+                <meta property="og:title" content="My Library – LabVerse" />
+                <meta property="og:description" content="Manage and organize your research papers easily." />
+                <meta property="og:type" content="website" />
             </Helmet>
             <div className="min-h-screen bg-background">
                 {/* Header */}
@@ -133,7 +102,7 @@ const Dashboard = () => {
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 items-center justify-between">
                             <Link to="/" className="flex items-center gap-2 transition-smooth hover:opacity-80">
-                                <BookOpen className="h-6 w-6 text-primary"/>
+                                <BookOpen className="h-6 w-6 text-primary" />
                                 <span className="text-xl font-bold text-gradient">LabVerse</span>
                             </Link>
 
@@ -142,15 +111,15 @@ const Dashboard = () => {
                                     Library
                                 </Link>
                                 <Link to="/collections"
-                                      className="text-sm font-medium hover:text-primary transition-smooth">
+                                    className="text-sm font-medium hover:text-primary transition-smooth">
                                     Collections
                                 </Link>
                                 <Link to="/reading-lists"
-                                      className="text-sm font-medium hover:text-primary transition-smooth">
+                                    className="text-sm font-medium hover:text-primary transition-smooth">
                                     Reading Lists
                                 </Link>
                                 <Link to="/discover"
-                                      className="text-sm font-medium hover:text-primary transition-smooth">
+                                    className="text-sm font-medium hover:text-primary transition-smooth">
                                     Discover
                                 </Link>
                             </nav>
@@ -175,19 +144,19 @@ const Dashboard = () => {
                         <div className="flex gap-2 overflow-x-auto">
                             <Link to="/collections">
                                 <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <Users className="h-4 w-4 mr-1"/>
+                                    <Users className="h-4 w-4 mr-1" />
                                     Collections
                                 </Button>
                             </Link>
                             <Link to="/reading-lists">
                                 <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <BookMarked className="h-4 w-4 mr-1"/>
+                                    <BookMarked className="h-4 w-4 mr-1" />
                                     Lists
                                 </Button>
                             </Link>
                             <Link to="/discover">
                                 <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <Compass className="h-4 w-4 mr-1"/>
+                                    <Compass className="h-4 w-4 mr-1" />
                                     Discover
                                 </Button>
                             </Link>
@@ -210,7 +179,7 @@ const Dashboard = () => {
                             <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
                                 <DialogTrigger asChild>
                                     <Button size="lg" className="sm:w-auto w-full">
-                                        <Plus className="h-5 w-5 mr-2"/>
+                                        <Plus className="h-5 w-5 mr-2" />
                                         Import Paper
                                     </Button>
                                 </DialogTrigger>
@@ -224,7 +193,7 @@ const Dashboard = () => {
                                             <Input
                                                 id="title"
                                                 value={newPaper.title}
-                                                onChange={(e) => setNewPaper({...newPaper, title: e.target.value})}
+                                                onChange={(e) => setNewPaper({ ...newPaper, title: e.target.value })}
                                                 placeholder="Paper title"
                                                 required
                                             />
@@ -235,7 +204,7 @@ const Dashboard = () => {
                                             <Input
                                                 id="authors"
                                                 value={newPaper.authors}
-                                                onChange={(e) => setNewPaper({...newPaper, authors: e.target.value})}
+                                                onChange={(e) => setNewPaper({ ...newPaper, authors: e.target.value })}
                                                 placeholder="John Doe, Jane Smith"
                                                 required
                                             />
@@ -260,10 +229,10 @@ const Dashboard = () => {
                                                 <Input
                                                     id="year"
                                                     type="number"
-                                                    value={newPaper.year}
+                                                    value={newPaper.publicationYear}
                                                     onChange={(e) => setNewPaper({
                                                         ...newPaper,
-                                                        year: parseInt(e.target.value)
+                                                        publicationYear: parseInt(e.target.value)
                                                     })}
                                                     placeholder="2024"
                                                 />
@@ -275,7 +244,7 @@ const Dashboard = () => {
                                             <Input
                                                 id="doi"
                                                 value={newPaper.doi}
-                                                onChange={(e) => setNewPaper({...newPaper, doi: e.target.value})}
+                                                onChange={(e) => setNewPaper({ ...newPaper, doi: e.target.value })}
                                                 placeholder="10.1234/example"
                                             />
                                         </div>
@@ -284,8 +253,8 @@ const Dashboard = () => {
                                             <Label htmlFor="abstract">Abstract</Label>
                                             <Textarea
                                                 id="abstract"
-                                                value={newPaper.abstract}
-                                                onChange={(e) => setNewPaper({...newPaper, abstract: e.target.value})}
+                                                value={newPaper.description}
+                                                onChange={(e) => setNewPaper({ ...newPaper, description: e.target.value })}
                                                 placeholder="Paper abstract..."
                                                 rows={5}
                                             />
@@ -308,7 +277,7 @@ const Dashboard = () => {
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <div className="relative flex-1">
                                     <Search
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         placeholder="Search papers by title or author..."
                                         className="pl-10"
@@ -319,7 +288,7 @@ const Dashboard = () => {
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <Button variant="outline">
-                                            <Filter className="h-5 w-5 mr-2"/>
+                                            <Filter className="h-5 w-5 mr-2" />
                                             Filters
                                         </Button>
                                     </DialogTrigger>
@@ -334,7 +303,7 @@ const Dashboard = () => {
                                                 <Label>Author</Label>
                                                 <Input
                                                     value={filters.author}
-                                                    onChange={(e) => setFilters({...filters, author: e.target.value})}
+                                                    onChange={(e) => setFilters({ ...filters, author: e.target.value })}
                                                     placeholder="John Doe"
                                                 />
                                             </div>
@@ -343,7 +312,7 @@ const Dashboard = () => {
                                                 <Label>Journal</Label>
                                                 <Input
                                                     value={filters.journal}
-                                                    onChange={(e) => setFilters({...filters, journal: e.target.value})}
+                                                    onChange={(e) => setFilters({ ...filters, journal: e.target.value })}
                                                     placeholder="Nature, Science..."
                                                 />
                                             </div>
@@ -403,14 +372,14 @@ const Dashboard = () => {
                             </div>
                         ) : (
                             <div className="text-center py-12">
-                                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
+                                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                                 <h3 className="text-lg font-semibold mb-2">No papers yet</h3>
                                 <p className="text-muted-foreground mb-4">
                                     {searchQuery ? 'No papers found matching your search' : 'Import your first paper to get started'}
                                 </p>
                                 {!searchQuery && (
                                     <Button onClick={() => setIsImportOpen(true)}>
-                                        <Plus className="h-4 w-4 mr-2"/>
+                                        <Plus className="h-4 w-4 mr-2" />
                                         Import Paper
                                     </Button>
                                 )}

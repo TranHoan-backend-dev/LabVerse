@@ -7,6 +7,8 @@ import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.repo.HighlightRepository;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.repo.NoteRepository;
+import com.se1853_jv.labverse.domain.infrastructure.sync.model.SyncQueue;
+import com.se1853_jv.labverse.domain.infrastructure.sync.repo.SyncQueueRepository;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.citation.repo.CitationRepository;
 import com.se1853_jv.labverse.domain.infrastructure.collection.repo.CollectionRepository;
@@ -45,9 +47,10 @@ import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections
                 Institution.class,
                 Citation.class,
                 Highlight.class,
-                Note.class
+                Note.class,
+                SyncQueue.class
         },
-        version = 1
+        version = 2
 )
 @TypeConverters({Converter.class})
 public abstract class AppDatabase extends RoomDatabase {
@@ -76,4 +79,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract HighlightRepository highlightRepository();
 
     public abstract NoteRepository noteRepository();
+
+    public abstract SyncQueueRepository syncQueueRepository();
 }

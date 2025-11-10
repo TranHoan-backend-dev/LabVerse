@@ -29,7 +29,7 @@ public class OpenApiConfig {
                                 .email("support@labverse.com")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080/v1/api/reading-service")
+                                .url("http://localhost:8080/reading-service")
                                 .description("Gateway Server (Recommended)"),
                         new Server()
                                 .url(contextPath.isEmpty() ? "/" : contextPath)

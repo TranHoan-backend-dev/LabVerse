@@ -5,6 +5,23 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Validate environment variables
+if (!SUPABASE_URL) {
+  throw new Error(
+    'Missing Supabase URL. Please create a .env file with VITE_SUPABASE_URL.\n' +
+    'For local development: VITE_SUPABASE_URL=http://localhost:54321\n' +
+    'See .env.example for more details.'
+  );
+}
+
+if (!SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing Supabase Anon Key. Please create a .env file with VITE_SUPABASE_PUBLISHABLE_KEY.\n' +
+    'Find this in your Supabase project settings > API\n' +
+    'See .env.example for more details.'
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

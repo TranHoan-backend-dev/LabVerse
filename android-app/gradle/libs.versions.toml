@@ -16,15 +16,15 @@ gson = "2.13.2"
 retrofit = "3.0.0"
 okhttp = "5.2.1"
 glide = "5.0.5"
-firebaseBom = "34.4.0"
 androidPdfViewer = "3.2.0-beta.3"
 loggingInterceptor = "5.2.1"
 lottieVersion = "6.7.0"
 coreKtx = "1.17.0"
-googleServices = "4.4.4"
 googleSignIn = "21.2.0"
+cloudinaryAndroid = "2.0.0"
 jackson = "2.17.2"
 yaml = "2.5"
+workManager = "2.10.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -40,7 +40,6 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersi
 
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
-googleServices = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 googleSignIn = { module = "com.google.android.gms:play-services-auth", version.ref = "googleSignIn" }
 
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
@@ -53,11 +52,7 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 
-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
-firebase-storage = { module = "com.google.firebase:firebase-storage" }
-firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
-firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
 
 android-pdf-viewer = { module = "com.github.mhiew:android-pdf-viewer", version.ref = "androidPdfViewer" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottieVersion" }
@@ -68,6 +63,7 @@ jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref
 jackson-annotation = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml"}
+work-manager = { module = "androidx.work:work-runtime", version.ref = "workManager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
