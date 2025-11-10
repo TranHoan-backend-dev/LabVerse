@@ -300,6 +300,9 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                     }
                     adapter.setPapers(papers);
                     updateEmptyState();
+                    
+                    // Load reading progress from database
+                    loadReadingProgressForPapers();
                 });
             }
 
@@ -314,6 +317,56 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+    
+    /**
+     * Load reading progress from ReadingWorkflow database for all papers in collection
+     */
+    private void loadReadingProgressForPapers() {
+        if (papers == null || papers.isEmpty()) {
+            return;
+        }
+        
+        // Get user ID
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+        
+        if (userId == null) {
+            return;
+        }
+        
+        // Get workflow repository
+        var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+        var workflowRepository = db.readingWorkflowRepository();
+        
+        // Load reading progress for each paper on background thread
+        new Thread(() -> {
+            try {
+                String collectionId = collection.getId();
+                java.util.Map<String, Integer> progressMap = new java.util.HashMap<>();
+                
+                for (CollectionPaperDetailResponse paper : papers) {
+                    try {
+                        com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow workflow = 
+                            workflowRepository.getByCompositeKey(userId, paper.getPaperId(), collectionId);
+                        
+                        if (workflow != null && workflow.getProgress() != null) {
+                            progressMap.put(paper.getPaperId(), workflow.getProgress());
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.e(TAG, "Error loading progress for paper: " + paper.getPaperId(), e);
+                    }
+                }
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    adapter.setPaperProgressData(progressMap);
+                });
+                
+            } catch (Exception e) {
+                android.util.Log.e(TAG, "Error loading reading progress", e);
+            }
+        }).start();
     }
 
     private void updateEmptyState() {
@@ -365,8 +418,10 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                     // Open PDF Reader Activity
                     Intent intent = new Intent(CollectionDetailsActivity.this, PDFReaderActivity.class);
                     intent.putExtra("paperId", paperId);
-                    intent.putExtra("collectionId", collection.getId());
+                    String collectionIdValue = collection != null && collection.getId() != null ? collection.getId() : "";
+                    intent.putExtra("collectionId", collectionIdValue);
                     intent.putExtra("pdfUrl", pdfUrl);
+                    android.util.Log.d(TAG, "Opening PDF Reader with paperId=" + paperId + ", collectionId=" + collectionIdValue);
                     startActivity(intent);
                 });
             }
@@ -389,6 +444,15 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         if (requestCode == 100 && resultCode == RESULT_OK) {
             // Refresh papers list after adding paper
             loadPapers();
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload papers to update reading progress when returning from PDF reader
+        if (papers != null && !papers.isEmpty()) {
+            loadReadingProgressForPapers();
         }
     }
 }

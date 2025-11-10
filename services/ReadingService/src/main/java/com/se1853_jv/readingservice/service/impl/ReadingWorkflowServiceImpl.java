@@ -95,15 +95,27 @@ public class ReadingWorkflowServiceImpl implements ReadingWorkflowService {
                 request.getUsersid()
         );
 
+        // Get existing workflow or create new one if it doesn't exist
         ReadingWorkflow workflow = readingWorkflowRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reading workflow not found"));
+                .orElseGet(() -> {
+                    // Create new workflow if it doesn't exist
+                    ReadingWorkflow newWorkflow = ReadingWorkflow.builder()
+                            .id(id)
+                            .status("reading")
+                            .lastPage(0)
+                            .progress(0)
+                            .build();
+                    return readingWorkflowRepository.save(newWorkflow);
+                });
 
         workflow.setLastPage(request.getLastPage());
         workflow.setProgress(request.getProgress());
         
-        // Auto-update status if progress >= 100
-        if (workflow.getProgress() >= 100 && !"finished".equals(workflow.getStatus())) {
+        // Auto-update status based on progress
+        if (workflow.getProgress() >= 100) {
             workflow.setStatus("finished");
+        } else if (workflow.getProgress() > 0 && !"finished".equals(workflow.getStatus())) {
+            workflow.setStatus("reading");
         }
 
         readingWorkflowRepository.save(workflow);

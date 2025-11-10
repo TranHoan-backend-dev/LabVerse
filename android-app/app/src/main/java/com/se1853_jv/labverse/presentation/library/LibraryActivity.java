@@ -191,12 +191,92 @@ public class LibraryActivity extends BaseActivity {
             papers = dataProvider.getPapersByTab(tab);
         }
         
+        // Enrich papers with reading progress from database
+        enrichPapersWithReadingProgress(papers);
+        
         adapter.setPapers(papers);
+    }
+    
+    /**
+     * Load reading progress from ReadingWorkflow database and update LibraryPaper objects
+     */
+    private void enrichPapersWithReadingProgress(List<LibraryPaper> papers) {
+        if (papers == null || papers.isEmpty()) {
+            return;
+        }
+        
+        // Get user ID
+        com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
+            new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        String userId = sessionManager.getUserId();
+        
+        if (userId == null) {
+            return;
+        }
+        
+        // Get workflow repository
+        var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+        var workflowRepository = db.readingWorkflowRepository();
+        
+        // Load reading progress for each paper on background thread
+        new Thread(() -> {
+            try {
+                String collectionId = "PERSONAL_LIBRARY"; // Special collection ID for personal library
+                
+                for (LibraryPaper paper : papers) {
+                    try {
+                        com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow workflow = 
+                            workflowRepository.getByCompositeKey(userId, paper.getId(), collectionId);
+                        
+                        if (workflow != null) {
+                            // Update progress
+                            paper.setProgress(workflow.getProgress() != null ? workflow.getProgress() : 0);
+                            
+                            // Update status based on WorkflowStatus enum
+                            com.se1853_jv.labverse.domain.enumerate.WorkflowStatus status = workflow.getStatus();
+                            if (status != null) {
+                                switch (status) {
+                                    case UNREAD:
+                                        paper.setStatus("Unread");
+                                        paper.setStatusColor("blue");
+                                        break;
+                                    case READING:
+                                        paper.setStatus("Reading");
+                                        paper.setStatusColor("yellow");
+                                        break;
+                                    case FINISHED:
+                                        paper.setStatus("Finished");
+                                        paper.setStatusColor("green");
+                                        break;
+                                }
+                            }
+                        } else {
+                            // No workflow found, set default values
+                            paper.setProgress(0);
+                            paper.setStatus("Unread");
+                            paper.setStatusColor("blue");
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.e(TAG, "Error loading progress for paper: " + paper.getId(), e);
+                    }
+                }
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+                
+            } catch (Exception e) {
+                android.util.Log.e(TAG, "Error enriching papers with reading progress", e);
+            }
+        }).start();
     }
     
     @Override
     protected void onResume() {
         super.onResume();
         HeaderHelper.loadNotificationBadge(this);
+        // Reload papers to update reading progress
+        loadPapers(currentTab);
     }
 }

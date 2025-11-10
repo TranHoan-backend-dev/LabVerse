@@ -3,6 +3,7 @@ package com.se1853_jv.labverse.presentation.collection.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     private OnRemoveClickListener removeClickListener;
     private OnPaperClickListener paperClickListener;
     private AccessLevel currentUserAccessLevel;
+    private java.util.Map<String, Integer> paperProgressMap = new java.util.HashMap<>(); // paperId -> progress (0-100)
 
     public interface OnStatusClickListener {
         void onStatusClick(CollectionPaperDetailResponse paper);
@@ -63,7 +65,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     @Override
     public void onBindViewHolder(@NonNull PaperViewHolder holder, int position) {
         CollectionPaperDetailResponse paper = papers.get(position);
-        holder.bind(paper, statusClickListener, removeClickListener, paperClickListener, currentUserAccessLevel);
+        holder.bind(paper, statusClickListener, removeClickListener, paperClickListener, currentUserAccessLevel, paperProgressMap);
     }
 
     @Override
@@ -75,6 +77,26 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
         this.papers = newPapers != null ? newPapers : new ArrayList<>();
         notifyDataSetChanged();
     }
+    
+    /**
+     * Update progress for a specific paper
+     */
+    public void updatePaperProgress(String paperId, int progress) {
+        for (int i = 0; i < papers.size(); i++) {
+            if (papers.get(i).getPaperId().equals(paperId)) {
+                notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Set progress data for papers (called after loading from ReadingWorkflow)
+     */
+    public void setPaperProgressData(java.util.Map<String, Integer> progressMap) {
+        this.paperProgressMap = progressMap != null ? progressMap : new java.util.HashMap<>();
+        notifyDataSetChanged();
+    }
 
     static class PaperViewHolder extends RecyclerView.ViewHolder {
         private TextView textTitle;
@@ -82,6 +104,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
         private TextView textJournal;
         private Chip chipPriority;
         private Chip chipStatus;
+        private ProgressBar progressBar;
         private com.google.android.material.button.MaterialButton buttonRemove;
 
         public PaperViewHolder(@NonNull View itemView) {
@@ -91,12 +114,13 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
             textJournal = itemView.findViewById(R.id.text_paper_journal);
             chipPriority = itemView.findViewById(R.id.chip_paper_priority);
             chipStatus = itemView.findViewById(R.id.chip_paper_status);
+            progressBar = itemView.findViewById(R.id.progress_bar);
             buttonRemove = itemView.findViewById(R.id.button_remove_paper);
         }
 
         public void bind(CollectionPaperDetailResponse paper, OnStatusClickListener statusListener, 
                         OnRemoveClickListener removeListener, OnPaperClickListener paperListener,
-                        AccessLevel currentUserAccessLevel) {
+                        AccessLevel currentUserAccessLevel, java.util.Map<String, Integer> progressMap) {
             // Handle title
             String title = paper.getTitle();
             if (title == null || title.isEmpty() || title.equals("Unknown Paper")) {
@@ -203,6 +227,19 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
                 });
             } else {
                 chipStatus.setVisibility(View.GONE);
+            }
+            
+            // Handle reading progress from ReadingWorkflow
+            if (progressBar != null) {
+                Integer progress = progressMap.get(paper.getPaperId());
+                if (progress != null && progress > 0 && progress < 100) {
+                    // Show progress bar for papers that are being read (0 < progress < 100)
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.setProgress(progress);
+                } else {
+                    // Hide progress bar for unread (0) or finished (100) papers
+                    progressBar.setVisibility(View.GONE);
+                }
             }
 
             // Show/hide remove button based on access level

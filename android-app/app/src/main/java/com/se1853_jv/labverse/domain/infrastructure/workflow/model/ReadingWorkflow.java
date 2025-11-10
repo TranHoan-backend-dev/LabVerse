@@ -39,7 +39,8 @@ import lombok.experimental.FieldDefaults;
                 @ForeignKey(
                         entity = Collections.class,
                         parentColumns = "id",
-                        childColumns = "collectionId"
+                        childColumns = "collectionId",
+                        onDelete = ForeignKey.CASCADE
                 )
         }
 )
