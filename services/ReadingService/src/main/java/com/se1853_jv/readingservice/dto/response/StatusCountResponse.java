@@ -13,3 +13,17 @@ public class StatusCountResponse {
     private Double percentage; // Percentage of total workflows
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

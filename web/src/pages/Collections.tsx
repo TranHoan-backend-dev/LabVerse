@@ -1,77 +1,128 @@
 import {useState} from "react";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
-import {supabase} from "@/integrations/supabase/client";
+import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
-import {Plus, Users} from "lucide-react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Plus, Users, Edit, Trash2, MoreVertical} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
 import Header from "@/pages/Header.tsx";
+import {
+    createCollection,
+    getMyCollections,
+    getSharedCollections,
+    updateCollection,
+    deleteCollection,
+    type CollectionResponse
+} from "@/services/collection.service";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Collections = () => {
     const {user} = useAuth();
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [newCollection, setNewCollection] = useState({name: '', description: ''});
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [editingCollection, setEditingCollection] = useState<CollectionResponse | null>(null);
+    const [newCollection, setNewCollection] = useState({name: ''});
+    const [editName, setEditName] = useState('');
+    const [activeTab, setActiveTab] = useState<'my' | 'shared'>('my');
 
-    const {data: collections, isLoading} = useQuery({
-        queryKey: ['collections', user?.id],
+    const {data: myCollectionsData, isLoading: isLoadingMy} = useQuery({
+        queryKey: ['collections', 'my', user?.id],
         queryFn: async () => {
-            const {data, error} = await supabase
-                .from('collections')
-                .select(`
-          *,
-          collection_members!inner(role),
-          collection_papers(count)
-        `)
-                .order('created_at', {ascending: false});
-
-            if (error) throw error;
-            return data;
+            if (!user?.id) throw new Error('User not logged in');
+            return await getMyCollections(user.id);
         },
-        enabled: !!user,
+        enabled: !!user && activeTab === 'my',
     });
+
+    const {data: sharedCollectionsData, isLoading: isLoadingShared} = useQuery({
+        queryKey: ['collections', 'shared', user?.id],
+        queryFn: async () => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await getSharedCollections(user.id);
+        },
+        enabled: !!user && activeTab === 'shared',
+    });
+
+    const collections = activeTab === 'my' 
+        ? myCollectionsData?.content || []
+        : sharedCollectionsData?.content || [];
+    const isLoading = activeTab === 'my' ? isLoadingMy : isLoadingShared;
 
     const createMutation = useMutation({
         mutationFn: async () => {
-            const {data: collection, error: collectionError} = await supabase
-                .from('collections')
-                .insert({
-                    name: newCollection.name,
-                    description: newCollection.description,
-                    created_by: user?.id,
-                })
-                .select()
-                .single();
-
-            if (collectionError) throw collectionError;
-
-            // Add creator as owner
-            const {error: memberError} = await supabase
-                .from('collection_members')
-                .insert({
-                    collection_id: collection.id,
-                    user_id: user?.id,
-                    role: 'owner',
-                });
-
-            if (memberError) throw memberError;
+            if (!user?.id) throw new Error('User not logged in');
+            return await createCollection(newCollection.name, user.id);
         },
         onSuccess: () => {
             toast.success('Collection created successfully');
             queryClient.invalidateQueries({queryKey: ['collections']});
             setIsCreateOpen(false);
-            setNewCollection({name: '', description: ''});
+            setNewCollection({name: ''});
         },
-        onError: () => {
-            toast.error('Failed to create collection');
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to create collection');
         },
     });
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!user?.id || !editingCollection) throw new Error('Invalid request');
+            return await updateCollection(editingCollection.id, editName, user.id);
+        },
+        onSuccess: () => {
+            toast.success('Collection updated successfully');
+            queryClient.invalidateQueries({queryKey: ['collections']});
+            setIsEditOpen(false);
+            setEditingCollection(null);
+            setEditName('');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to update collection');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (collection: CollectionResponse) => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await deleteCollection(collection.id, user.id);
+        },
+        onSuccess: () => {
+            toast.success('Collection deleted successfully');
+            queryClient.invalidateQueries({queryKey: ['collections']});
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to delete collection');
+        },
+    });
+
+    const handleEdit = (collection: CollectionResponse) => {
+        setEditingCollection(collection);
+        setEditName(collection.name);
+        setIsEditOpen(true);
+    };
+
+    const handleDelete = (collection: CollectionResponse) => {
+        if (window.confirm(`Are you sure you want to delete "${collection.name}"? This action cannot be undone.`)) {
+            deleteMutation.mutate(collection);
+        }
+    };
+
+    const handleCollectionClick = (collection: CollectionResponse) => {
+        navigate(`/collections/${collection.id}`);
+    };
 
     return (
         <>
@@ -128,19 +179,6 @@ const Collections = () => {
                                                 placeholder="e.g., Machine Learning Papers"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="description">Description</Label>
-                                            <Textarea
-                                                id="description"
-                                                value={newCollection.description}
-                                                onChange={(e) => setNewCollection({
-                                                    ...newCollection,
-                                                    description: e.target.value
-                                                })}
-                                                placeholder="What is this collection about?"
-                                                rows={3}
-                                            />
-                                        </div>
                                         <Button
                                             onClick={() => createMutation.mutate()}
                                             disabled={!newCollection.name || createMutation.isPending}
@@ -151,52 +189,159 @@ const Collections = () => {
                                     </div>
                                 </DialogContent>
                             </Dialog>
+
+                            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Edit Collection</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="edit-name">Collection Name</Label>
+                                            <Input
+                                                id="edit-name"
+                                                value={editName}
+                                                onChange={(e) => setEditName(e.target.value)}
+                                                placeholder="Collection name"
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={() => updateMutation.mutate()}
+                                            disabled={!editName || updateMutation.isPending}
+                                            className="w-full"
+                                        >
+                                            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                         </div>
 
-                        {isLoading ? (
-                            <div className="flex justify-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                            </div>
-                        ) : collections && collections.length > 0 ? (
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {collections.map((collection: any) => (
-                                    <Card key={collection.id}
-                                          className="shadow-custom-sm hover:shadow-custom-md transition-shadow">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-start justify-between">
-                                                <span className="line-clamp-2">{collection.name}</span>
-                                                <Users className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2"/>
-                                            </CardTitle>
-                                            {collection.description && (
-                                                <CardDescription className="line-clamp-2">
-                                                    {collection.description}
-                                                </CardDescription>
-                                            )}
-                                        </CardHeader>
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'my' | 'shared')}>
+                            <TabsList>
+                                <TabsTrigger value="my">My Collections</TabsTrigger>
+                                <TabsTrigger value="shared">Shared Collections</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="my" className="mt-6">
+                                {isLoading ? (
+                                    <div className="flex justify-center py-12">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                                    </div>
+                                ) : collections.length > 0 ? (
+                                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                        {collections.map((collection: CollectionResponse) => (
+                                            <Card 
+                                                key={collection.id}
+                                                className="shadow-custom-sm hover:shadow-custom-md transition-shadow cursor-pointer"
+                                                onClick={() => handleCollectionClick(collection)}
+                                            >
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-start justify-between">
+                                                        <span className="line-clamp-2 flex-1">{collection.name}</span>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                    <MoreVertical className="h-4 w-4"/>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEdit(collection);
+                                                                }}>
+                                                                    <Edit className="h-4 w-4 mr-2"/>
+                                                                    Edit
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem 
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDelete(collection);
+                                                                    }}
+                                                                    className="text-destructive"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 mr-2"/>
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="text-sm text-muted-foreground space-y-1">
+                                                        <p>Papers: {collection.paperCount || 0}</p>
+                                                        <p>Members: {collection.memberCount || 0}</p>
+                                                        {collection.currentUserAccessLevel && (
+                                                            <p>Role: {collection.currentUserAccessLevel}</p>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <Card className="text-center py-12">
                                         <CardContent>
-                                            <div className="text-sm text-muted-foreground">
-                                                <p>Role: {collection.collection_members[0]?.role || 'member'}</p>
-                                                <p>Papers: {collection.collection_papers?.[0]?.count || 0}</p>
-                                            </div>
+                                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
+                                            <h3 className="text-lg font-semibold mb-2">No collections yet</h3>
+                                            <p className="text-muted-foreground mb-4">
+                                                Create your first collection to start collaborating with your team
+                                            </p>
+                                            <Button onClick={() => setIsCreateOpen(true)}>
+                                                <Plus className="h-4 w-4 mr-2"/>
+                                                Create Collection
+                                            </Button>
                                         </CardContent>
                                     </Card>
-                                ))}
-                            </div>
-                        ) : (
-                            <Card className="text-center py-12">
-                                <CardContent>
-                                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
-                                    <h3 className="text-lg font-semibold mb-2">No collections yet</h3>
-                                    <p className="text-muted-foreground mb-4">
-                                        Create your first collection to start collaborating with your team
-                                    </p>
-                                    <Button onClick={() => setIsCreateOpen(true)}>
-                                        <Plus className="h-4 w-4 mr-2"/>
-                                        Create Collection
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        )}
+                                )}
+                            </TabsContent>
+                            <TabsContent value="shared" className="mt-6">
+                                {isLoading ? (
+                                    <div className="flex justify-center py-12">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                                    </div>
+                                ) : collections.length > 0 ? (
+                                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                        {collections.map((collection: CollectionResponse) => (
+                                            <Card 
+                                                key={collection.id}
+                                                className="shadow-custom-sm hover:shadow-custom-md transition-shadow cursor-pointer"
+                                                onClick={() => handleCollectionClick(collection)}
+                                            >
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-start justify-between">
+                                                        <span className="line-clamp-2 flex-1">{collection.name}</span>
+                                                        <Users className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2"/>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="text-sm text-muted-foreground space-y-1">
+                                                        <p>Papers: {collection.paperCount || 0}</p>
+                                                        <p>Members: {collection.memberCount || 0}</p>
+                                                        {collection.currentUserAccessLevel && (
+                                                            <p>Role: {collection.currentUserAccessLevel}</p>
+                                                        )}
+                                                        {collection.creatorName && (
+                                                            <p>Created by: {collection.creatorName}</p>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <Card className="text-center py-12">
+                                        <CardContent>
+                                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
+                                            <h3 className="text-lg font-semibold mb-2">No shared collections</h3>
+                                            <p className="text-muted-foreground">
+                                                Collections shared with you will appear here
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </TabsContent>
+                        </Tabs>
+
                     </div>
                 </main>
             </div>
