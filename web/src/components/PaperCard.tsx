@@ -4,15 +4,20 @@ import { Button } from "@/components/ui/button";
 import { FileText, Calendar, Users, ExternalLink } from "lucide-react";
 
 interface PaperCardProps {
-  title: string;
-  authors: string[];
+  authors: string;
+  dataUrl?: string;
+  description?: string;
+  doi: string;
+  id: string;
   journal?: string | null;
-  year?: number | null;
+  keywords?: string[] | null;
+  publicationYear?: number | null;
+  title: string;
   status?: string | null;
   priority?: string | null;
 }
 
-const PaperCard = ({ title, authors, journal, year, status, priority }: PaperCardProps) => {
+const PaperCard = ({ title, authors, journal, publicationYear: year, status, priority }: PaperCardProps) => {
   const statusColors: Record<string, string> = {
     "To Read": "bg-muted text-muted-foreground",
     "Reading": "bg-accent/10 text-accent",
@@ -36,7 +41,7 @@ const PaperCard = ({ title, authors, journal, year, status, priority }: PaperCar
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span className="line-clamp-1">{authors.join(", ")}</span>
+              <span className="line-clamp-1">{authors}</span>
             </div>
 
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
