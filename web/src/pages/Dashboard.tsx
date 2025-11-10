@@ -42,42 +42,42 @@ const Dashboard = () => {
         enabled: !!user,
     });
 
-    // const papers = data?.data ?? [];
-    // const total = data?.total ?? 0;
-    // const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const papers = data?.data ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
     // Mock data
-    const papers = [
-        {
-            id: "1",
-            title: "Deep Learning for Natural Language Processing",
-            authors: ["John Doe", "Jane Smith"],
-            journal: "Journal of AI Research",
-            year: 2023,
-            abstract: "An overview of deep learning methods in NLP.",
-            doi: "10.1234/dlnlp.2023"
-        },
-        {
-            id: "2",
-            title: "Blockchain Applications in Healthcare",
-            authors: ["Alice Nguyen", "Bob Tran"],
-            journal: "Health Informatics Review",
-            year: 2022,
-            abstract: "Explores blockchain use for secure medical data sharing.",
-            doi: "10.5678/health.blockchain.2022"
-        },
-        {
-            id: "3",
-            title: "A Survey on Generative AI Models",
-            authors: ["David Pham"],
-            journal: "Computational Intelligence Journal",
-            year: 2024,
-            abstract: "Survey of current generative models and architectures.",
-            doi: "10.9876/genai.survey.2024"
-        }
-    ];
-    const total = papers.length;
-    const totalPages = 2;
+    // const papers = [
+    //     {
+    //         id: "1",
+    //         title: "Deep Learning for Natural Language Processing",
+    //         authors: ["John Doe", "Jane Smith"],
+    //         journal: "Journal of AI Research",
+    //         year: 2023,
+    //         abstract: "An overview of deep learning methods in NLP.",
+    //         doi: "10.1234/dlnlp.2023"
+    //     },
+    //     {
+    //         id: "2",
+    //         title: "Blockchain Applications in Healthcare",
+    //         authors: ["Alice Nguyen", "Bob Tran"],
+    //         journal: "Health Informatics Review",
+    //         year: 2022,
+    //         abstract: "Explores blockchain use for secure medical data sharing.",
+    //         doi: "10.5678/health.blockchain.2022"
+    //     },
+    //     {
+    //         id: "3",
+    //         title: "A Survey on Generative AI Models",
+    //         authors: ["David Pham"],
+    //         journal: "Computational Intelligence Journal",
+    //         year: 2024,
+    //         abstract: "Survey of current generative models and architectures.",
+    //         doi: "10.9876/genai.survey.2024"
+    //     }
+    // ];
+    // const total = papers.length;
+    // const totalPages = 2;
 
     const importMutation = useMutation({
         // TODO: xu ly import paper

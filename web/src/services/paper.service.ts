@@ -1,4 +1,4 @@
-import {BASE_API_URL, METHOD, PAPER_SERVICE_PREDICATE} from "@/type/constant.ts";
+import { BASE_API_URL, METHOD, PAPER_SERVICE_PREDICATE } from "@/type/constant.ts";
 
 const endpoints = ["papers", "references", "tags"] as const;
 export type Endpoints = (typeof endpoints)[number];
@@ -27,7 +27,7 @@ export const getPaperDetails = async (id: string) => {
 export const getReferencesOfPaper = async (id: string) => {
     const response = await fetch(
         `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/references?id=${id}`,
-        {method: METHOD.GET.toString()}
+        { method: METHOD.GET.toString() }
     )
     const data = await response.json()
     console.log(data)
@@ -43,15 +43,20 @@ export const getPaginatedPapers = async (
         yearFrom: string,
         yearTo: string,
     }) => {
-    const response = await fetch(
-        `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/all?index=${currentPage}&size=${pageSize}
-        ${kw && `search=${kw}`}
-        ${filter.author && `&author=${filter.author}`}
-        ${filter.journal && `&journal=${filter.journal}`}
-        ${filter.yearFrom && `&from=${filter.yearFrom}`}
-        ${filter.yearTo && `&to=${filter.yearTo}`}`,
-        {method: METHOD.GET.toString()}
-    )
+    const params = new URLSearchParams({
+        index: currentPage.toString(),
+        size: pageSize.toString(),
+        ...(kw ? { search: kw } : {}),
+        ...(filter?.author ? { author: filter.author } : {}),
+        ...(filter?.journal ? { journal: filter.journal } : {}),
+        ...(filter?.yearFrom ? { from: filter.yearFrom } : {}),
+        ...(filter?.yearTo ? { to: filter.yearTo } : {}),
+    });
+
+    const url = `http://localhost:8080/paper-service/papers/all?${params.toString()}`;
+    console.log(url);
+    const response = await fetch(url, { method: METHOD.GET.toString() })
+    console.log(await response)
     const data = await response.json()
     console.log(data)
     return data

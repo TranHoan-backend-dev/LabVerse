@@ -1,4 +1,4 @@
-@url = http://localhost:8080/v1/api/papers
+@url = http://localhost:8080/paper-service/papers
 
 ### Get paper details
 @id = YjNjZGU2YTUtYWYyYi00ZDJjLTljYWYtN2UxODY3ZDY3OWI4
@@ -93,6 +93,7 @@ Accept: application/json
 
 ### Get all papers - Search by authors
 GET {{url}}/all?search=Author1&index=0&size=10
+
 ### Get paper with pagination and full of request params
 GET {{url}}/all?index=1&size=&author=Hoan&journal=hehe&from=2004&to=2025
 Accept: application/json
@@ -100,6 +101,7 @@ Accept: application/json
 ### Get all papers - Search by journal
 GET {{url}}/all?search=Journal&index=0&size=10
 ### Get paper with pagination and missing some request params #1
+
 GET {{url}}/all?index=1&size=&from=2004&to=2025
 Accept: application/json
 
