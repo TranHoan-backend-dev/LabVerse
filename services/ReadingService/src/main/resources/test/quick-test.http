@@ -70,18 +70,3 @@ Accept: application/json
 ### Get Workflows by Collection - Filter: reading
 GET {{baseUrl}}/workflows/collection/{{collectionId}}?status=reading
 Accept: application/json
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
