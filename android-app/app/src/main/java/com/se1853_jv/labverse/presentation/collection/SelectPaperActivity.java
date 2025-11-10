@@ -6,9 +6,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,22 +38,31 @@ import java.util.List;
 public class SelectPaperActivity extends AppCompatActivity {
     private static final String TAG = "SelectPaperActivity";
     private static final long SEARCH_DEBOUNCE_DELAY = 500; // milliseconds
-    
+    private static final int PAGE_SIZE = 10;
+
     private CollectionResponse collection;
     private PaperApiHandler paperApiHandler;
     private CollectionApiHandler collectionApiHandler;
-    
+
     private MaterialToolbar toolbar;
     private EditText editSearch;
     private RecyclerView recyclerPapers;
     private TextView textEmptyState;
     private ProgressBar progressBar;
+    private View paginationView;
+    private ImageButton btnPreviousPage;
+    private ImageButton btnNextPage;
+    private TextView tvPageInfo;
     private SelectPaperAdapter adapter;
-    
-    private final List<PaperResearch> allPapers = new ArrayList<>();
-    private final List<PaperResearch> filteredPapers = new ArrayList<>();
+
+    private final List<PaperResearch> currentPapers = new ArrayList<>();
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private int totalResults = 0;
+    private boolean isLoading = false;
+    private String currentQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,13 +78,13 @@ public class SelectPaperActivity extends AppCompatActivity {
 
         paperApiHandler = new PaperApiHandler();
         collectionApiHandler = new CollectionApiHandler();
-        
+
         initializeViews();
         setupToolbar();
         setupRecyclerView();
         setupSearch();
-        // TODO: xu ly phan trang
-        loadPapers(0, 10);
+        resetPagination();
+        fetchPapers();
     }
 
     private void initializeViews() {
@@ -82,6 +93,17 @@ public class SelectPaperActivity extends AppCompatActivity {
         recyclerPapers = findViewById(R.id.recycler_papers);
         textEmptyState = findViewById(R.id.text_empty_state);
         progressBar = findViewById(R.id.progress_bar);
+        paginationView = findViewById(R.id.pagination_view);
+        btnPreviousPage = findViewById(R.id.btn_prev);
+        btnNextPage = findViewById(R.id.btn_next);
+        tvPageInfo = findViewById(R.id.tv_page_info);
+
+        if (btnPreviousPage != null) {
+            btnPreviousPage.setOnClickListener(v -> goToPreviousPage());
+        }
+        if (btnNextPage != null) {
+            btnNextPage.setOnClickListener(v -> goToNextPage());
+        }
     }
 
     private void setupToolbar() {
@@ -101,22 +123,22 @@ public class SelectPaperActivity extends AppCompatActivity {
     }
 
     private void setupSearch() {
-        // TODO: xu ly phan trang
-        int currentPage = 0;
-        int pageSize = 10;
         editSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Cancel previous search
+                String query = s != null ? s.toString().trim() : "";
                 if (searchRunnable != null) {
                     searchHandler.removeCallbacks(searchRunnable);
                 }
-                
-                // Schedule new search with debounce
-                searchRunnable = () -> performSearch(s.toString(), currentPage, pageSize);
+
+                searchRunnable = () -> {
+                    currentQuery = query;
+                    resetPagination();
+                    fetchPapers();
+                };
                 searchHandler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY);
             }
 
@@ -125,101 +147,61 @@ public class SelectPaperActivity extends AppCompatActivity {
         });
     }
 
-    private void performSearch(String query, int currentPage, int pageSize) {
-        if (query == null || query.trim().isEmpty()) {
-            // Show all papers if search is empty
-            filterPapers("");
-        } else {
-            // Filter locally first
-            filterPapers(query);
-            
-            // Then search on server
-            searchPapersOnServer(query, currentPage, pageSize);
-        }
-    }
-
-    private void filterPapers(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            filteredPapers.clear();
-            filteredPapers.addAll(allPapers);
-        } else {
-            String lowerQuery = query.toLowerCase();
-            filteredPapers.clear();
-            for (PaperResearch paper : allPapers) {
-                if ((paper.getTitle() != null && paper.getTitle().toLowerCase().contains(lowerQuery)) ||
-                    (paper.getAuthors() != null && paper.getAuthors().toLowerCase().contains(lowerQuery)) ||
-                    (paper.getJournal() != null && paper.getJournal().toLowerCase().contains(lowerQuery))) {
-                    filteredPapers.add(paper);
-                }
-            }
-        }
-        adapter.setPapers(filteredPapers);
-        updateEmptyState();
-    }
-
-    private void searchPapersOnServer(String query, int currentPage, int pageSize) {
-        if (!Connectivity.isInternetAvailable(this)) {
-            return;
-        }
-
-        showLoading(true);
-        
-        paperApiHandler.getAllPapers(query, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
-            @Override
-            public void onSuccess(List<PaperResearch> response) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-                    if (response != null && !response.isEmpty()) {
-                        // Merge new results with existing ones
-                        for (PaperResearch paper : response) {
-                            if (!containsPaper(allPapers, paper.getId())) {
-                                allPapers.add(paper);
-                            }
-                        }
-                        filterPapers(query);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-                    android.util.Log.e(TAG, "Error searching papers: " + error);
-                });
-            }
-        });
-    }
-
-    private boolean containsPaper(List<PaperResearch> papers, String id) {
-        if (id == null) return false;
-        for (PaperResearch paper : papers) {
-            if (id.equals(paper.getId())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void loadPapers(int currentPage, int pageSize) {
+    private void fetchPapers() {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            showLoading(false);
             updateEmptyState();
+            updatePaginationControls();
             return;
         }
 
+        isLoading = true;
         showLoading(true);
+        updatePaginationControls();
 
-        paperApiHandler.getAllPapers(null, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
+        String searchQuery = currentQuery == null || currentQuery.isEmpty() ? null : currentQuery;
+
+        paperApiHandler.getAllPapers(searchQuery, currentPage, PAGE_SIZE,
+                null, null, null, null, new ApiCallback<List<PaperResearch>>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
                     showLoading(false);
-                    allPapers.clear();
-                    if (response != null) {
-                        allPapers.addAll(response);
+                    isLoading = false;
+
+                    if (response == null || response.isEmpty()) {
+                        if (currentPage > 0) {
+                            currentPage--;
+                            totalPages = Math.max(1, currentPage + 1);
+                            updatePaginationControls();
+                            Toast.makeText(SelectPaperActivity.this,
+                                    "No more papers", Toast.LENGTH_SHORT).show();
+                            fetchPapers();
+                        } else {
+                            currentPapers.clear();
+                            adapter.setPapers(new ArrayList<>(currentPapers));
+                            totalResults = 0;
+                            totalPages = 1;
+                            updateEmptyState();
+                            updatePaginationControls();
+                        }
+                        return;
                     }
-                    filterPapers(editSearch.getText().toString());
+
+                    currentPapers.clear();
+                    currentPapers.addAll(response);
+                    adapter.setPapers(new ArrayList<>(currentPapers));
+                    updateEmptyState();
+
+                    if (response.size() < PAGE_SIZE) {
+                        totalResults = (currentPage * PAGE_SIZE) + response.size();
+                        totalPages = currentPage + 1;
+                    } else if (currentPage >= totalPages - 1) {
+                        totalPages = currentPage + 2;
+                    }
+
+                    updatePaginationControls();
                 });
             }
 
@@ -227,11 +209,13 @@ public class SelectPaperActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     showLoading(false);
-                    android.util.Log.e(TAG, "Error loading papers: " + error);
+                    isLoading = false;
+                    Log.e(TAG, "Error loading papers: " + error);
                     Toast.makeText(SelectPaperActivity.this,
                             "Failed to load papers: " + error,
                             Toast.LENGTH_SHORT).show();
                     updateEmptyState();
+                    updatePaginationControls();
                 });
             }
         });
@@ -269,11 +253,14 @@ public class SelectPaperActivity extends AppCompatActivity {
                     Toast.makeText(SelectPaperActivity.this,
                             "Paper added to collection successfully",
                             Toast.LENGTH_SHORT).show();
-                    
-                    // Remove paper from list to prevent duplicate selection
-                    allPapers.removeIf(p -> p.getId().equals(paper.getId()));
-                    filterPapers(editSearch.getText().toString());
-                    
+
+                    currentPapers.removeIf(p -> p.getId().equals(paper.getId()));
+                    adapter.setPapers(new ArrayList<>(currentPapers));
+                    updateEmptyState();
+
+                    // Refresh current page to keep page size consistent
+                    fetchPapers();
+
                     // Return result to parent activity
                     setResult(RESULT_OK);
                 });
@@ -294,9 +281,13 @@ public class SelectPaperActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     private void updateEmptyState() {
-        if (filteredPapers.isEmpty()) {
+        boolean hasData = !currentPapers.isEmpty();
+        if (!hasData) {
             textEmptyState.setVisibility(View.VISIBLE);
             recyclerPapers.setVisibility(View.GONE);
+            if (paginationView != null) {
+                paginationView.setVisibility(View.GONE);
+            }
             if (editSearch.getText().toString().trim().isEmpty()) {
                 textEmptyState.setText("No papers found");
             } else {
@@ -305,6 +296,9 @@ public class SelectPaperActivity extends AppCompatActivity {
         } else {
             textEmptyState.setVisibility(View.GONE);
             recyclerPapers.setVisibility(View.VISIBLE);
+            if (paginationView != null) {
+                paginationView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -328,6 +322,64 @@ public class SelectPaperActivity extends AppCompatActivity {
         if (searchRunnable != null) {
             searchHandler.removeCallbacks(searchRunnable);
         }
+    }
+
+    private void resetPagination() {
+        currentPage = 0;
+        totalPages = 1;
+        totalResults = 0;
+    }
+
+    private void goToPreviousPage() {
+        if (currentPage > 0 && !isLoading) {
+            currentPage--;
+            fetchPapers();
+        }
+    }
+
+    private void goToNextPage() {
+        if (isLoading) {
+            return;
+        }
+
+        boolean hasNext = adapter != null && (adapter.getItemCount() == PAGE_SIZE || currentPage < totalPages - 1);
+        if (hasNext) {
+            currentPage++;
+            fetchPapers();
+        } else {
+            Toast.makeText(this, "Already on the last page", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updatePaginationControls() {
+        if (paginationView == null || tvPageInfo == null || btnPreviousPage == null || btnNextPage == null) {
+            return;
+        }
+
+        if (currentPapers.isEmpty() && !isLoading) {
+            paginationView.setVisibility(View.GONE);
+            return;
+        }
+
+        paginationView.setVisibility(View.VISIBLE);
+
+        if (totalResults > 0) {
+            tvPageInfo.setText(getString(R.string.page_info, currentPage + 1, totalPages));
+        } else if (totalPages > 1) {
+            tvPageInfo.setText("Page " + (currentPage + 1) + " of " + totalPages + "+");
+        } else {
+            tvPageInfo.setText("Page " + (currentPage + 1));
+        }
+
+        boolean canGoPrevious = currentPage > 0 && !isLoading;
+        btnPreviousPage.setEnabled(canGoPrevious);
+        btnPreviousPage.setAlpha(canGoPrevious ? 1.0f : 0.4f);
+
+        int currentCount = adapter != null ? adapter.getItemCount() : 0;
+        boolean hasNext = (currentCount == PAGE_SIZE) || (currentPage < totalPages - 1);
+        boolean canGoNext = hasNext && !isLoading;
+        btnNextPage.setEnabled(canGoNext);
+        btnNextPage.setAlpha(canGoNext ? 1.0f : 0.4f);
     }
 }
 

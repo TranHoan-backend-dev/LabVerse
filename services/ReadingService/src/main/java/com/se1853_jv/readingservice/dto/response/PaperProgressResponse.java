@@ -19,3 +19,17 @@ public class PaperProgressResponse {
     private List<UserPaperProgressResponse> userProgressList;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

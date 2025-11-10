@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, Filter, BookOpen, Users, BookMarked, Compass } from "lucide-react";
+import { Search, Plus, Filter, BookOpen } from "lucide-react";
 import PaperCard from "@/components/PaperCard";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 // import {toast} from "sonner";
 import { Helmet } from "react-helmet-async";
 import { getPaginatedPapers } from "@/services/paper.service.ts";
+import Header from "@/pages/Header.tsx";
 
 const Dashboard = () => {
     const { user, signOut } = useAuth();
@@ -97,72 +98,7 @@ const Dashboard = () => {
                 <meta property="og:type" content="website" />
             </Helmet>
             <div className="min-h-screen bg-background">
-                {/* Header */}
-                <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-                    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex h-16 items-center justify-between">
-                            <Link to="/" className="flex items-center gap-2 transition-smooth hover:opacity-80">
-                                <BookOpen className="h-6 w-6 text-primary" />
-                                <span className="text-xl font-bold text-gradient">LabVerse</span>
-                            </Link>
-
-                            <nav className="hidden md:flex items-center gap-6">
-                                <Link to="/dashboard" className="text-sm font-medium text-primary">
-                                    Library
-                                </Link>
-                                <Link to="/collections"
-                                    className="text-sm font-medium hover:text-primary transition-smooth">
-                                    Collections
-                                </Link>
-                                <Link to="/reading-lists"
-                                    className="text-sm font-medium hover:text-primary transition-smooth">
-                                    Reading Lists
-                                </Link>
-                                <Link to="/discover"
-                                    className="text-sm font-medium hover:text-primary transition-smooth">
-                                    Discover
-                                </Link>
-                            </nav>
-
-                            <div className="flex items-center gap-4">
-                                <Link to="/profile">
-                                    <Button variant="outline" size="sm">
-                                        Profile
-                                    </Button>
-                                </Link>
-                                <Button variant="ghost" size="sm" onClick={() => signOut()}>
-                                    Sign Out
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                {/* Quick Navigation for Mobile */}
-                <div className="md:hidden border-b border-border bg-background">
-                    <div className="container mx-auto px-4 py-3">
-                        <div className="flex gap-2 overflow-x-auto">
-                            <Link to="/collections">
-                                <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <Users className="h-4 w-4 mr-1" />
-                                    Collections
-                                </Button>
-                            </Link>
-                            <Link to="/reading-lists">
-                                <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <BookMarked className="h-4 w-4 mr-1" />
-                                    Lists
-                                </Button>
-                            </Link>
-                            <Link to="/discover">
-                                <Button variant="outline" size="sm" className="flex-shrink-0">
-                                    <Compass className="h-4 w-4 mr-1" />
-                                    Discover
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                <Header />
 
                 {/* Main Content */}
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">

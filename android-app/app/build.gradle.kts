@@ -62,6 +62,13 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Force update evernote.android.job to fix PendingIntent FLAG_IMMUTABLE issue on Android 12+
+        force("com.evernote:android-job:1.4.2")
+    }
+}
+
 dependencies {
 
     implementation(libs.appcompat)
@@ -90,6 +97,10 @@ dependencies {
     annotationProcessor(libs.glide.compiler)
 
     implementation(libs.cloudinary.android)
+    // Force update evernote.android.job to fix PendingIntent FLAG_IMMUTABLE issue on Android 12+
+    implementation("com.evernote:android-job:1.4.2") {
+        exclude(group = "com.google.android.gms")
+    }
 
     implementation(libs.android.pdf.viewer)
 
