@@ -8,6 +8,8 @@ import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -35,4 +37,19 @@ public interface PaperApi {
 
     @POST("pdf/upload")
     Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request, @Header("X-User-Id") String userId);
+
+    @Multipart
+    @POST("pdf/upload-with-file")
+    Call<BaseJsonResponse<Object>> uploadPdfWithFile(
+            @Part MultipartBody.Part file,
+            @Part("title") RequestBody title,
+            @Part("authors") RequestBody authors,
+            @Part("journal") RequestBody journal,
+            @Part("publicationYear") RequestBody publicationYear,
+            @Part("doi") RequestBody doi,
+            @Part("description") RequestBody description,
+            @Part("keywords") RequestBody keywords,
+            @Part("tags") RequestBody tags,
+            @Header("X-User-Id") String userId
+    );
 }

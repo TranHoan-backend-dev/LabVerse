@@ -29,8 +29,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
-import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
-import com.se1853_jv.labverse.data.utils.S3StorageHelper;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.data.utils.TestPdfGenerator;
@@ -47,7 +45,6 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
     private LinearLayout recentUploadsContainer;
     private final List<RecentUploadItem> recentUploads = new ArrayList<>();
     
-    private S3StorageHelper storageHelper;
     private PaperApiHandler paperApiHandler;
     private SessionManager sessionManager;
     private Uri selectedFileUri;
@@ -82,10 +79,8 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
         });
 
         // Initialize helpers
-        storageHelper = new S3StorageHelper();
         paperApiHandler = new PaperApiHandler(this);
         sessionManager = new SessionManager(this);
-        // S3 đã được khởi tạo trong LabVerseApplication
         
         filePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -371,52 +366,33 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
             progressBar.setVisibility(ProgressBar.VISIBLE);
         }
         
-        // Step 1: Upload file to S3
-        // Pass context để hỗ trợ content:// URI (Google Drive, etc.)
-        storageHelper.uploadPdfFile(this, selectedFileUri, new S3StorageHelper.StorageUploadCallback() {
-            @Override
-            public void onSuccess(String downloadUrl) {
-                Log.d(TAG, "✅ File uploaded to S3 successfully!");
-                Log.d(TAG, "📎 Download URL: " + downloadUrl);
-                Log.d(TAG, "💡 Check S3 bucket to see the file");
-                
-                // Step 2: Create paper metadata via API
-                UploadPdfRequest request = new UploadPdfRequest();
-                request.setDataUrl(downloadUrl);
-                request.setTitle(title);
-                request.setAuthors(authors);
-                request.setJournal(journal);
-                request.setPublicationYear(year > 0 ? year : null);
-                
-                // DOI: If empty, backend will auto-generate a unique DOI
-                // If provided, use the user's DOI (already validated above)
-                if (doi.isEmpty()) {
-                    request.setDoi(null); // Backend will auto-generate
-                    Log.d(TAG, "DOI is empty, backend will auto-generate a unique DOI");
-                } else {
-                    request.setDoi(doi); // Use user-provided DOI
-                }
-                
-                request.setDescription(description.isEmpty() ? null : description);
-                request.setKeywords(keywords.isEmpty() ? null : keywords);
-                request.setTags(null); // Can be added later
-                
-                // Get current user ID
-                String userId = sessionManager.getUserId();
-                Log.d(TAG, "Current userId: " + userId);
-                if (userId == null || userId.isEmpty()) {
-                    runOnUiThread(() -> {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(ProgressBar.GONE);
-                        }
-                        Toast.makeText(ImportPaperManuallyActivity.this, 
-                                "User not logged in. Please login first.", Toast.LENGTH_LONG).show();
-                    });
-                    return;
-                }
-                
-                Log.d(TAG, "Uploading paper with userId: " + userId + ", DOI: " + request.getDoi());
-                paperApiHandler.uploadPdf(request, userId, new ApiCallback<Object>() {
+        // Get current user ID
+        String userId = sessionManager.getUserId();
+        Log.d(TAG, "Current userId: " + userId);
+        if (userId == null || userId.isEmpty()) {
+            if (progressBar != null) {
+                progressBar.setVisibility(ProgressBar.GONE);
+            }
+            Toast.makeText(this, 
+                    "User not logged in. Please login first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        // Upload file directly to backend (backend will handle file upload to storage)
+        Log.d(TAG, "Uploading paper with file to backend, userId: " + userId + ", DOI: " + doi);
+        paperApiHandler.uploadPdfWithFile(
+                this,
+                selectedFileUri,
+                title,
+                authors,
+                journal,
+                year > 0 ? year : 0,
+                doi.isEmpty() ? null : doi,
+                description.isEmpty() ? null : description,
+                keywords.isEmpty() ? null : keywords,
+                null, // tags - can be added later
+                userId,
+                new ApiCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         runOnUiThread(() -> {
@@ -442,30 +418,8 @@ public class ImportPaperManuallyActivity extends AppCompatActivity {
                                     "Failed to upload paper: " + error, Toast.LENGTH_LONG).show();
                         });
                     }
-                });
-            }
-            
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    if (progressBar != null) {
-                        progressBar.setVisibility(ProgressBar.GONE);
-                    }
-                    Log.e(TAG, "Error uploading file: " + error);
-                    Toast.makeText(ImportPaperManuallyActivity.this, 
-                            "Failed to upload file: " + error, Toast.LENGTH_LONG).show();
-                });
-            }
-            
-            @Override
-            public void onProgress(int progress) {
-                runOnUiThread(() -> {
-                    if (progressBar != null) {
-                        progressBar.setProgress(progress);
-                    }
-                });
-            }
-        });
+                }
+        );
     }
 }
 
