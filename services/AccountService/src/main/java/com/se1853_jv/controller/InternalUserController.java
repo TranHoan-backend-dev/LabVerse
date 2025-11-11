@@ -39,5 +39,19 @@ public class InternalUserController {
                     .body(WrapperApiResponse.error(400, e.getMessage()));
         }
     }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<WrapperApiResponse> getUserByEmail(@PathVariable String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(WrapperApiResponse.error(400, "Email cannot be empty"));
+        }
+        try {
+            return ResponseEntity.ok(WrapperApiResponse.success(userService.getUserByEmail(email.trim())));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(WrapperApiResponse.error(400, e.getMessage()));
+        }
+    }
 }
 

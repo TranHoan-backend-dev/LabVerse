@@ -20,7 +20,7 @@ import {
     removePaperFromCollection,
     addPaperToCollection,
     getCollectionMembers,
-    addMemberToCollection,
+    addMemberToCollectionByEmail,
     removeMemberFromCollection,
     type CollectionResponse,
     type CollectionPaperDetailResponse,
@@ -29,6 +29,7 @@ import {
 import {BASE_API_URL} from "@/type/constant.ts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
+import {getAuthHeaders} from "@/utils/token";
 
 const CollectionDetails = () => {
     const {id} = useParams<{id: string}>();
@@ -250,34 +251,8 @@ const CollectionDetails = () => {
         mutationFn: async () => {
             if (!id || !newMemberEmail) throw new Error('Missing required fields');
             
-            // Step 1: Find user by email
-            const userResponse = await fetch(`${BASE_API_URL}/account-service/users/email/${encodeURIComponent(newMemberEmail)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // TODO: Add authentication token if required
-                },
-            });
-
-            if (!userResponse.ok) {
-                const error = await userResponse.json().catch(() => ({ message: 'User not found' }));
-                throw new Error(error.message || 'User not found with this email');
-            }
-
-            const userResult = await userResponse.json();
-            const userId = userResult.data?.id || userResult.data?.userId;
-
-            if (!userId) {
-                throw new Error('Could not get user ID from response');
-            }
-
-            // Step 2: Add user to collection
-            return await addMemberToCollection({
-                collectionId: id,
-                memberId: userId,
-                accessLevel: newMemberAccessLevel,
-                isAuthor: newMemberAccessLevel === 'AUTHOR',
-            });
+            // Add member directly by email
+            return await addMemberToCollectionByEmail(id, newMemberEmail, newMemberAccessLevel);
         },
         onSuccess: () => {
             toast.success('Member added to collection successfully');
@@ -727,11 +702,15 @@ const CollectionDetails = () => {
                                         {members.map((member) => (
                                             <Card key={member.memberId} className="hover:shadow-md transition-shadow">
                                                 <CardHeader>
-                                                    <div className="flex items-center justify-between">
+                                                    <div className="flex items-start justify-between">
                                                         <div className="flex-1">
-                                                            <CardTitle className="text-lg">{member.memberName}</CardTitle>
-                                                            <p className="text-sm text-muted-foreground">{member.memberEmail}</p>
-                                                            <div className="flex gap-2 mt-2">
+                                                            <CardTitle className="text-lg font-semibold mb-1">
+                                                                {member.memberName}
+                                                            </CardTitle>
+                                                            <p className="text-xs text-muted-foreground mb-3">
+                                                                {member.memberEmail}
+                                                            </p>
+                                                            <div className="flex gap-2">
                                                                 <Badge variant="outline">{member.accessLevel}</Badge>
                                                                 <Badge variant="secondary">{member.role}</Badge>
                                                             </div>
@@ -741,6 +720,7 @@ const CollectionDetails = () => {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 onClick={() => handleRemoveMember(member)}
+                                                                className="flex-shrink-0"
                                                             >
                                                                 <Trash2 className="h-4 w-4"/>
                                                             </Button>

@@ -99,7 +99,14 @@ public class CollectionServiceImpl implements CollectionService {
         String decodedId = IdEncoder.decode(encodedId);
         Collection entity = collectionRepository.findById(decodedId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + encodedId));
-        return CollectionResponse.fromEntity(entity);
+        
+        // Get counts
+        long paperCount = collectionPaperRepository.findByIdCollectionId(entity.getId()).size();
+        long memberCount = collectionUserRepository.findByIdCollectionId(entity.getId()).size();
+        
+        CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
+        setCreatorInfo(response, entity.getId());
+        return response;
     }
 
     @Override

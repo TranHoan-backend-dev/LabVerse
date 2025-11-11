@@ -1,4 +1,5 @@
 import {BASE_API_URL, GROUP_SERVICE_PREDICATE, METHOD} from "@/type/constant.ts";
+import {getAuthHeaders} from "@/utils/token";
 
 const endpoints = ["collections", "collections/members"] as const;
 
@@ -188,6 +189,38 @@ export const addMemberToCollection = async (request: CollectionUserRequest): Pro
         body: JSON.stringify(request)
     });
     await handleResponse<void>(response);
+}
+
+// Helper function to add member by email
+export const addMemberToCollectionByEmail = async (
+    collectionId: string,
+    email: string,
+    accessLevel: 'READ_ONLY' | 'CONTRIBUTOR' | 'AUTHOR' = 'CONTRIBUTOR'
+): Promise<void> => {
+    // First, get user by email from AccountService
+    const userResponse = await fetch(`${BASE_API_URL}/account-service/users/email/${encodeURIComponent(email)}`, {
+        method: METHOD.GET.toString(),
+        headers: getAuthHeaders()
+    });
+    
+    if (!userResponse.ok) {
+        const error = await userResponse.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(error.message || `Failed to find user with email: ${email}`);
+    }
+    
+    const userResult = await userResponse.json();
+    const user = userResult.data;
+    
+    if (!user || !user.id) {
+        throw new Error(`User not found with email: ${email}`);
+    }
+    
+    // Then add member to collection
+    await addMemberToCollection({
+        collectionId,
+        memberId: user.id,
+        accessLevel
+    });
 }
 
 export const removeMemberFromCollection = async (collectionId: string, memberId: string): Promise<void> => {
