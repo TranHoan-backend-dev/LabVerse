@@ -247,38 +247,113 @@ public class PDFReaderActivity extends AppCompatActivity {
             .pageNumber(page)
             .build();
         
-        // Save với offline support - DÙNG PHẦN 11!
-        syncHelper.saveNote(note, "CREATE");
-        
-        // Display note overlay trên PDF
-        loadedNotes.add(note);
-        displayNoteOverlay(note);
-        
-        Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
+        // Try to create via API if online, otherwise save for offline sync
+        if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
+            // Create API request
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request = 
+                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
+            request.paperId = paperId;
+            request.collectionId = collectionId != null ? collectionId : "";
+            request.content = content;
+            request.coordinationX = (int) x;
+            request.coordinationY = (int) y;
+            request.pageNumber = page;
+            
+            // Call API
+            apiHandler.createNote(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>() {
+                @Override
+                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse response) {
+                    runOnUiThread(() -> {
+                        // Update note with server ID
+                        note.setId(response.id);
+                        loadedNotes.add(note);
+                        displayNoteOverlay(note);
+                        Toast.makeText(PDFReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        Log.e(TAG, "Error creating note via API: " + error);
+                        // Fallback to offline sync
+                        syncHelper.saveNote(note, "CREATE");
+                        loadedNotes.add(note);
+                        displayNoteOverlay(note);
+                        Toast.makeText(PDFReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        } else {
+            // Offline: save for sync later
+            syncHelper.saveNote(note, "CREATE");
+            loadedNotes.add(note);
+            displayNoteOverlay(note);
+            Toast.makeText(this, "Note saved (will sync when online)", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
      * Create highlight với offline support
      */
     private void createHighlight(String color, int page) {
-        // TODO: Get actual coordinates from user selection
-        // For now, using placeholder coordinates
+        // Get coordinates from current page center (can be improved with text selection)
+        // For now, using center of page as placeholder
+        long x = 200L; // Center X
+        long y = 300L; // Center Y
+        
         Highlight highlight = Highlight.builder()
             .id(UUID.randomUUID().toString())
             .colorCode(color)
-            .coordinationX(100L) // TODO: Get from selection
-            .coordinationY(200L) // TODO: Get from selection
+            .coordinationX(x)
+            .coordinationY(y)
             .pageNumber(page)
             .build();
         
-        // Save với offline support - DÙNG PHẦN 11!
-        syncHelper.saveHighlight(highlight, "CREATE");
-        
-        // Display highlight overlay trên PDF
-        loadedHighlights.add(highlight);
-        displayHighlightOverlay(highlight);
-        
-        Toast.makeText(this, "Text highlighted", Toast.LENGTH_SHORT).show();
+        // Try to create via API if online, otherwise save for offline sync
+        if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
+            // Create API request
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request = 
+                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
+            request.paperId = paperId;
+            request.collectionId = collectionId != null ? collectionId : "";
+            request.color = color;
+            request.coordinationX = (int) x;
+            request.coordinationY = (int) y;
+            request.pageNumber = page;
+            
+            // Call API
+            apiHandler.createHighlight(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>() {
+                @Override
+                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse response) {
+                    runOnUiThread(() -> {
+                        // Update highlight with server ID
+                        highlight.setId(response.id);
+                        loadedHighlights.add(highlight);
+                        displayHighlightOverlay(highlight);
+                        Toast.makeText(PDFReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        Log.e(TAG, "Error creating highlight via API: " + error);
+                        // Fallback to offline sync
+                        syncHelper.saveHighlight(highlight, "CREATE");
+                        loadedHighlights.add(highlight);
+                        displayHighlightOverlay(highlight);
+                        Toast.makeText(PDFReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        } else {
+            // Offline: save for sync later
+            syncHelper.saveHighlight(highlight, "CREATE");
+            loadedHighlights.add(highlight);
+            displayHighlightOverlay(highlight);
+            Toast.makeText(this, "Highlight saved (will sync when online)", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

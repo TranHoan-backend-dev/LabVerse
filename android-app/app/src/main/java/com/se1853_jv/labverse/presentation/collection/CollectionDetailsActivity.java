@@ -20,6 +20,7 @@ import com.google.android.material.button.MaterialButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -27,7 +28,9 @@ import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
+import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionPaperAdapter;
+import com.se1853_jv.labverse.presentation.paper.PDFReaderActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +108,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         adapter = new CollectionPaperAdapter();
         adapter.setOnStatusClickListener(paper -> showStatusPriorityBottomSheet(paper));
         adapter.setOnRemoveClickListener(paper -> showRemovePaperDialog(paper));
+        adapter.setOnPaperClickListener(paper -> openPDFReader(paper));
         
         // Set current user's access level in adapter
         AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
@@ -329,6 +333,54 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Open PDF Reader Activity when user clicks on a paper
+     */
+    private void openPDFReader(CollectionPaperDetailResponse paper) {
+        String paperId = paper.getPaperId();
+        if (paperId == null || paperId.isEmpty()) {
+            Toast.makeText(this, "Paper ID not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show loading indicator
+        Toast.makeText(this, "Loading paper...", Toast.LENGTH_SHORT).show();
+
+        // Fetch paper details to get PDF URL (dataUrl)
+        PaperApiHandler paperApiHandler = new PaperApiHandler(this);
+        paperApiHandler.getPaperDetails(paperId, new ApiCallback<PaperResearch>() {
+            @Override
+            public void onSuccess(PaperResearch paperResearch) {
+                runOnUiThread(() -> {
+                    String pdfUrl = paperResearch.getDataUrl();
+                    if (pdfUrl == null || pdfUrl.isEmpty()) {
+                        Toast.makeText(CollectionDetailsActivity.this,
+                                "PDF URL not available for this paper",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    // Open PDF Reader Activity
+                    Intent intent = new Intent(CollectionDetailsActivity.this, PDFReaderActivity.class);
+                    intent.putExtra("paperId", paperId);
+                    intent.putExtra("collectionId", collection.getId());
+                    intent.putExtra("pdfUrl", pdfUrl);
+                    startActivity(intent);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    android.util.Log.e(TAG, "Error loading paper details: " + error);
+                    Toast.makeText(CollectionDetailsActivity.this,
+                            "Failed to load paper: " + error,
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     @Override

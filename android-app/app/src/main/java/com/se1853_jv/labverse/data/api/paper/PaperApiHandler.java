@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.data.dto.response.PapersPageResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -143,29 +144,32 @@ public class PaperApiHandler {
         Log.d("PAPER_DATA", "  yearFrom=" + yearFrom);
         Log.d("PAPER_DATA", "  yearTo=" + yearTo);
         
-        Call<BaseJsonResponse<List<PaperResearch>>> call = apiService.getAllPapers(
+        Call<BaseJsonResponse<PapersPageResponse>> call = apiService.getAllPapers(
                 searchQuery, currentPage, pageSize, author, journal, yearFrom, yearTo);
         call.enqueue(new Callback<>() {
             @Override
-            public void onResponse(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Response<BaseJsonResponse<List<PaperResearch>>> response) {
+            public void onResponse(@NonNull Call<BaseJsonResponse<PapersPageResponse>> call, @NonNull Response<BaseJsonResponse<PapersPageResponse>> response) {
                 Log.d("PAPER_DATA", "Response received:");
                 Log.d("PAPER_DATA", "  isSuccessful: " + response.isSuccessful());
                 Log.d("PAPER_DATA", "  code: " + response.code());
                 Log.d("PAPER_DATA", "  message: " + response.message());
                 
                 if (response.isSuccessful()) {
-                    BaseJsonResponse<List<PaperResearch>> body = response.body();
+                    BaseJsonResponse<PapersPageResponse> body = response.body();
                     if (body != null) {
                         Log.d("PAPER_DATA", "Response body:");
                         Log.d("PAPER_DATA", "  status: " + body.getStatus());
                         Log.d("PAPER_DATA", "  message: " + body.getMessage());
                         
-                        var result = body.getData();
-                        if (result != null) {
+                        PapersPageResponse pageResponse = body.getData();
+                        if (pageResponse != null && pageResponse.getContent() != null) {
+                            List<PaperResearch> result = pageResponse.getContent();
                             Log.d("PAPER_DATA", "Papers fetched: " + result.size());
+                            Log.d("PAPER_DATA", "Total elements: " + pageResponse.getTotalElements());
+                            Log.d("PAPER_DATA", "Total pages: " + pageResponse.getTotalPages());
                             callback.onSuccess(new ArrayList<>(result));
                         } else {
-                            Log.w("PAPER_DATA", "Response data is null");
+                            Log.w("PAPER_DATA", "Response data or content is null");
                             callback.onSuccess(new ArrayList<>());
                         }
                     } else {
@@ -189,7 +193,7 @@ public class PaperApiHandler {
             }
 
             @Override
-            public void onFailure(@NonNull Call<BaseJsonResponse<List<PaperResearch>>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<BaseJsonResponse<PapersPageResponse>> call, @NonNull Throwable t) {
                 Log.e("PAPER_DATA", "API call failed", t);
                 Log.e("PAPER_DATA", "Failure message: " + t.getMessage());
                 if (t.getCause() != null) {

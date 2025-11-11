@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UploadPdfRequest implements Serializable {
-    private String dataUrl; // URL của PDF file trên Cloudinary
+    private String dataUrl; // URL của PDF file trên S3
     private String description;
     private List<String> keywords;
     private String title;

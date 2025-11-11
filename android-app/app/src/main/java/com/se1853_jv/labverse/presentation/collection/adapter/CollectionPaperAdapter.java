@@ -20,6 +20,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     private List<CollectionPaperDetailResponse> papers = new ArrayList<>();
     private OnStatusClickListener statusClickListener;
     private OnRemoveClickListener removeClickListener;
+    private OnPaperClickListener paperClickListener;
     private AccessLevel currentUserAccessLevel;
 
     public interface OnStatusClickListener {
@@ -30,12 +31,20 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
         void onRemoveClick(CollectionPaperDetailResponse paper);
     }
 
+    public interface OnPaperClickListener {
+        void onPaperClick(CollectionPaperDetailResponse paper);
+    }
+
     public void setOnStatusClickListener(OnStatusClickListener listener) {
         this.statusClickListener = listener;
     }
 
     public void setOnRemoveClickListener(OnRemoveClickListener listener) {
         this.removeClickListener = listener;
+    }
+
+    public void setOnPaperClickListener(OnPaperClickListener listener) {
+        this.paperClickListener = listener;
     }
 
     public void setCurrentUserAccessLevel(AccessLevel accessLevel) {
@@ -54,7 +63,7 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
     @Override
     public void onBindViewHolder(@NonNull PaperViewHolder holder, int position) {
         CollectionPaperDetailResponse paper = papers.get(position);
-        holder.bind(paper, statusClickListener, removeClickListener, currentUserAccessLevel);
+        holder.bind(paper, statusClickListener, removeClickListener, paperClickListener, currentUserAccessLevel);
     }
 
     @Override
@@ -86,13 +95,30 @@ public class CollectionPaperAdapter extends RecyclerView.Adapter<CollectionPaper
         }
 
         public void bind(CollectionPaperDetailResponse paper, OnStatusClickListener statusListener, 
-                        OnRemoveClickListener removeListener, AccessLevel currentUserAccessLevel) {
+                        OnRemoveClickListener removeListener, OnPaperClickListener paperListener,
+                        AccessLevel currentUserAccessLevel) {
             // Handle title
             String title = paper.getTitle();
             if (title == null || title.isEmpty() || title.equals("Unknown Paper")) {
                 title = "Loading paper details...";
             }
             textTitle.setText(title);
+            
+            // Set click listener on entire item view to open PDF reader
+            // Child views (chips, buttons) will consume their own clicks
+            itemView.setOnClickListener(v -> {
+                if (paperListener != null) {
+                    paperListener.onPaperClick(paper);
+                }
+            });
+            
+            // Make chips and buttons not clickable for parent (they handle their own clicks)
+            // This prevents the itemView click from firing when clicking on these views
+            chipStatus.setClickable(true);
+            chipPriority.setClickable(true);
+            if (buttonRemove.getVisibility() == View.VISIBLE) {
+                buttonRemove.setClickable(true);
+            }
             
             // Handle authors
             String authors = paper.getAuthors();

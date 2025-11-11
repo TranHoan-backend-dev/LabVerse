@@ -2,6 +2,7 @@ package com.se1853_jv.labverse.data.api.paper;
 
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.data.dto.response.PapersPageResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
@@ -16,7 +17,7 @@ public interface PaperApi {
     @GET("citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
     @GET("all")
-    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(
+    Call<BaseJsonResponse<PapersPageResponse>> getAllPapers(
             @Query(value = "search", encoded = true) String searchQuery,
             @Query("index") int currentPage,
             @Query("size") int pageSize,
