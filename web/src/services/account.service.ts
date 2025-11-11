@@ -1,4 +1,4 @@
-import { ACCOUNT_SERVICE_URL } from "@/type/constant.ts";
+import { ACCOUNT_SERVICE_PREDICATE, BASE_API_URL } from "@/type/constant";
 import type {
   RegisterRequest,
   LoginRequest,
@@ -9,6 +9,8 @@ import type {
   ChangePasswordRequest,
 } from "@/types/auth.types";
 import { getAuthHeaders, tokenStorage } from "@/utils/token";
+
+export const ACCOUNT_SERVICE_URL = `${BASE_API_URL}/${ACCOUNT_SERVICE_PREDICATE}` 
 
 /**
  * Register a new user
