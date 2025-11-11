@@ -99,18 +99,6 @@
                 android:textColor="@color/gray_500" />
         </LinearLayout>
 
-        <!-- Progress Bar (only visible when reading) -->
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="6dp"
-            android:layout_marginTop="12dp"
-            android:max="100"
-            android:progress="45"
-            android:progressTint="@color/third_green"
-            android:visibility="gone" />
-
         <!-- Action Buttons Row -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -162,5 +150,17 @@
                 android:contentDescription="@string/share"
                 app:tint="@color/gray_500" />
         </LinearLayout>
+
+        <!-- Progress Bar (only visible when reading) - at the bottom -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="12dp"
+            android:max="100"
+            android:progress="45"
+            android:progressTint="@color/third_green"
+            android:visibility="gone" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
