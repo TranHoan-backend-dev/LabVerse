@@ -43,23 +43,47 @@ export const getPaginatedPapers = async (
         yearFrom: string,
         yearTo: string,
     }) => {
-    const params = new URLSearchParams({
-        index: currentPage.toString(),
-        size: pageSize.toString(),
-        ...(kw ? { search: kw } : {}),
-        ...(filter?.author ? { author: filter.author } : {}),
-        ...(filter?.journal ? { journal: filter.journal } : {}),
-        ...(filter?.yearFrom ? { from: filter.yearFrom } : {}),
-        ...(filter?.yearTo ? { to: filter.yearTo } : {}),
-    });
+    try {
+        // Convert 1-based page to 0-based index for Spring Data
+        const pageIndex = Math.max(0, currentPage - 1);
+        
+        const params = new URLSearchParams({
+            index: pageIndex.toString(),
+            size: pageSize.toString(),
+            ...(kw ? { search: kw } : {}),
+            ...(filter?.author ? { author: filter.author } : {}),
+            ...(filter?.journal ? { journal: filter.journal } : {}),
+            ...(filter?.yearFrom ? { from: filter.yearFrom } : {}),
+            ...(filter?.yearTo ? { to: filter.yearTo } : {}),
+        });
 
-    const url = `http://localhost:8080/paper-service/papers/all?${params.toString()}`;
-    console.log(url);
-    const response = await fetch(url, { method: METHOD.GET.toString() })
-    console.log(await response)
-    const data = await response.json()
-    console.log(data)
-    return data
+        const url = `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/papers/all?${params.toString()}`;
+        const response = await fetch(url, { 
+            method: METHOD.GET.toString(),
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to fetch papers' }));
+            throw new Error(errorData.message || `Failed to fetch papers: ${response.statusText} (${response.status})`);
+        }
+
+        const data = await response.json();
+        
+        // Check if response has the expected structure
+        if (!data || data.status !== 200) {
+            throw new Error(data?.message || 'Invalid response from server');
+        }
+
+        return data;
+    } catch (error: any) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error(`Cannot connect to Paper Service. Please make sure the service is running.`);
+        }
+        throw error;
+    }
 }
 // </editor-fold>
 

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
+import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.ForgotPasswordRequest;
 import com.se1853_jv.labverse.data.dto.request.GoogleLoginRequest;
@@ -26,7 +27,7 @@ public class AuthApiHandler {
     private static final String TAG = "AuthApiHandler";
     // 10.0.2.2 = localhost của máy host khi chạy trên Android Emulator
     // Port 8081 = AccountService port
-    private static final String BASE_URL = "http://10.0.2.2:8081/api/auth/";
+    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL + "auth/" ;
     
     private final AuthApi authApi;
 

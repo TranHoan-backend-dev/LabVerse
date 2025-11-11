@@ -39,15 +39,16 @@ const Dashboard = () => {
         yearTo: '',
     });
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, error } = useQuery({
         queryKey: ['papers', user?.id, searchQuery, page],
         queryFn: async () => await getPaginatedPapers(page, pageSize, searchQuery),
         enabled: !!user,
+        retry: 1,
     });
 
-    const papers = data?.data.content ?? [];
-    const total = data?.data.totalElements ?? 0;
-    const totalPages = data?.data.pageable.pageSize ?? Math.max(1, Math.ceil(total / pageSize));
+    const papers = data?.data?.content ?? [];
+    const total = data?.data?.totalElements ?? 0;
+    const totalPages = data?.data?.totalPages ?? Math.max(1, Math.ceil(total / pageSize));
 
     const importMutation = useMutation({
         // TODO: xu ly import paper
@@ -297,6 +298,17 @@ const Dashboard = () => {
                         {isLoading ? (
                             <div className="flex justify-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-12">
+                                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-semibold mb-2">Error loading papers</h3>
+                                <p className="text-muted-foreground mb-4">
+                                    {error instanceof Error ? error.message : 'Failed to load papers. Please try again.'}
+                                </p>
+                                <Button onClick={() => window.location.reload()}>
+                                    Retry
+                                </Button>
                             </div>
                         ) : papers && papers.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
