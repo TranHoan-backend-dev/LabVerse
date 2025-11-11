@@ -29,7 +29,6 @@ import {
 import {BASE_API_URL} from "@/type/constant.ts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
-import {IdEncoder} from "@/utils/idEncoder.ts";
 
 const CollectionDetails = () => {
     const {id} = useParams<{id: string}>();
@@ -88,17 +87,8 @@ const CollectionDetails = () => {
     // Determine user's access level from members list or collection response
     const currentUserMember = useMemo(() => {
         if (!members || !user?.id) return null;
-        // memberId from API is encoded, need to decode to compare with raw user.id
-        return members.find(m => {
-            try {
-                // Decode memberId if it's encoded (doesn't contain dashes like UUID)
-                const decodedMemberId = m.memberId.includes('-') ? m.memberId : IdEncoder.decode(m.memberId);
-                return decodedMemberId === user.id;
-            } catch {
-                // If decoding fails, try direct comparison (might already be raw UUID)
-                return m.memberId === user.id;
-            }
-        });
+        // memberId from API is already encoded, compare directly with user.id
+        return members.find(m => m.memberId === user.id);
     }, [members, user?.id]);
 
     const userAccessLevel = collection?.currentUserAccessLevel || currentUserMember?.accessLevel;
@@ -155,7 +145,6 @@ const CollectionDetails = () => {
     // Filter out papers that are already in the collection
     const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
-        // Note: paper.id from getAllPapers is already encoded, paper.paperId in collection is also encoded
         const existingPaperIds = papers?.map(p => p.paperId) || [];
         return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
@@ -218,9 +207,6 @@ const CollectionDetails = () => {
     });
 
     const handleAddPaper = (paperId: string) => {
-        // Paper ID from getAllPapers is already encoded by paper service
-        // Collection service will decode it, then encode again to call paper service
-        console.log('Adding paper with ID:', paperId, 'Format:', paperId.includes('-') ? 'UUID' : 'Encoded');
         addPaperMutation.mutate(paperId);
     };
 
