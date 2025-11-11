@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     id("io.freefair.lombok") version "9.0.0"
@@ -9,13 +7,6 @@ android {
     namespace = "com.se1853_jv.labverse"
     compileSdk = 36
 
-    // Đọc AWS S3 credentials từ local.properties
-    val localProperties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { localProperties.load(it) }
-    }
-
     defaultConfig {
         applicationId = "com.se1853_jv.labverse"
         minSdk = 24
@@ -24,28 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Inject AWS S3 credentials vào BuildConfig từ local.properties
-        buildConfigField(
-            "String",
-            "AWS_ACCESS_KEY",
-            "\"${localProperties.getProperty("aws.access.key", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "AWS_SECRET_KEY",
-            "\"${localProperties.getProperty("aws.secret.key", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "AWS_REGION",
-            "\"${localProperties.getProperty("aws.region", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "AWS_S3_BUCKET",
-            "\"${localProperties.getProperty("aws.s3.bucket", "")}\""
-        )
     }
 
     buildTypes {
@@ -101,9 +70,6 @@ dependencies {
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
-    // AWS SDK for Android
-    implementation("com.amazonaws:aws-android-sdk-s3:2.72.0")
-    implementation("com.amazonaws:aws-android-sdk-core:2.72.0")
     // Force update evernote.android.job to fix PendingIntent FLAG_IMMUTABLE issue on Android 12+
     implementation("com.evernote:android-job:1.4.2") {
         exclude(group = "com.google.android.gms")

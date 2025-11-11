@@ -20,9 +20,19 @@ import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.net.Uri;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -265,5 +275,161 @@ public class PaperApiHandler {
                 callback.onError(t.getMessage());
             }
         });
+    }
+
+    /**
+     * Upload PDF file with metadata to backend
+     * @param context Android context (needed for content:// URIs)
+     * @param fileUri URI of the PDF file
+     * @param title Paper title
+     * @param authors Paper authors
+     * @param journal Paper journal
+     * @param publicationYear Publication year
+     * @param doi DOI (optional, can be null)
+     * @param description Description (optional, can be null)
+     * @param keywords List of keywords (optional, can be null)
+     * @param tags List of tags (optional, can be null)
+     * @param userId User ID
+     * @param callback Callback for result
+     */
+    public void uploadPdfWithFile(
+            Context context,
+            Uri fileUri,
+            String title,
+            String authors,
+            String journal,
+            int publicationYear,
+            String doi,
+            String description,
+            List<String> keywords,
+            List<String> tags,
+            String userId,
+            ApiCallback<Object> callback
+    ) {
+        Log.d("PAPER_UPLOAD", "uploadPdfWithFile: title=" + title + ", userId: " + userId);
+        
+        try {
+            // Convert URI to File
+            File file = getFileFromUri(context, fileUri);
+            if (file == null || !file.exists()) {
+                callback.onError("File does not exist or cannot be accessed");
+                return;
+            }
+            
+            // Create RequestBody for file
+            RequestBody fileRequestBody = RequestBody.create(
+                    MediaType.parse("application/pdf"),
+                    file
+            );
+            MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", file.getName(), fileRequestBody);
+            
+            // Create RequestBody for metadata
+            MediaType textPlain = MediaType.parse("text/plain");
+            RequestBody titleBody = RequestBody.create(textPlain, title);
+            RequestBody authorsBody = RequestBody.create(textPlain, authors);
+            RequestBody journalBody = RequestBody.create(textPlain, journal);
+            RequestBody publicationYearBody = RequestBody.create(textPlain, String.valueOf(publicationYear));
+            
+            // For optional fields, use empty string if null to avoid Retrofit issues with null RequestBody
+            RequestBody doiBody = RequestBody.create(textPlain, (doi != null && !doi.isEmpty()) ? doi : "");
+            RequestBody descriptionBody = RequestBody.create(textPlain, (description != null && !description.isEmpty()) ? description : "");
+            RequestBody keywordsBody = RequestBody.create(textPlain, (keywords != null && !keywords.isEmpty()) 
+                    ? String.join(",", keywords) : "");
+            RequestBody tagsBody = RequestBody.create(textPlain, (tags != null && !tags.isEmpty()) 
+                    ? String.join(",", tags) : "");
+            
+            // Call API
+            Call<BaseJsonResponse<Object>> call = apiService.uploadPdfWithFile(
+                    filePart,
+                    titleBody,
+                    authorsBody,
+                    journalBody,
+                    publicationYearBody,
+                    doiBody,
+                    descriptionBody,
+                    keywordsBody,
+                    tagsBody,
+                    userId
+            );
+            
+            call.enqueue(new Callback<>() {
+                @Override
+                public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Response<BaseJsonResponse<Object>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Log.d("PAPER_UPLOAD", "Paper uploaded successfully");
+                        callback.onSuccess(null);
+                    } else {
+                        String errorMessage = "Failed to upload paper";
+                        if (response.errorBody() != null) {
+                            try {
+                                errorMessage = response.errorBody().string();
+                            } catch (Exception e) {
+                                Log.e("PAPER_UPLOAD", "Error parsing error body", e);
+                            }
+                        }
+                        Log.e("PAPER_UPLOAD", "Server Error: " + errorMessage);
+                        callback.onError(errorMessage);
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call, @NonNull Throwable t) {
+                    Log.e("PAPER_UPLOAD", "API Error: " + t.getMessage());
+                    callback.onError(t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            Log.e("PAPER_UPLOAD", "Error preparing file upload: " + e.getMessage(), e);
+            callback.onError("Error preparing file upload: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Convert URI to File, handling both file:// and content:// URIs
+     */
+    private File getFileFromUri(Context context, Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+        
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            return null;
+        }
+        
+        if ("file".equals(scheme)) {
+            // File URI - return directly
+            String path = uri.getPath();
+            if (path != null) {
+                return new File(path);
+            }
+        } else if ("content".equals(scheme)) {
+            // Content URI - copy to temp file
+            try {
+                InputStream inputStream = context.getContentResolver().openInputStream(uri);
+                if (inputStream == null) {
+                    return null;
+                }
+                
+                File tempFile = new File(context.getCacheDir(), "upload_" + System.currentTimeMillis() + ".pdf");
+                FileOutputStream outputStream = new FileOutputStream(tempFile);
+                
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                
+                outputStream.close();
+                inputStream.close();
+                
+                return tempFile;
+            } catch (IOException e) {
+                Log.e("PAPER_UPLOAD", "Error copying content URI to file", e);
+                return null;
+            }
+        }
+        
+        return null;
     }
 }

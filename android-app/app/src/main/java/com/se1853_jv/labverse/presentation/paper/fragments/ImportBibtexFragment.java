@@ -37,8 +37,6 @@ import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.CrossRefApiHandler;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
-import com.se1853_jv.labverse.data.service.s3.S3Service;
-import com.se1853_jv.labverse.data.service.s3.S3Service.UploadCallback;
 import com.se1853_jv.labverse.data.service.unpaywall.UnpaywallService;
 import com.se1853_jv.labverse.data.utils.ParseFileUtils;
 import com.se1853_jv.labverse.data.utils.SessionManager;
@@ -60,7 +58,6 @@ public class ImportBibtexFragment extends Fragment {
     ActivityResultLauncher<Intent> filePickerLauncher;
     List<BibEntry> entries;
     final List<BibEntry> selectedEntries; // Entries được chọn để import
-    final S3Service s3Service;
     final UnpaywallService unpaywallService;
     final String TAG_NAME = "ImportBibtexFragment";
     View view;
@@ -70,7 +67,6 @@ public class ImportBibtexFragment extends Fragment {
     public ImportBibtexFragment() {
         this.entries = new ArrayList<>();
         this.selectedEntries = new ArrayList<>();
-        this.s3Service = new S3Service();
         this.unpaywallService = new UnpaywallService();
     }
 
@@ -484,25 +480,6 @@ public class ImportBibtexFragment extends Fragment {
             }
         });
         return uri.get();
-    }
-
-    private void uploadPdfToS3(String doi) {
-        var uri = getPdfLink("10.34190/iccws.20.1.3366", view);
-        Log.d(TAG_NAME, "pdf link: " + uri);
-        if (uri != null) {
-            s3Service.uploadPdfToS3(requireContext(), Uri.parse(uri), new UploadCallback() {
-
-                @Override
-                public void onSuccess(String downloadUrl) {
-                    Log.d(TAG_NAME, "download url successfully: " + downloadUrl);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    requireActivity().runOnUiThread(() -> Toast.makeText(view.getContext(), "Upload không thành công", Toast.LENGTH_SHORT).show());
-                }
-            });
-        }
     }
     // </editor-fold>
 }
