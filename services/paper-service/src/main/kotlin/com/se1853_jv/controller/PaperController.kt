@@ -106,7 +106,7 @@ class PaperController(
     fun getAllPapers(
         @RequestParam(value = "search", required = false) searchQuery: String?,
         @RequestParam(value = "index", defaultValue = "0") index: Int,
-        @RequestParam(value = "size", required = false, defaultValue = "50") pageSize: Int,
+        @RequestParam(value = "size", required = false) pageSize: Int?,
         // filter
         @RequestParam(value = "author", required = false) author: String?,
         @RequestParam(value = "journal", required = false) journal: String?,

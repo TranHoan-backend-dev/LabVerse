@@ -11,7 +11,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 public interface PaperApi {
-    @GET("papers/details")
+    @GET("details")
     Call<BaseJsonResponse<PaperResearch>> getPaperDetails(@Query("id") String id);
     @GET("papers/citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);

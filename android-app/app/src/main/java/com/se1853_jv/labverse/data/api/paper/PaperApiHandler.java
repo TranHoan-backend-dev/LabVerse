@@ -76,7 +76,7 @@ public class PaperApiHandler {
         var client = clientBuilder.build();
 
         var retrofit = new Retrofit.Builder()
-                .baseUrl(PAPER_ENDPOINT_URL)
+                .baseUrl(PAPER_ENDPOINT_URL.concat("papers/"))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();

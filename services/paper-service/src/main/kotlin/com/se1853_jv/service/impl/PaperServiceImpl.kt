@@ -120,8 +120,8 @@ class PaperServiceImpl(
         if (!req.tags.isNullOrEmpty()) {
             req.tags.forEach {
                 val tag = tagRepo.findByName(it)
-                if (tag != null && tag.id != null) {
-                    tagIds.add(tag.id)
+                tag?.id?.let { tagId ->
+                    tagIds.add(tagId)
                 }
             }
         }
