@@ -9,6 +9,7 @@ import com.se1853_jv.service.boundary.ReferenceService
 import com.se1853_jv.service.boundary.PaperService
 import jakarta.validation.Valid
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -27,7 +28,7 @@ class PaperController(
     private val referenceService: ReferenceService,
     private val encoder: EncoderService,
     private val grobid: GrobidService,
-    private val s3Service: S3Service
+    @Autowired(required = false) private val s3Service: S3Service?
 ) {
     @GetMapping("/details")
     fun getDetails(@RequestParam("id") data: String): ResponseEntity<WrapperApiResponse> {
@@ -124,6 +125,18 @@ class PaperController(
         }
         
         try {
+            // Check if S3Service is available
+            if (s3Service == null) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                    WrapperApiResponse(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        "S3 service is not configured. Please configure AWS S3 credentials.",
+                        null,
+                        LocalDateTime.now()
+                    )
+                )
+            }
+            
             // Upload file to S3
             val s3Url = s3Service.uploadPdf(file.inputStream, file.contentType ?: "application/pdf")
             logger.info { "File uploaded to S3: $s3Url" }

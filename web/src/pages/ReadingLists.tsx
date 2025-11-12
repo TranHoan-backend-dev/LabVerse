@@ -1,17 +1,28 @@
 import {useState} from "react";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
-import {supabase} from "@/integrations/supabase/client";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
-import {Plus, BookMarked} from "lucide-react";
+import {Plus, BookMarked, Trash2, MoreVertical} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
 import Header from "@/pages/Header.tsx";
+import {
+    createReadingList,
+    getReadingListsByUser,
+    deleteReadingList,
+    type ReadingListResponse
+} from "@/services/reading-list.service";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ReadingLists = () => {
     const {user} = useAuth();
@@ -22,32 +33,20 @@ const ReadingLists = () => {
     const {data: readingLists, isLoading} = useQuery({
         queryKey: ['reading-lists', user?.id],
         queryFn: async () => {
-            const {data, error} = await supabase
-                .from('reading_lists')
-                .select(`
-          *,
-          reading_list_papers(count)
-        `)
-                .eq('user_id', user?.id)
-                .order('created_at', {ascending: false});
-
-            if (error) throw error;
-            return data;
+            if (!user?.id) throw new Error('User not logged in');
+            return await getReadingListsByUser(user.id);
         },
         enabled: !!user,
     });
 
     const createMutation = useMutation({
         mutationFn: async () => {
-            const {error} = await supabase
-                .from('reading_lists')
-                .insert({
-                    name: newList.name,
-                    description: newList.description,
-                    user_id: user?.id,
-                });
-
-            if (error) throw error;
+            if (!user?.id) throw new Error('User not logged in');
+            return await createReadingList({
+                name: newList.name,
+                description: newList.description || undefined,
+                userId: user.id
+            });
         },
         onSuccess: () => {
             toast.success('Reading list created successfully');
@@ -55,10 +54,29 @@ const ReadingLists = () => {
             setIsCreateOpen(false);
             setNewList({name: '', description: ''});
         },
-        onError: () => {
-            toast.error('Failed to create reading list');
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to create reading list');
         },
     });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (listId: string) => {
+            return await deleteReadingList(listId);
+        },
+        onSuccess: () => {
+            toast.success('Reading list deleted successfully');
+            queryClient.invalidateQueries({queryKey: ['reading-lists']});
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to delete reading list');
+        },
+    });
+
+    const handleDelete = (list: ReadingListResponse) => {
+        if (window.confirm(`Are you sure you want to delete "${list.name}"? This action cannot be undone.`)) {
+            deleteMutation.mutate(list.id);
+        }
+    };
 
     return (
         <>
@@ -150,14 +168,28 @@ const ReadingLists = () => {
                             </div>
                         ) : readingLists && readingLists.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {readingLists.map((list: any) => (
+                                {readingLists.map((list: ReadingListResponse) => (
                                     <Card key={list.id}
                                           className="shadow-custom-sm hover:shadow-custom-md transition-shadow">
                                         <CardHeader>
                                             <CardTitle className="flex items-start justify-between">
-                                                <span className="line-clamp-2">{list.name}</span>
-                                                <BookMarked
-                                                    className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2"/>
+                                                <span className="line-clamp-2 flex-1">{list.name}</span>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                            <MoreVertical className="h-4 w-4"/>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem 
+                                                            onClick={() => handleDelete(list)}
+                                                            className="text-destructive"
+                                                        >
+                                                            <Trash2 className="h-4 w-4 mr-2"/>
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </CardTitle>
                                             {list.description && (
                                                 <CardDescription className="line-clamp-2">
@@ -167,10 +199,13 @@ const ReadingLists = () => {
                                         </CardHeader>
                                         <CardContent>
                                             <div className="text-sm text-muted-foreground">
-                                                <p>Papers: {list.reading_list_papers?.[0]?.count || 0}</p>
-                                                <p className="text-xs mt-1">
-                                                    Created {new Date(list.created_at).toLocaleDateString()}
-                                                </p>
+                                                <p>Papers: {list.paperIds?.length || 0}</p>
+                                                <p>Members: {list.userIds?.length || 0}</p>
+                                                {list.createdAt && (
+                                                    <p className="text-xs mt-1">
+                                                        Created {new Date(list.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                )}
                                             </div>
                                         </CardContent>
                                     </Card>
