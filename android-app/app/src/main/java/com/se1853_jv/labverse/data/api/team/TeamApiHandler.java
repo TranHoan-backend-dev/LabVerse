@@ -57,6 +57,9 @@ public class TeamApiHandler {
             Request.Builder requestBuilder = original.newBuilder();
             if (token != null) {
                 requestBuilder.header("Authorization", token);
+                Log.d(TAG, "Adding Authorization header: " + (token.length() > 20 ? token.substring(0, 20) + "..." : token));
+            } else {
+                Log.w(TAG, "No token available for request: " + original.url());
             }
             
             return chain.proceed(requestBuilder.build());
@@ -96,13 +99,24 @@ public class TeamApiHandler {
                     Log.d(TAG, "Teams fetched: " + (result != null && result.getContent() != null ? result.getContent().size() : 0));
                 } else {
                     String errorMessage = "Failed to fetch teams";
+                    int statusCode = response.code();
+                    Log.e(TAG, "Request failed with status code: " + statusCode);
+                    
                     if (response.errorBody() != null) {
                         try {
                             errorMessage = response.errorBody().string();
+                            Log.e(TAG, "Error response body: " + errorMessage);
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing error body", e);
                         }
                     }
+                    
+                    // Check if it's an authentication error
+                    if (statusCode == 401 || statusCode == 403) {
+                        errorMessage = "Authentication failed. Please login again.";
+                        Log.e(TAG, "Authentication error - token may be expired or invalid");
+                    }
+                    
                     Log.e(TAG, "Server Error: " + errorMessage);
                     callback.onError(errorMessage);
                 }

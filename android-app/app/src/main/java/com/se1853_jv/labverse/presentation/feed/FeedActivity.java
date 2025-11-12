@@ -33,7 +33,6 @@ import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.feed.adapter.TabAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.DiscoveryItem;
 import com.se1853_jv.labverse.presentation.paper.ImportPaperManuallyActivity;
-import com.se1853_jv.labverse.presentation.team.TeamListActivity;
 
 import java.util.List;
 
@@ -112,68 +111,14 @@ public class FeedActivity extends BaseActivity {
         mediator.attach();
 
         // Handle FAB visibility based on current tab
-        // Add tab selection listener to intercept Teams tab clicks
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                try {
-                    int position = tab.getPosition();
-                    if (position == 2) { // Teams tab
-                        // Temporarily detach mediator to prevent ViewPager sync
-                        try {
-                            if (mediator != null) {
-                                mediator.detach();
-                            }
-                        } catch (Exception e) {
-                            Log.e("FeedActivity", "Error detaching mediator: " + e.getMessage());
-                        }
-
-                        // Get current page before navigation
-                        final int currentPage;
-                        if (pager != null) {
-                            int tempPage = pager.getCurrentItem();
-                            currentPage = (tempPage == 2) ? 0 : tempPage; // If already on Teams, go to Discovery
-                        } else {
-                            currentPage = 0;
-                        }
-
-                        // Navigate to TeamListActivity
-                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
-                        startActivity(intent);
-
-                        // Reset ViewPager and tab selection after navigation
-                        if (tabLayout != null && pager != null) {
-                            final ViewPager2 finalPager = pager;
-                            final TabLayout finalTabLayout = tabLayout;
-                            final TabLayoutMediator finalMediator = mediator;
-
-                            tabLayout.post(() -> {
-                                try {
-                                    // Reset ViewPager to previous page
-                                    if (finalPager != null) {
-                                        finalPager.setCurrentItem(currentPage, false);
-                                    }
-
-                                    // Reset tab selection to previous tab
-                                    if (finalTabLayout != null) {
-                                        TabLayout.Tab prevTab = finalTabLayout.getTabAt(currentPage);
-                                        if (prevTab != null) {
-                                            finalTabLayout.selectTab(prevTab, false);
-                                        }
-                                    }
-
-                                    // Reattach mediator
-                                    if (finalMediator != null) {
-                                        finalMediator.attach();
-                                    }
-                                } catch (Exception e) {
-                                    Log.e("FeedActivity", "Error resetting tabs: " + e.getMessage());
-                                }
-                            });
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e("FeedActivity", "Error in onTabSelected: " + e.getMessage(), e);
+                int position = tab.getPosition();
+                // Hide FAB when on Teams tab (position 2)
+                FloatingActionButton fab = findViewById(R.id.fabImportPaper);
+                if (fab != null) {
+                    fab.setVisibility(position == 2 ? View.GONE : View.VISIBLE);
                 }
             }
 
@@ -184,66 +129,18 @@ public class FeedActivity extends BaseActivity {
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                try {
-                    int position = tab.getPosition();
-                    if (position == 2) { // Teams tab
-                        // Navigate to TeamListActivity when reselected
-                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
-                        startActivity(intent);
-                    }
-                } catch (Exception e) {
-                    Log.e("FeedActivity", "Error in onTabReselected: " + e.getMessage(), e);
-                }
+                // Do nothing
             }
         });
 
-        // Prevent ViewPager from swiping to Teams tab (position 2)
+        // Handle page changes
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                try {
-                    if (position == 2) { // Teams tab
-                        // Temporarily detach mediator
-                        try {
-                            if (mediator != null) {
-                                mediator.detach();
-                            }
-                        } catch (Exception e) {
-                            Log.e("FeedActivity", "Error detaching mediator in page callback: " + e.getMessage());
-                        }
-
-                        // Navigate to TeamListActivity
-                        Intent intent = new Intent(FeedActivity.this, TeamListActivity.class);
-                        startActivity(intent);
-
-                        // Go back to previous page
-                        if (pager != null && tabLayout != null) {
-                            pager.post(() -> {
-                                try {
-                                    if (pager != null) {
-                                        pager.setCurrentItem(0, false);
-                                    }
-
-                                    // Reset tab selection
-                                    if (tabLayout != null) {
-                                        TabLayout.Tab prevTab = tabLayout.getTabAt(0);
-                                        if (prevTab != null) {
-                                            tabLayout.selectTab(prevTab, false);
-                                        }
-                                    }
-
-                                    // Reattach mediator
-                                    if (mediator != null) {
-                                        mediator.attach();
-                                    }
-                                } catch (Exception e) {
-                                    Log.e("FeedActivity", "Error resetting in page callback: " + e.getMessage());
-                                }
-                            });
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e("FeedActivity", "Error in onPageSelected: " + e.getMessage(), e);
+                // Hide FAB when on Teams tab (position 2)
+                FloatingActionButton fab = findViewById(R.id.fabImportPaper);
+                if (fab != null) {
+                    fab.setVisibility(position == 2 ? View.GONE : View.VISIBLE);
                 }
             }
         });

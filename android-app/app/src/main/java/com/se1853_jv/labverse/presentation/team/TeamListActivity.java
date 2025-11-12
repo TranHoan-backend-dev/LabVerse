@@ -9,9 +9,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -37,7 +37,7 @@ import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TeamListActivity extends AppCompatActivity {
+public class TeamListActivity extends BaseActivity {
 
     private static final String TAG = "TeamListActivity";
 
@@ -66,6 +66,12 @@ public class TeamListActivity extends AppCompatActivity {
             v.setPadding(statusBar.left, statusBar.top, statusBar.right, statusBar.bottom);
             return insets;
         });
+
+        // Setup bottom navigation bar
+        View rootView = findViewById(android.R.id.content);
+        if (rootView instanceof android.view.ViewGroup) {
+            setupBottomNavbar((android.view.ViewGroup) rootView, R.id.bottomNav);
+        }
 
         // Initialize API handler and database
         teamApiHandler = new TeamApiHandler(this);
@@ -174,10 +180,32 @@ public class TeamListActivity extends AppCompatActivity {
             public void onError(String error) {
                 isLoading = false;
                 Log.e(TAG, "Error loading teams from API: " + error);
-                Toast.makeText(TeamListActivity.this, "Failed to load teams: " + error, Toast.LENGTH_SHORT).show();
-
-                // Try loading from database as fallback
-                loadTeamsFromDatabase();
+                
+                // Check if it's an authentication error
+                if (error != null && (error.contains("Authentication failed") || 
+                                     error.contains("401") || 
+                                     error.contains("403"))) {
+                    runOnUiThread(() -> {
+                        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(TeamListActivity.this);
+                        builder.setTitle("Authentication Required");
+                        builder.setMessage("Your session has expired. Please login again to continue.");
+                        builder.setPositiveButton("OK", (dialog, which) -> {
+                            // Try loading from database as fallback
+                            loadTeamsFromDatabase();
+                        });
+                        builder.setCancelable(false);
+                        builder.show();
+                    });
+                } else {
+                    // For other errors, show toast and try database fallback
+                    runOnUiThread(() -> {
+                        Toast.makeText(TeamListActivity.this, 
+                            "Failed to load teams. Showing cached data.", 
+                            Toast.LENGTH_LONG).show();
+                    });
+                    // Try loading from database as fallback
+                    loadTeamsFromDatabase();
+                }
             }
         });
     }

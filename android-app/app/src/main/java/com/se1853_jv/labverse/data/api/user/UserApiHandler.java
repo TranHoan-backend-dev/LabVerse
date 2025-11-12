@@ -27,7 +27,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApiHandler {
     private static final String TAG = "UserApiHandler";
-    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL + "users/";
+    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL;
     
     private final UserApi userApi;
     private final SessionManager sessionManager;
@@ -60,6 +60,8 @@ public class UserApiHandler {
                 .addInterceptor(logging)
                 .build();
 
+        Log.d(TAG, "UserApiHandler BASE_URL: " + BASE_URL);
+        
         var retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
