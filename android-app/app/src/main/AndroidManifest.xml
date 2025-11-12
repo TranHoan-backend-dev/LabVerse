@@ -53,7 +53,7 @@
             android:exported="true"
             tools:targetApi="34" />
         <activity
-            android:name=".presentation.paper.PDFReaderActivity"
+            android:name=".presentation.paper.PdfReaderActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize"
             android:windowSoftInputMode="adjustResize" />
