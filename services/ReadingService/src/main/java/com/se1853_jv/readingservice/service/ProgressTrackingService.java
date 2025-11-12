@@ -23,3 +23,8 @@ public interface ProgressTrackingService {
      */
     PaperProgressResponse getPaperProgress(String collectionId, String paperId);
 }
+
+
+
+
+

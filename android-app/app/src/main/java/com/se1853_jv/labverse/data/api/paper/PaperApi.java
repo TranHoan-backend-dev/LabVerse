@@ -2,11 +2,14 @@ package com.se1853_jv.labverse.data.api.paper;
 
 import com.se1853_jv.labverse.data.dto.request.UploadPdfRequest;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
+import com.se1853_jv.labverse.data.dto.response.PapersPageResponse;
 import com.se1853_jv.labverse.domain.infrastructure.citation.model.Citation;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -16,7 +19,7 @@ public interface PaperApi {
     @GET("citation")
     Call<BaseJsonResponse<List<Citation>>> getCitationOfPaper(@Query("id") String id);
     @GET("all")
-    Call<BaseJsonResponse<List<PaperResearch>>> getAllPapers(
+    Call<BaseJsonResponse<PapersPageResponse>> getAllPapers(
             @Query(value = "search", encoded = true) String searchQuery,
             @Query("index") int currentPage,
             @Query("size") int pageSize,
@@ -34,4 +37,19 @@ public interface PaperApi {
 
     @POST("pdf/upload")
     Call<BaseJsonResponse<Object>> uploadPdf(@Body UploadPdfRequest request, @Header("X-User-Id") String userId);
+
+    @Multipart
+    @POST("pdf/upload-with-file")
+    Call<BaseJsonResponse<Object>> uploadPdfWithFile(
+            @Part MultipartBody.Part file,
+            @Part("title") RequestBody title,
+            @Part("authors") RequestBody authors,
+            @Part("journal") RequestBody journal,
+            @Part("publicationYear") RequestBody publicationYear,
+            @Part("doi") RequestBody doi,
+            @Part("description") RequestBody description,
+            @Part("keywords") RequestBody keywords,
+            @Part("tags") RequestBody tags,
+            @Header("X-User-Id") String userId
+    );
 }

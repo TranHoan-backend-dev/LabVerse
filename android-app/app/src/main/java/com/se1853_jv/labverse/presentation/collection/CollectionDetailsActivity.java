@@ -20,6 +20,7 @@ import com.google.android.material.button.MaterialButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.collection.CollectionApiHandler;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.dto.request.CollectionPaperRequest;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperDetailResponse;
 import com.se1853_jv.labverse.data.dto.response.CollectionPaperResponse;
@@ -27,7 +28,9 @@ import com.se1853_jv.labverse.data.dto.response.CollectionResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
+import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionPaperAdapter;
+import com.se1853_jv.labverse.presentation.paper.PDFReaderActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,8 +106,11 @@ public class CollectionDetailsActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         adapter = new CollectionPaperAdapter();
-        adapter.setOnStatusClickListener(paper -> showStatusPriorityBottomSheet(paper));
+        // Status is now read-only (calculated automatically), so no status click listener
+        // Only priority can be changed (by AUTHOR only)
+        adapter.setOnPriorityClickListener(paper -> showPriorityBottomSheet(paper));
         adapter.setOnRemoveClickListener(paper -> showRemovePaperDialog(paper));
+        adapter.setOnPaperClickListener(paper -> openPDFReader(paper));
         
         // Set current user's access level in adapter
         AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
@@ -114,7 +120,19 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         recyclerPapers.setAdapter(adapter);
     }
 
-    private void showStatusPriorityBottomSheet(CollectionPaperDetailResponse paper) {
+    /**
+     * Show bottom sheet to change priority only (status is now read-only, calculated automatically)
+     * Only AUTHOR can change priority
+     */
+    private void showPriorityBottomSheet(CollectionPaperDetailResponse paper) {
+        AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
+        boolean isAuthor = currentUserAccessLevel == AccessLevel.AUTHOR;
+        
+        if (!isAuthor) {
+            Toast.makeText(this, "Only collection authors can change paper priority", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View bottomSheetView = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_paper_status, null);
         bottomSheetDialog.setContentView(bottomSheetView);
@@ -123,17 +141,9 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         Spinner spinnerPriority = bottomSheetView.findViewById(R.id.spinner_priority);
         MaterialButton buttonSave = bottomSheetView.findViewById(R.id.button_save);
 
-        // Setup Status spinner
-        String[] statuses = {"ToRead", "Reading", "Finished"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerStatus.setAdapter(statusAdapter);
-        
-        // Set current status
-        String currentStatus = paper.getStatus() != null ? paper.getStatus() : "ToRead";
-        int statusPosition = Arrays.asList(statuses).indexOf(currentStatus);
-        if (statusPosition >= 0) {
-            spinnerStatus.setSelection(statusPosition);
+        // Hide status spinner (status is now read-only, calculated automatically)
+        if (spinnerStatus != null) {
+            spinnerStatus.setVisibility(View.GONE);
         }
 
         // Setup Priority spinner
@@ -149,39 +159,17 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             spinnerPriority.setSelection(priorityPosition);
         }
 
-        // Disable priority spinner for non-AUTHOR users (only AUTHOR can set priority)
-        AccessLevel currentUserAccessLevel = collection.getCurrentUserAccessLevel();
-        boolean isAuthor = currentUserAccessLevel == AccessLevel.AUTHOR;
-        
-        if (!isAuthor) {
-            spinnerPriority.setEnabled(false);
-            spinnerPriority.setAlpha(0.5f); // Visual indication of disabled state
-            TextView priorityLabel = bottomSheetView.findViewById(R.id.text_priority_label);
-            if (priorityLabel != null) {
-                priorityLabel.setAlpha(0.5f);
-            }
-        }
-
         buttonSave.setOnClickListener(v -> {
-            String newStatus = (String) spinnerStatus.getSelectedItem();
+            String selectedPriority = (String) spinnerPriority.getSelectedItem();
             String newPriority = null;
             
-            // Only send priority if user is AUTHOR and priority is being changed
-            if (isAuthor && spinnerPriority.isEnabled()) {
-                String selectedPriority = (String) spinnerPriority.getSelectedItem();
-                // Only send priority if it's different from current
-                if (selectedPriority != null && !selectedPriority.equals(currentPriority)) {
-                    newPriority = selectedPriority;
-                } else {
-                    // Don't send priority if it hasn't changed (backend will keep current)
-                    newPriority = null;
-                }
-            } else {
-                // For non-AUTHOR users, don't send priority (backend will keep current)
-                newPriority = null;
+            // Only send priority if it's different from current
+            if (selectedPriority != null && !selectedPriority.equals(currentPriority)) {
+                newPriority = selectedPriority;
             }
             
-            updatePaperStatus(paper, newStatus, newPriority);
+            // Status is not sent anymore (it's calculated automatically)
+            updatePaperPriority(paper, newPriority);
             bottomSheetDialog.dismiss();
         });
 
@@ -232,7 +220,10 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    private void updatePaperStatus(CollectionPaperDetailResponse paper, String status, String priority) {
+    /**
+     * Update paper priority only (status is now calculated automatically, read-only)
+     */
+    private void updatePaperPriority(CollectionPaperDetailResponse paper, String priority) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             return;
@@ -246,9 +237,8 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         request.setCollectionId(collection.getId());
         request.setPaperId(paper.getPaperId());
         request.setUserId(userId); // Add userId for authorization check
-        request.setStatus(status);
-        // Only send priority if it's being changed (for AUTHOR) or keep current priority
-        // Backend will handle: if priority is null or same as current, it won't update priority
+        // Status is not sent - it's calculated automatically by backend
+        // Only send priority if it's being changed
         request.setPriority(priority);
 
         apiHandler.updatePaperStatus(request, new ApiCallback<CollectionPaperResponse>() {
@@ -256,7 +246,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             public void onSuccess(CollectionPaperResponse response) {
                 runOnUiThread(() -> {
                     Toast.makeText(CollectionDetailsActivity.this,
-                            "Paper status updated successfully",
+                            "Paper priority updated successfully",
                             Toast.LENGTH_SHORT).show();
                     // Refresh papers list
                     loadPapers();
@@ -266,14 +256,14 @@ public class CollectionDetailsActivity extends AppCompatActivity {
             @Override
             public void onError(String error) {
                 runOnUiThread(() -> {
-                    android.util.Log.e(TAG, "Error updating paper status: " + error);
+                    android.util.Log.e(TAG, "Error updating paper priority: " + error);
                     String errorMessage = error;
                     // Check if it's an authorization error
                     if (error != null && (error.contains("Read-only") || error.contains("Only collection authors"))) {
                         errorMessage = "You don't have permission to perform this action. " + error;
                     }
                     Toast.makeText(CollectionDetailsActivity.this,
-                            "Failed to update status: " + errorMessage,
+                            "Failed to update priority: " + errorMessage,
                             Toast.LENGTH_LONG).show();
                 });
             }
@@ -293,9 +283,17 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                     papers.clear();
                     if (response != null) {
                         papers.addAll(response);
+                        // Log status for debugging
+                        for (CollectionPaperDetailResponse paper : response) {
+                            android.util.Log.d(TAG, "Paper loaded - paperId: " + paper.getPaperId() + 
+                                ", status: " + paper.getStatus() + ", title: " + paper.getTitle());
+                        }
                     }
                     adapter.setPapers(papers);
                     updateEmptyState();
+                    
+                    // Load reading progress from database
+                    loadReadingProgressForPapers();
                 });
             }
 
@@ -310,6 +308,56 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+    
+    /**
+     * Load reading progress from ReadingWorkflow database for all papers in collection
+     */
+    private void loadReadingProgressForPapers() {
+        if (papers == null || papers.isEmpty()) {
+            return;
+        }
+        
+        // Get user ID
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+        
+        if (userId == null) {
+            return;
+        }
+        
+        // Get workflow repository
+        var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+        var workflowRepository = db.readingWorkflowRepository();
+        
+        // Load reading progress for each paper on background thread
+        new Thread(() -> {
+            try {
+                String collectionId = collection.getId();
+                java.util.Map<String, Integer> progressMap = new java.util.HashMap<>();
+                
+                for (CollectionPaperDetailResponse paper : papers) {
+                    try {
+                        com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow workflow = 
+                            workflowRepository.getByCompositeKey(userId, paper.getPaperId(), collectionId);
+                        
+                        if (workflow != null && workflow.getProgress() != null) {
+                            progressMap.put(paper.getPaperId(), workflow.getProgress());
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.e(TAG, "Error loading progress for paper: " + paper.getPaperId(), e);
+                    }
+                }
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    adapter.setPaperProgressData(progressMap);
+                });
+                
+            } catch (Exception e) {
+                android.util.Log.e(TAG, "Error loading reading progress", e);
+            }
+        }).start();
     }
 
     private void updateEmptyState() {
@@ -331,11 +379,72 @@ public class CollectionDetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Open PDF Reader Activity when user clicks on a paper
+     */
+    private void openPDFReader(CollectionPaperDetailResponse paper) {
+        String paperId = paper.getPaperId();
+        if (paperId == null || paperId.isEmpty()) {
+            Toast.makeText(this, "Paper ID not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show loading indicator
+        Toast.makeText(this, "Loading paper...", Toast.LENGTH_SHORT).show();
+
+        // Fetch paper details to get PDF URL (dataUrl)
+        PaperApiHandler paperApiHandler = new PaperApiHandler(this);
+        paperApiHandler.getPaperDetails(paperId, new ApiCallback<PaperResearch>() {
+            @Override
+            public void onSuccess(PaperResearch paperResearch) {
+                runOnUiThread(() -> {
+                    String pdfUrl = paperResearch.getDataUrl();
+                    if (pdfUrl == null || pdfUrl.isEmpty()) {
+                        Toast.makeText(CollectionDetailsActivity.this,
+                                "PDF URL not available for this paper",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    // Open PDF Reader Activity
+                    Intent intent = new Intent(CollectionDetailsActivity.this, PDFReaderActivity.class);
+                    intent.putExtra("paperId", paperId);
+                    String collectionIdValue = collection != null && collection.getId() != null ? collection.getId() : "";
+                    intent.putExtra("collectionId", collectionIdValue);
+                    intent.putExtra("pdfUrl", pdfUrl);
+                    android.util.Log.d(TAG, "Opening PDF Reader with paperId=" + paperId + ", collectionId=" + collectionIdValue);
+                    startActivity(intent);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    android.util.Log.e(TAG, "Error loading paper details: " + error);
+                    Toast.makeText(CollectionDetailsActivity.this,
+                            "Failed to load paper: " + error,
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100 && resultCode == RESULT_OK) {
             // Refresh papers list after adding paper
+            loadPapers();
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload papers from API to update status and reading progress
+        // Backend automatically recalculates status when getPapersInCollection is called
+        // So we just need to reload the papers list
+        if (collection != null && collection.getId() != null) {
             loadPapers();
         }
     }

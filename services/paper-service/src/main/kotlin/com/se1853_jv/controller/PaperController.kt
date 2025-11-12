@@ -4,6 +4,7 @@ import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.WrapperApiResponse
 import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.GrobidService
+import com.se1853_jv.service.S3Service
 import com.se1853_jv.service.boundary.ReferenceService
 import com.se1853_jv.service.boundary.PaperService
 import jakarta.validation.Valid
@@ -25,7 +26,8 @@ class PaperController(
     private val paperService: PaperService,
     private val referenceService: ReferenceService,
     private val encoder: EncoderService,
-    private val grobid: GrobidService
+    private val grobid: GrobidService,
+    private val s3Service: S3Service
 ) {
     @GetMapping("/details")
     fun getDetails(@RequestParam("id") data: String): ResponseEntity<WrapperApiResponse> {
@@ -77,6 +79,94 @@ class PaperController(
                 LocalDateTime.now()
             )
         )
+    }
+
+    @PostMapping(
+        "/pdf/upload-with-file",
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
+    fun uploadPdfWithFile(
+        @RequestParam file: MultipartFile,
+        @RequestParam title: String,
+        @RequestParam authors: String,
+        @RequestParam journal: String,
+        @RequestParam publicationYear: Int,
+        @RequestParam doi: String,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) keywords: String?,
+        @RequestParam(required = false) tags: String?,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to uploadPdfWithFile controller, userId: $userId, filename: ${file.originalFilename}" }
+
+        // Validate file
+        if (file.isEmpty) {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "File is empty",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+
+        if (file.contentType != "application/pdf") {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "File must be a PDF",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+
+        try {
+            // Upload file to S3
+            val s3Url = s3Service.uploadPdf(file.inputStream, file.contentType ?: "application/pdf")
+            logger.info { "File uploaded to S3: $s3Url" }
+
+            // Parse keywords and tags if provided
+            val keywordsList = keywords?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
+            val tagsList = tags?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
+
+            // Create paper request
+            val request = UploadPdfRequest(
+                dataUrl = s3Url,
+                title = title,
+                authors = authors,
+                journal = journal,
+                publicationYear = publicationYear,
+                doi = doi,
+                description = if (description.isNullOrBlank()) null else description,
+                keywords = keywordsList,
+                tags = tagsList
+            )
+
+            // Create paper
+            paperService.createNewPaper(request, userId)
+
+            return ResponseEntity.ok(
+                WrapperApiResponse(
+                    HttpStatus.OK.value(),
+                    "Upload paper successfully",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to upload PDF: ${e.message}" }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                WrapperApiResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to upload paper: ${e.message}",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
     }
 
     @PostMapping(

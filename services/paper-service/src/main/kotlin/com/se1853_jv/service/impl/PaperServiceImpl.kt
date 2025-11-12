@@ -2,6 +2,7 @@ package com.se1853_jv.service.impl
 
 import com.google.cloud.firestore.Firestore
 import com.se1853_jv.dto.request.UploadPdfRequest
+import com.se1853_jv.dto.response.PaginatedPapersListResponse
 import com.se1853_jv.dto.response.PaperResponse
 import com.se1853_jv.model.*
 import com.se1853_jv.repository.PaperRepository
@@ -9,6 +10,7 @@ import com.se1853_jv.repository.TagRepository
 import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
+import org.springframework.cloud.context.named.NamedContextFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -50,48 +52,27 @@ class PaperServiceImpl(
         searchQuery: String?, pageIndex: Int, pageSize: Int?,
         author: String?, journal: String?, publicationYearFrom: Int?,
         publicationYearTo: Int?
-    ): PageImpl<PaperResponse> {
-        logger.info { "Getting all papers with search query: $searchQuery" }
-        val pageRequest = PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE)
-        val allPapers: Page<Paper> = paperRepo.findAll(pageRequest)
-        var data = allPapers.content
-
-        data = if (searchQuery.isNullOrBlank()) {
-            data
-        } else {
-            val query = searchQuery.lowercase()
-            data.filter { paper ->
-                paper.metadata?.title?.lowercase()?.contains(query) == true ||
-                        paper.metadata?.authors?.lowercase()?.contains(query) == true ||
-                        paper.metadata?.journal?.lowercase()?.contains(query) == true ||
-                        paper.keywords?.any { it.lowercase().contains(query) } == true
-            }
+    ): PaginatedPapersListResponse {
+        logger.info {
+            "Getting all papers with search query: $searchQuery, pageIndex: $pageIndex, pageSize: $pageSize," +
+                    " author: $author, journal: $journal, publicationYearFrom: $publicationYearFrom"
         }
-
-        if (!author.isNullOrBlank()) {
-            data = data.filter {
-                val content = it.metadata?.authors
-                content != null && it.metadata.authors.lowercase().contains(author.lowercase())
-            }
-        }
-
-        if (!journal.isNullOrBlank()) {
-            data = data.filter {
-                val content = it.metadata?.journal?.lowercase()
-                content != null && it.metadata.journal.lowercase().contains(journal.lowercase())
-            }
-        }
-
-        if (publicationYearFrom != null || publicationYearTo != null) {
-            data = data.filter {
-                val year = it.metadata?.publicationYear ?: return@filter false
-                (publicationYearFrom == null || year >= publicationYearFrom) &&
-                        (publicationYearTo == null || year <= publicationYearTo)
-            }
-        }
+        val data = paperRepo.searchPapers(
+            searchQuery,
+            author,
+            journal,
+            publicationYearFrom,
+            publicationYearTo,
+            pageIndex,
+            pageSize ?: PAGE_SIZE
+        )
 
         val response = data.map { convert(it) }
-        return PageImpl(response, pageRequest, response.size.toLong())
+        return PaginatedPapersListResponse(
+            response.content,
+            data.totalPages,
+            data.totalElements
+        )
     }
 
     override fun deleteById(id: String) {

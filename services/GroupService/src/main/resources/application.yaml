@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: group-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
+server:
+  port: 0
+  servlet:
+    context-path: /v1/api
+eureka:
+  client:
+    service-url:
+#      defaultZone: http://localhost:9001/eureka/,http://localhost:9002/eureka/,http://localhost:9003/eureka/
+      defaultZone: http://localhost:9001/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+jwt:
+  secret: ${JWT_SECRET}

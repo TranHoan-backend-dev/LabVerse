@@ -31,14 +31,14 @@ const PaperCard = ({ title, authors, journal, publicationYear: year, status, pri
   };
 
   return (
-    <Card className="hover:shadow-custom-md transition-smooth group">
-      <CardContent className="p-6 space-y-4">
+    <Card className="hover:shadow-custom-md transition-smooth group h-[260px] flex flex-col">
+      <CardContent className="p-6 space-y-4 flex-1 overflow-hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-3">
             <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-smooth">
               {title}
             </h3>
-            
+
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
               <span className="line-clamp-1">{authors}</span>

@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://sample:1433;databaseName=LabVerse_AccountService;encrypt=false
+    username: sample
+    password: sample
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: sample
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: sample
+    password: sample
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+jwt:
+  secret: sample
+  expiration: 86400000

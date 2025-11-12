@@ -27,6 +27,7 @@ import com.se1853_jv.labverse.data.service.storage.RemotePdfService;
 import com.se1853_jv.labverse.data.sync.OfflineSyncHelper;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,12 +53,15 @@ public class PDFReaderActivity extends AppCompatActivity {
     private OfflineSyncHelper syncHelper;
     private AnnotationApiHandler apiHandler;
     private RemotePdfService remotePdfService;
+    private com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler workflowApiHandler;
+    private com.se1853_jv.labverse.domain.infrastructure.workflow.repo.ReadingWorkflowRepository workflowRepository;
     
     private String paperId;
     private String collectionId;
     private String userId;
     private String jwtToken;
     private String pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
+    private int totalPages = 0; // Total pages in PDF
     
     private List<Note> loadedNotes = new ArrayList<>();
     private List<Highlight> loadedHighlights = new ArrayList<>();
@@ -97,6 +101,24 @@ public class PDFReaderActivity extends AppCompatActivity {
         syncHelper = new OfflineSyncHelper(this);
         apiHandler = new AnnotationApiHandler();
         remotePdfService = new RemotePdfService();
+        workflowApiHandler = new com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler(this);
+        
+        // Get workflow repository from database
+        var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+        workflowRepository = db.readingWorkflowRepository();
+        
+        // Log collectionId for debugging
+        Log.d(TAG, "PDFReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
+        
+        // Set default collectionId if null or empty (personal library)
+        if (collectionId == null || collectionId.isEmpty()) {
+            collectionId = "PERSONAL_LIBRARY"; // Special collection ID for personal library
+            Log.d(TAG, "Using PERSONAL_LIBRARY for personal library");
+            // Ensure personal library collection exists in database
+            ensurePersonalLibraryCollectionExists();
+        } else {
+            Log.d(TAG, "Using collectionId from intent: " + collectionId);
+        }
     }
 
     private void setupToolbar() {
@@ -152,8 +174,11 @@ public class PDFReaderActivity extends AppCompatActivity {
      * Load PDF from local file
      */
     private void loadPdfFromFile(File pdfFile) {
+        // Load last read page from database
+        int lastReadPage = loadLastReadPage();
+        
         pdfView.fromFile(pdfFile)
-            .defaultPage(0)
+            .defaultPage(lastReadPage) // Start from last read page
             .enableSwipe(true)
             .swipeHorizontal(false) // Vertical scrolling (recommended for research papers)
             .enableDoubletap(true)
@@ -163,6 +188,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                 @Override
                 public void onPageChanged(int page, int pageCount) {
                     // Update reading progress
+                    totalPages = pageCount;
                     updateReadingProgress(page, pageCount);
                 }
             })
@@ -177,6 +203,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                 }
             })
             .onLoad(nbPages -> {
+                totalPages = nbPages;
                 Log.d(TAG, "PDF loaded: " + nbPages + " pages");
             })
             .onError(t -> {
@@ -247,38 +274,113 @@ public class PDFReaderActivity extends AppCompatActivity {
             .pageNumber(page)
             .build();
         
-        // Save với offline support - DÙNG PHẦN 11!
-        syncHelper.saveNote(note, "CREATE");
-        
-        // Display note overlay trên PDF
-        loadedNotes.add(note);
-        displayNoteOverlay(note);
-        
-        Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
+        // Try to create via API if online, otherwise save for offline sync
+        if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
+            // Create API request
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request = 
+                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
+            request.paperId = paperId;
+            request.collectionId = collectionId != null ? collectionId : "";
+            request.content = content;
+            request.coordinationX = (int) x;
+            request.coordinationY = (int) y;
+            request.pageNumber = page;
+            
+            // Call API
+            apiHandler.createNote(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>() {
+                @Override
+                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse response) {
+                    runOnUiThread(() -> {
+                        // Update note with server ID
+                        note.setId(response.id);
+                        loadedNotes.add(note);
+                        displayNoteOverlay(note);
+                        Toast.makeText(PDFReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        Log.e(TAG, "Error creating note via API: " + error);
+                        // Fallback to offline sync
+                        syncHelper.saveNote(note, "CREATE");
+                        loadedNotes.add(note);
+                        displayNoteOverlay(note);
+                        Toast.makeText(PDFReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        } else {
+            // Offline: save for sync later
+            syncHelper.saveNote(note, "CREATE");
+            loadedNotes.add(note);
+            displayNoteOverlay(note);
+            Toast.makeText(this, "Note saved (will sync when online)", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
      * Create highlight với offline support
      */
     private void createHighlight(String color, int page) {
-        // TODO: Get actual coordinates from user selection
-        // For now, using placeholder coordinates
+        // Get coordinates from current page center (can be improved with text selection)
+        // For now, using center of page as placeholder
+        long x = 200L; // Center X
+        long y = 300L; // Center Y
+        
         Highlight highlight = Highlight.builder()
             .id(UUID.randomUUID().toString())
             .colorCode(color)
-            .coordinationX(100L) // TODO: Get from selection
-            .coordinationY(200L) // TODO: Get from selection
+            .coordinationX(x)
+            .coordinationY(y)
             .pageNumber(page)
             .build();
         
-        // Save với offline support - DÙNG PHẦN 11!
-        syncHelper.saveHighlight(highlight, "CREATE");
-        
-        // Display highlight overlay trên PDF
-        loadedHighlights.add(highlight);
-        displayHighlightOverlay(highlight);
-        
-        Toast.makeText(this, "Text highlighted", Toast.LENGTH_SHORT).show();
+        // Try to create via API if online, otherwise save for offline sync
+        if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
+            // Create API request
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request = 
+                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
+            request.paperId = paperId;
+            request.collectionId = collectionId != null ? collectionId : "";
+            request.color = color;
+            request.coordinationX = (int) x;
+            request.coordinationY = (int) y;
+            request.pageNumber = page;
+            
+            // Call API
+            apiHandler.createHighlight(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>() {
+                @Override
+                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse response) {
+                    runOnUiThread(() -> {
+                        // Update highlight with server ID
+                        highlight.setId(response.id);
+                        loadedHighlights.add(highlight);
+                        displayHighlightOverlay(highlight);
+                        Toast.makeText(PDFReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        Log.e(TAG, "Error creating highlight via API: " + error);
+                        // Fallback to offline sync
+                        syncHelper.saveHighlight(highlight, "CREATE");
+                        loadedHighlights.add(highlight);
+                        displayHighlightOverlay(highlight);
+                        Toast.makeText(PDFReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        } else {
+            // Offline: save for sync later
+            syncHelper.saveHighlight(highlight, "CREATE");
+            loadedHighlights.add(highlight);
+            displayHighlightOverlay(highlight);
+            Toast.makeText(this, "Highlight saved (will sync when online)", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -382,12 +484,330 @@ public class PDFReaderActivity extends AppCompatActivity {
     }
 
     /**
+     * Ensure personal library collection exists in database (async)
+     */
+    private void ensurePersonalLibraryCollectionExists() {
+        new Thread(() -> {
+            ensurePersonalLibraryCollectionExistsSync();
+        }).start();
+    }
+    
+    /**
+     * Ensure personal library collection exists in database (synchronous, must be called on background thread)
+     */
+    private void ensurePersonalLibraryCollectionExistsSync() {
+        try {
+            var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+            var collectionRepository = db.collectionRepository();
+            
+            // Check if personal library collection exists
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections personalCollection = 
+                collectionRepository.getById("PERSONAL_LIBRARY");
+            
+            if (personalCollection == null) {
+                // Create personal library collection
+                personalCollection = com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections.builder()
+                        .id("PERSONAL_LIBRARY")
+                        .name("Personal Library")
+                        .build();
+                collectionRepository.create(personalCollection);
+                Log.d(TAG, "Created personal library collection");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error ensuring personal library collection exists", e);
+        }
+    }
+    
+    /**
+     * Ensure all foreign key entities exist before creating ReadingWorkflow
+     * Returns true if all entities exist or were created successfully
+     */
+    private boolean ensureForeignKeysExist(String userId, String paperId, String collectionId) {
+        try {
+            var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+            
+            // Ensure User exists
+            var userRepository = db.userRepository();
+            com.se1853_jv.labverse.domain.infrastructure.user.model.Users user = userRepository.getById(userId);
+            if (user == null) {
+                Log.w(TAG, "User not found in database: " + userId + ". Creating minimal user record.");
+                // Create minimal user record from SessionManager
+                com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
+                    new com.se1853_jv.labverse.data.utils.SessionManager(this);
+                String email = sessionManager.getEmail();
+                String username = sessionManager.getUsername();
+                String fullName = sessionManager.getFullName();
+                String role = sessionManager.getRole();
+                
+                // Use default roleId if role is not available
+                String roleId = "role_researcher"; // Default role
+                if (role != null) {
+                    // Map role string to roleId
+                    if (role.contains("PI") || role.contains("Principal")) {
+                        roleId = "role_pi";
+                    } else if (role.contains("Student") || role.contains("Intern")) {
+                        roleId = "role_student";
+                    }
+                }
+                
+                // Ensure role exists in Roles table
+                var roleRepository = db.roleRepository();
+                com.se1853_jv.labverse.domain.infrastructure.role.model.Roles roleEntity = roleRepository.getById(roleId);
+                if (roleEntity == null) {
+                    // Create role if it doesn't exist
+                    roleEntity = com.se1853_jv.labverse.domain.infrastructure.role.model.Roles.builder()
+                            .id(roleId)
+                            .role(com.se1853_jv.labverse.domain.enumerate.Role.RESEARCHER) // Default to RESEARCHER
+                            .build();
+                    try {
+                        roleRepository.create(roleEntity);
+                        Log.d(TAG, "Created role: " + roleId);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to create role: " + roleId, e);
+                        // Continue anyway - might already exist
+                    }
+                }
+                
+                long currentTime = System.currentTimeMillis();
+                user = com.se1853_jv.labverse.domain.infrastructure.user.model.Users.builder()
+                        .id(userId)
+                        .email(email != null ? email : userId + "@labverse.com")
+                        .password("") // Empty password for minimal record
+                        .name(fullName != null ? fullName : "User")
+                        .username(username != null ? username : userId)
+                        .createdDate(currentTime)
+                        .updatedDate(currentTime)
+                        .roleId(roleId)
+                        .avatarUrl(sessionManager.getAvatarUrl())
+                        .build();
+                try {
+                    userRepository.create(user);
+                    Log.d(TAG, "Created minimal user record: " + userId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to create user: " + userId, e);
+                    return false;
+                }
+            }
+            
+            // Ensure PaperResearch exists
+            var paperRepository = db.paperRepository();
+            com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch paper = paperRepository.getById(paperId);
+            if (paper == null) {
+                Log.w(TAG, "Paper not found in database: " + paperId + ". Creating minimal paper record.");
+                // Create minimal paper record
+                paper = com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch.builder()
+                        .id(paperId)
+                        .dataUrl(pdfUrl != null ? pdfUrl : "")
+                        .description("")
+                        .title("Paper " + paperId)
+                        .authors("Unknown")
+                        .journal("Unknown")
+                        .publicationYear(2024)
+                        .doi("")
+                        .build();
+                try {
+                    paperRepository.create(paper);
+                    Log.d(TAG, "Created minimal paper record: " + paperId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to create paper: " + paperId, e);
+                    return false;
+                }
+            }
+            
+            // Ensure Collection exists
+            var collectionRepository = db.collectionRepository();
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections collection = 
+                collectionRepository.getById(collectionId);
+            if (collection == null) {
+                // Create collection if it doesn't exist
+                if ("PERSONAL_LIBRARY".equals(collectionId)) {
+                    collection = com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections.builder()
+                            .id("PERSONAL_LIBRARY")
+                            .name("Personal Library")
+                            .build();
+                    collectionRepository.create(collection);
+                    Log.d(TAG, "Created personal library collection");
+                } else {
+                    // For real collections, we need to create a minimal record
+                    // This should ideally be loaded from backend, but we'll create a placeholder
+                    collection = com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections.builder()
+                            .id(collectionId)
+                            .name("Collection " + collectionId)
+                            .build();
+                    try {
+                        collectionRepository.create(collection);
+                        Log.d(TAG, "Created collection placeholder: " + collectionId);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to create collection: " + collectionId, e);
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error ensuring foreign keys exist", e);
+            return false;
+        }
+    }
+
+    /**
+     * Load last read page from database
+     */
+    private int loadLastReadPage() {
+        if (userId == null || paperId == null) {
+            return 0;
+        }
+        
+        try {
+            String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
+            // Note: We don't need to ensure collection exists here since we're only reading
+            ReadingWorkflow workflow = workflowRepository.getByCompositeKey(userId, paperId, finalCollectionId);
+            if (workflow != null && workflow.getLastPage() != null) {
+                int lastPage = workflow.getLastPage();
+                Log.d(TAG, "Restoring last read page: " + lastPage);
+                return lastPage;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading last read page", e);
+        }
+        
+        return 0;
+    }
+
+    /**
      * Update reading progress
      */
     private void updateReadingProgress(int currentPage, int totalPages) {
-        // TODO: Update ReadingWorkflow với lastPage và progress
-        int progress = (int) ((currentPage * 100.0) / totalPages);
+        if (userId == null || paperId == null || totalPages == 0) {
+            return;
+        }
+        
+        // Make variables final for lambda
+        final String finalUserId = userId;
+        final String finalPaperId = paperId;
+        final String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
+        final String finalJwtToken = jwtToken;
+        
+        // Calculate progress percentage (0-100)
+        // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
+        // For a 2-page PDF: page 0 = 50%, page 1 = 100%
+        int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
+        if (calculatedProgress > 100) calculatedProgress = 100;
+        if (calculatedProgress < 0) calculatedProgress = 0;
+        
+        final int progress = calculatedProgress;
+        final int finalCurrentPage = currentPage;
+        
         Log.d(TAG, "Reading progress: " + progress + "% (page " + currentPage + "/" + totalPages + ")");
+        
+        // Run on background thread
+        new Thread(() -> {
+            try {
+                // Ensure all foreign key entities exist before creating workflow
+                if (!ensureForeignKeysExist(finalUserId, finalPaperId, finalCollectionId)) {
+                    Log.e(TAG, "Failed to ensure foreign keys exist, skipping workflow creation");
+                    return;
+                }
+                
+                // Get or create ReadingWorkflow
+                ReadingWorkflow workflow = workflowRepository.getByCompositeKey(finalUserId, finalPaperId, finalCollectionId);
+                
+                com.se1853_jv.labverse.domain.enumerate.WorkflowStatus newStatus;
+                if (progress == 0) {
+                    newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.UNREAD;
+                } else if (progress >= 100) {
+                    newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.FINISHED;
+                } else {
+                    newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.READING;
+                }
+                
+                if (workflow == null) {
+                    // Create new workflow
+                    workflow = ReadingWorkflow.builder()
+                            .userId(finalUserId)
+                            .paperId(finalPaperId)
+                            .collectionId(finalCollectionId)
+                            .status(newStatus)
+                            .progress(progress)
+                            .lastPage(finalCurrentPage)
+                            .build();
+                    workflowRepository.create(workflow);
+                    Log.d(TAG, "Created new ReadingWorkflow");
+                } else {
+                    // Update existing workflow - create new instance with updated values
+                    ReadingWorkflow updatedWorkflow = ReadingWorkflow.builder()
+                            .userId(workflow.getUserId())
+                            .paperId(workflow.getPaperId())
+                            .collectionId(workflow.getCollectionId())
+                            .status(newStatus)
+                            .progress(progress)
+                            .lastPage(finalCurrentPage)
+                            .build();
+                    workflowRepository.update(updatedWorkflow);
+                    workflow = updatedWorkflow;
+                    Log.d(TAG, "Updated ReadingWorkflow");
+                }
+                
+                // Sync to backend via OfflineSyncHelper (handles online/offline)
+                final ReadingWorkflow finalWorkflow = workflow;
+                syncHelper.updateReadingProgress(finalWorkflow);
+                
+                // Also try direct API call if online
+                if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && finalJwtToken != null) {
+                    com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request = 
+                        new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
+                    request.setCollectionId(finalCollectionId);
+                    request.setPaperId(finalPaperId);
+                    request.setUsersid(finalUserId);
+                    request.setLastPage(finalCurrentPage);
+                    request.setProgress(progress);
+                    
+                    workflowApiHandler.updateProgress(request, new com.se1853_jv.labverse.data.api.ApiCallback<String>() {
+                        @Override
+                        public void onSuccess(String result) {
+                            Log.d(TAG, "Reading progress synced to backend successfully");
+                            
+                            // Trigger status recalculation if reading in a collection (not personal library)
+                            if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
+                                try {
+                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler = 
+                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                    // finalCollectionId and finalPaperId from intent are already encoded
+                                    // recalculatePaperStatus expects encoded IDs, so we use them directly
+                                    Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
+                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId, 
+                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                            @Override
+                                            public void onSuccess(Object result) {
+                                                Log.d(TAG, "Collection paper status recalculated successfully");
+                                            }
+                                            
+                                            @Override
+                                            public void onError(String error) {
+                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                // Non-critical, status will be recalculated on next collection view
+                                            }
+                                        });
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
+                                    // Non-critical
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Log.w(TAG, "Failed to sync reading progress to backend: " + error);
+                            // Progress is already saved locally, will sync later
+                        }
+                    });
+                }
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating reading progress", e);
+            }
+        }).start();
     }
 
     /**

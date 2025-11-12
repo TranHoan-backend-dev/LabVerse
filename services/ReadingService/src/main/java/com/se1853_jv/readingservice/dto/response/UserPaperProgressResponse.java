@@ -16,3 +16,7 @@ public class UserPaperProgressResponse {
     private Integer progress;
     private LocalDateTime lastUpdated;
 }
+
+
+
+

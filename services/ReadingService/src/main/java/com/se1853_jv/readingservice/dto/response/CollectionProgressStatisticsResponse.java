@@ -35,3 +35,10 @@ public class CollectionProgressStatisticsResponse {
 
 
 
+
+
+
+
+
+
+

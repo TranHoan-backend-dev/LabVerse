@@ -222,14 +222,65 @@ public class SyncWorker extends Worker {
     }
 
     private boolean syncReadingProgress(SyncQueue syncItem) {
-        // TODO: Implement API call để sync reading progress
-        // ReadingWorkflow workflow = gson.fromJson(syncItem.getJsonData(), ReadingWorkflow.class);
-        // Call API để update reading progress
-        // Return true nếu success
-        
-        // Tạm thời return true để test
-        Log.d(TAG, "Syncing reading progress: " + syncItem.getEntityId());
-        return true;
+        try {
+            ReadingWorkflow workflow = gson.fromJson(syncItem.getJsonData(), ReadingWorkflow.class);
+            if (workflow == null) {
+                Log.e(TAG, "Failed to deserialize ReadingWorkflow from JSON");
+                return false;
+            }
+            
+            // Check if JWT token is available via SessionManager
+            com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
+                new com.se1853_jv.labverse.data.utils.SessionManager(getApplicationContext());
+            String jwtToken = sessionManager.getToken();
+            
+            if (jwtToken == null || jwtToken.isEmpty()) {
+                Log.w(TAG, "No JWT token available for syncing reading progress");
+                return false;
+            }
+            
+            // Create API request
+            com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request = 
+                new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
+            request.setCollectionId(workflow.getCollectionId());
+            request.setPaperId(workflow.getPaperId());
+            request.setUsersid(workflow.getUserId());
+            request.setLastPage(workflow.getLastPage());
+            request.setProgress(workflow.getProgress());
+            
+            // Call API synchronously
+            // ReadingWorkflowApiHandler will automatically add JWT token via interceptor
+            final boolean[] success = {false};
+            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            
+            com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler apiHandler = 
+                new com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler(getApplicationContext());
+            
+            apiHandler.updateProgress(request, new com.se1853_jv.labverse.data.api.ApiCallback<String>() {
+                @Override
+                public void onSuccess(String result) {
+                    success[0] = true;
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e(TAG, "Error syncing reading progress: " + error);
+                    success[0] = false;
+                    latch.countDown();
+                }
+            });
+            
+            // Wait for API call to complete (max 10 seconds)
+            latch.await(10, java.util.concurrent.TimeUnit.SECONDS);
+            
+            Log.d(TAG, "Synced reading progress: " + syncItem.getEntityId() + " - Success: " + success[0]);
+            return success[0];
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error syncing reading progress", e);
+            return false;
+        }
     }
 
     private boolean syncWorkflowStatus(SyncQueue syncItem) {

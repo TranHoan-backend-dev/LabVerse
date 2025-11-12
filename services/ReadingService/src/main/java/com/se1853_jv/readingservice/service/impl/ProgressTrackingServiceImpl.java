@@ -10,6 +10,7 @@ import com.se1853_jv.readingservice.repository.ReadingWorkflowRepository;
 import com.se1853_jv.readingservice.service.ProgressTrackingService;
 import com.se1853_jv.readingservice.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,9 +27,93 @@ public class ProgressTrackingServiceImpl implements ProgressTrackingService {
 
     private final ReadingWorkflowRepository readingWorkflowRepository;
 
+    /**
+     * Helper method to find workflows by collectionId and paperId, trying both decoded and encoded versions.
+     * This handles the case where database might have encoded IDs from old data.
+     */
+    private List<ReadingWorkflow> findWorkflowsByCollectionAndPaper(String collectionId, String paperId) {
+        // First try with decoded IDs (normal case)
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findByCollectionIdAndPaperId(collectionId, paperId);
+        
+        if (!workflows.isEmpty()) {
+            return workflows;
+        }
+        
+        // If not found, try with encoded IDs (for old data in database)
+        try {
+            String encodedCollectionId = IdEncoder.encode(collectionId);
+            String encodedPaperId = IdEncoder.encode(paperId);
+            workflows = readingWorkflowRepository.findByCollectionIdAndPaperId(encodedCollectionId, encodedPaperId);
+            
+            if (!workflows.isEmpty()) {
+                log.warn("Found {} workflows with encoded IDs for collectionId={}, paperId={}. These should be migrated.", 
+                        workflows.size(), collectionId, paperId);
+            }
+        } catch (Exception e) {
+            log.debug("Failed to try encoded ID lookup: {}", e.getMessage());
+        }
+        
+        return workflows;
+    }
+
+    /**
+     * Helper method to find workflows by collectionId, trying both decoded and encoded versions.
+     */
+    private List<ReadingWorkflow> findWorkflowsByCollection(String collectionId) {
+        // First try with decoded IDs (normal case)
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_CollectionId(collectionId);
+        
+        if (!workflows.isEmpty()) {
+            return workflows;
+        }
+        
+        // If not found, try with encoded IDs (for old data in database)
+        try {
+            String encodedCollectionId = IdEncoder.encode(collectionId);
+            workflows = readingWorkflowRepository.findById_CollectionId(encodedCollectionId);
+            
+            if (!workflows.isEmpty()) {
+                log.warn("Found {} workflows with encoded IDs for collectionId={}. These should be migrated.", 
+                        workflows.size(), collectionId);
+            }
+        } catch (Exception e) {
+            log.debug("Failed to try encoded ID lookup: {}", e.getMessage());
+        }
+        
+        return workflows;
+    }
+
+    /**
+     * Helper method to find workflows by collectionId and userId, trying both decoded and encoded versions.
+     */
+    private List<ReadingWorkflow> findWorkflowsByCollectionAndUser(String collectionId, String userId) {
+        // First try with decoded IDs (normal case)
+        List<ReadingWorkflow> workflows = readingWorkflowRepository.findByCollectionIdAndUsersid(collectionId, userId);
+        
+        if (!workflows.isEmpty()) {
+            return workflows;
+        }
+        
+        // If not found, try with encoded IDs (for old data in database)
+        try {
+            String encodedCollectionId = IdEncoder.encode(collectionId);
+            String encodedUserId = IdEncoder.encode(userId);
+            workflows = readingWorkflowRepository.findByCollectionIdAndUsersid(encodedCollectionId, encodedUserId);
+            
+            if (!workflows.isEmpty()) {
+                log.warn("Found {} workflows with encoded IDs for collectionId={}, userId={}. These should be migrated.", 
+                        workflows.size(), collectionId, userId);
+            }
+        } catch (Exception e) {
+            log.debug("Failed to try encoded ID lookup: {}", e.getMessage());
+        }
+        
+        return workflows;
+    }
+
     @Override
     public CollectionProgressStatisticsResponse getCollectionProgressStatistics(String collectionId) {
-        List<ReadingWorkflow> workflows = readingWorkflowRepository.findById_CollectionId(collectionId);
+        List<ReadingWorkflow> workflows = findWorkflowsByCollection(collectionId);
 
         if (workflows.isEmpty()) {
             return CollectionProgressStatisticsResponse.builder()
@@ -102,7 +188,7 @@ public class ProgressTrackingServiceImpl implements ProgressTrackingService {
 
     @Override
     public TeamMemberProgressResponse getTeamMemberProgress(String collectionId, String userId) {
-        List<ReadingWorkflow> workflows = readingWorkflowRepository.findByCollectionIdAndUsersid(collectionId, userId);
+        List<ReadingWorkflow> workflows = findWorkflowsByCollectionAndUser(collectionId, userId);
 
         if (workflows.isEmpty()) {
             return TeamMemberProgressResponse.builder()
@@ -150,7 +236,7 @@ public class ProgressTrackingServiceImpl implements ProgressTrackingService {
 
     @Override
     public PaperProgressResponse getPaperProgress(String collectionId, String paperId) {
-        List<ReadingWorkflow> workflows = readingWorkflowRepository.findByCollectionIdAndPaperId(collectionId, paperId);
+        List<ReadingWorkflow> workflows = findWorkflowsByCollectionAndPaper(collectionId, paperId);
 
         if (workflows.isEmpty()) {
             return PaperProgressResponse.builder()
@@ -250,3 +336,8 @@ public class ProgressTrackingServiceImpl implements ProgressTrackingService {
                 .build();
     }
 }
+
+
+
+
+

@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -38,6 +39,7 @@ import com.se1853_jv.labverse.presentation.user.fragment.ChangePasswordDialogFra
 
 public class ProfileActivity extends BaseActivity {
 
+    // <editor-fold> desc="attributes"
     private final String TAG = "ProfileActivity";
 
     private TextInputEditText etFullName, etEmail, etRole;
@@ -47,12 +49,13 @@ public class ProfileActivity extends BaseActivity {
     private ImageView ivProfileAvatar;
     private TextView tvProfileName, tvProfileTitle;
     private LinearLayout layoutChangePassword;
-
+    private MaterialToolbar toolbar;
     private UserApiHandler userApiHandler;
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
     private UserResponse currentUser;
     private boolean isLoading = false;
+    // </editor-fold>
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,26 +74,11 @@ public class ProfileActivity extends BaseActivity {
 
         bindViews();
         setupToolbar();
-        // ProfileActivity layout doesn't have bottom navbar, skip setup
-        // setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
         loadUserData();
         handleEvents();
-    }
 
-    private void bindViews() {
-        etFullName = findViewById(R.id.etFullName);
-        etEmail = findViewById(R.id.etEmail);
-        etRole = findViewById(R.id.etRole);
-        spinnerResearchField = findViewById(R.id.spinnerResearchField);
-        switchPushNotifications = findViewById(R.id.switchPushNotifications);
-        switchEmailUpdates = findViewById(R.id.switchEmailUpdates);
-        switchCollaboration = findViewById(R.id.switchCollaboration);
-        btnSaveChanges = findViewById(R.id.btnSaveChanges);
-        btnLogout = findViewById(R.id.btnLogout);
-        ivProfileAvatar = findViewById(R.id.ivProfileAvatar);
-        tvProfileName = findViewById(R.id.tvProfileName);
-        tvProfileTitle = findViewById(R.id.tvProfileTitle);
-        layoutChangePassword = findViewById(R.id.layoutChangePassword);
+        // Thiet lap hanh vi cho nut back
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void setupToolbar() {
@@ -98,17 +86,16 @@ public class ProfileActivity extends BaseActivity {
         if (header != null) {
             ImageButton backBtn = header.findViewById(R.id.back_btn);
             TextView titleTv = header.findViewById(R.id.title);
-            
+
             if (backBtn != null) {
                 backBtn.setOnClickListener(v -> finish());
             }
-            
+
             if (titleTv != null) {
                 titleTv.setText(getString(R.string.profile));
             }
         }
     }
-
 
     private void loadUserData() {
         if (isLoading) return;
@@ -148,7 +135,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     @SuppressLint("SetTextI18n")
-    private void displayUserData(UserResponse user) {
+    private void displayUserData(@NonNull UserResponse user) {
         // Display full name
         if (!TextUtils.isEmpty(user.getFullName())) {
             etFullName.setText(user.getFullName());
@@ -252,10 +239,10 @@ public class ProfileActivity extends BaseActivity {
             // If offline, logout locally immediately
             Log.d(TAG, "Device is offline, performing local logout");
             sessionManager.logout();
-            
+
             Toast.makeText(this, "Logged out successfully (offline mode)",
                     Toast.LENGTH_SHORT).show();
-            
+
             // Navigate to login screen
             navigateToLogin();
             return;
@@ -286,7 +273,7 @@ public class ProfileActivity extends BaseActivity {
                     sessionManager.logout();
 
                     Log.w(TAG, "Logout API error but proceeding with local logout: " + error);
-                    
+
                     Toast.makeText(ProfileActivity.this,
                             "Logged out locally (API unavailable)",
                             Toast.LENGTH_SHORT).show();
@@ -360,9 +347,10 @@ public class ProfileActivity extends BaseActivity {
     /**
      * Map backend role string to display name
      */
+    @NonNull
     private String mapRoleToDisplayName(String role) {
         if (role == null) return "";
-        
+
         String roleUpper = role.toUpperCase();
         if (roleUpper.equals("PI") || roleUpper.contains("PRINCIPAL")) {
             return getString(R.string.role_principal_investigator);
@@ -373,6 +361,23 @@ public class ProfileActivity extends BaseActivity {
         }
         // Return original role if no match found
         return role;
+    }
+
+    private void bindViews() {
+        etFullName = findViewById(R.id.etFullName);
+        etEmail = findViewById(R.id.etEmail);
+        etRole = findViewById(R.id.etRole);
+        spinnerResearchField = findViewById(R.id.spinnerResearchField);
+        switchPushNotifications = findViewById(R.id.switchPushNotifications);
+        switchEmailUpdates = findViewById(R.id.switchEmailUpdates);
+        switchCollaboration = findViewById(R.id.switchCollaboration);
+        btnSaveChanges = findViewById(R.id.btnSaveChanges);
+        btnLogout = findViewById(R.id.btnLogout);
+        ivProfileAvatar = findViewById(R.id.ivProfileAvatar);
+        tvProfileName = findViewById(R.id.tvProfileName);
+        tvProfileTitle = findViewById(R.id.tvProfileTitle);
+        layoutChangePassword = findViewById(R.id.layoutChangePassword);
+        toolbar = findViewById(R.id.toolbar);
     }
 }
 

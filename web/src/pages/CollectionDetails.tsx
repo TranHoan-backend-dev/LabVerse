@@ -20,7 +20,7 @@ import {
     removePaperFromCollection,
     addPaperToCollection,
     getCollectionMembers,
-    addMemberToCollection,
+    addMemberToCollectionByEmail,
     removeMemberFromCollection,
     type CollectionResponse,
     type CollectionPaperDetailResponse,
@@ -29,7 +29,7 @@ import {
 import {BASE_API_URL} from "@/type/constant.ts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
-import {IdEncoder} from "@/utils/idEncoder.ts";
+import {getAuthHeaders} from "@/utils/token";
 
 const CollectionDetails = () => {
     const {id} = useParams<{id: string}>();
@@ -38,9 +38,8 @@ const CollectionDetails = () => {
     const queryClient = useQueryClient();
     const [isAddPaperOpen, setIsAddPaperOpen] = useState(false);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+    const [isPriorityDialogOpen, setIsPriorityDialogOpen] = useState(false);
     const [selectedPaper, setSelectedPaper] = useState<CollectionPaperDetailResponse | null>(null);
-    const [selectedStatus, setSelectedStatus] = useState<string>('ToRead');
     const [selectedPriority, setSelectedPriority] = useState<string>('MEDIUM');
     const [newPaperId, setNewPaperId] = useState('');
     const [newMemberEmail, setNewMemberEmail] = useState('');
@@ -88,17 +87,8 @@ const CollectionDetails = () => {
     // Determine user's access level from members list or collection response
     const currentUserMember = useMemo(() => {
         if (!members || !user?.id) return null;
-        // memberId from API is encoded, need to decode to compare with raw user.id
-        return members.find(m => {
-            try {
-                // Decode memberId if it's encoded (doesn't contain dashes like UUID)
-                const decodedMemberId = m.memberId.includes('-') ? m.memberId : IdEncoder.decode(m.memberId);
-                return decodedMemberId === user.id;
-            } catch {
-                // If decoding fails, try direct comparison (might already be raw UUID)
-                return m.memberId === user.id;
-            }
-        });
+        // memberId from API is already encoded, compare directly with user.id
+        return members.find(m => m.memberId === user.id);
     }, [members, user?.id]);
 
     const userAccessLevel = collection?.currentUserAccessLevel || currentUserMember?.accessLevel;
@@ -155,7 +145,6 @@ const CollectionDetails = () => {
     // Filter out papers that are already in the collection
     const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
-        // Note: paper.id from getAllPapers is already encoded, paper.paperId in collection is also encoded
         const existingPaperIds = papers?.map(p => p.paperId) || [];
         return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
@@ -218,31 +207,31 @@ const CollectionDetails = () => {
     });
 
     const handleAddPaper = (paperId: string) => {
-        // Paper ID from getAllPapers is already encoded by paper service
-        // Collection service will decode it, then encode again to call paper service
-        console.log('Adding paper with ID:', paperId, 'Format:', paperId.includes('-') ? 'UUID' : 'Encoded');
         addPaperMutation.mutate(paperId);
     };
 
-    const updateStatusMutation = useMutation({
+    /**
+     * Update paper priority only (status is now calculated automatically, read-only)
+     */
+    const updatePriorityMutation = useMutation({
         mutationFn: async () => {
             if (!id || !user?.id || !selectedPaper) throw new Error('Missing required fields');
             return await updatePaperStatus({
                 collectionId: id,
                 paperId: selectedPaper.paperId,
                 userId: user.id,
-                status: selectedStatus,
+                // Status is not sent - it's calculated automatically by backend
                 priority: canSetPriority ? selectedPriority : undefined,
             });
         },
         onSuccess: () => {
-            toast.success('Paper status updated successfully');
+            toast.success('Paper priority updated successfully');
             queryClient.invalidateQueries({queryKey: ['collection-papers']});
-            setIsStatusDialogOpen(false);
+            setIsPriorityDialogOpen(false);
             setSelectedPaper(null);
         },
         onError: (error: Error) => {
-            toast.error(error.message || 'Failed to update paper status');
+            toast.error(error.message || 'Failed to update paper priority');
         },
     });
 
@@ -264,34 +253,8 @@ const CollectionDetails = () => {
         mutationFn: async () => {
             if (!id || !newMemberEmail) throw new Error('Missing required fields');
             
-            // Step 1: Find user by email
-            const userResponse = await fetch(`${BASE_API_URL}/account-service/users/email/${encodeURIComponent(newMemberEmail)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // TODO: Add authentication token if required
-                },
-            });
-
-            if (!userResponse.ok) {
-                const error = await userResponse.json().catch(() => ({ message: 'User not found' }));
-                throw new Error(error.message || 'User not found with this email');
-            }
-
-            const userResult = await userResponse.json();
-            const userId = userResult.data?.id || userResult.data?.userId;
-
-            if (!userId) {
-                throw new Error('Could not get user ID from response');
-            }
-
-            // Step 2: Add user to collection
-            return await addMemberToCollection({
-                collectionId: id,
-                memberId: userId,
-                accessLevel: newMemberAccessLevel,
-                isAuthor: newMemberAccessLevel === 'AUTHOR',
-            });
+            // Add member directly by email
+            return await addMemberToCollectionByEmail(id, newMemberEmail, newMemberAccessLevel);
         },
         onSuccess: () => {
             toast.success('Member added to collection successfully');
@@ -318,11 +281,18 @@ const CollectionDetails = () => {
         },
     });
 
-    const handleStatusClick = (paper: CollectionPaperDetailResponse) => {
+    /**
+     * Handle priority click (status is now read-only, calculated automatically)
+     * Only AUTHOR can change priority
+     */
+    const handlePriorityClick = (paper: CollectionPaperDetailResponse) => {
+        if (!canSetPriority) {
+            toast.error('Only collection authors can change paper priority');
+            return;
+        }
         setSelectedPaper(paper);
-        setSelectedStatus(paper.status || 'ToRead');
         setSelectedPriority(paper.priority || 'MEDIUM');
-        setIsStatusDialogOpen(true);
+        setIsPriorityDialogOpen(true);
     };
 
     const handleRemovePaper = (paper: CollectionPaperDetailResponse) => {
@@ -655,8 +625,8 @@ const CollectionDetails = () => {
                                                             <div className="flex gap-2">
                                                                 {paper.status && (
                                                                     <Badge
-                                                                        className={`${getStatusColor(paper.status)} text-white cursor-pointer`}
-                                                                        onClick={() => handleStatusClick(paper)}
+                                                                        className={`${getStatusColor(paper.status)} text-white`}
+                                                                        title="Status is calculated automatically based on all members' reading progress"
                                                                     >
                                                                         {paper.status}
                                                                     </Badge>
@@ -664,8 +634,9 @@ const CollectionDetails = () => {
                                                                 {paper.priority && (
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className={`${getPriorityColor(paper.priority)} text-white cursor-pointer`}
-                                                                        onClick={() => canSetPriority && handleStatusClick(paper)}
+                                                                        className={`${getPriorityColor(paper.priority)} text-white ${canSetPriority ? 'cursor-pointer hover:opacity-80' : ''}`}
+                                                                        onClick={() => canSetPriority && handlePriorityClick(paper)}
+                                                                        title={canSetPriority ? 'Click to change priority' : 'Only collection authors can change priority'}
                                                                     >
                                                                         {paper.priority}
                                                                     </Badge>
@@ -741,11 +712,15 @@ const CollectionDetails = () => {
                                         {members.map((member) => (
                                             <Card key={member.memberId} className="hover:shadow-md transition-shadow">
                                                 <CardHeader>
-                                                    <div className="flex items-center justify-between">
+                                                    <div className="flex items-start justify-between">
                                                         <div className="flex-1">
-                                                            <CardTitle className="text-lg">{member.memberName}</CardTitle>
-                                                            <p className="text-sm text-muted-foreground">{member.memberEmail}</p>
-                                                            <div className="flex gap-2 mt-2">
+                                                            <CardTitle className="text-lg font-semibold mb-1">
+                                                                {member.memberName}
+                                                            </CardTitle>
+                                                            <p className="text-xs text-muted-foreground mb-3">
+                                                                {member.memberEmail}
+                                                            </p>
+                                                            <div className="flex gap-2">
                                                                 <Badge variant="outline">{member.accessLevel}</Badge>
                                                                 <Badge variant="secondary">{member.role}</Badge>
                                                             </div>
@@ -755,6 +730,7 @@ const CollectionDetails = () => {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 onClick={() => handleRemoveMember(member)}
+                                                                className="flex-shrink-0"
                                                             >
                                                                 <Trash2 className="h-4 w-4"/>
                                                             </Button>
@@ -780,54 +756,39 @@ const CollectionDetails = () => {
                             </TabsContent>
                         </Tabs>
 
-                        {/* Status/Priority Update Dialog */}
-                        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+                        {/* Priority Update Dialog (Status is now read-only, calculated automatically) */}
+                        <Dialog open={isPriorityDialogOpen} onOpenChange={setIsPriorityDialogOpen}>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Update Paper Status</DialogTitle>
+                                    <DialogTitle>Update Paper Priority</DialogTitle>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Status is calculated automatically based on all members' reading progress
+                                    </p>
                                 </DialogHeader>
                                 {selectedPaper && (
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="status">Status</Label>
+                                            <Label htmlFor="priority">Priority</Label>
                                             <Select
-                                                value={selectedStatus}
-                                                onValueChange={setSelectedStatus}
+                                                value={selectedPriority}
+                                                onValueChange={setSelectedPriority}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue/>
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="ToRead">To Read</SelectItem>
-                                                    <SelectItem value="Reading">Reading</SelectItem>
-                                                    <SelectItem value="Finished">Finished</SelectItem>
+                                                    <SelectItem value="HIGH">High</SelectItem>
+                                                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                                                    <SelectItem value="LOW">Low</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        {canSetPriority && (
-                                            <div className="space-y-2">
-                                                <Label htmlFor="priority">Priority</Label>
-                                                <Select
-                                                    value={selectedPriority}
-                                                    onValueChange={setSelectedPriority}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue/>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="HIGH">High</SelectItem>
-                                                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                        <SelectItem value="LOW">Low</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
                                         <Button
-                                            onClick={() => updateStatusMutation.mutate()}
-                                            disabled={updateStatusMutation.isPending}
+                                            onClick={() => updatePriorityMutation.mutate()}
+                                            disabled={updatePriorityMutation.isPending}
                                             className="w-full"
                                         >
-                                            {updateStatusMutation.isPending ? 'Updating...' : 'Update Status'}
+                                            {updatePriorityMutation.isPending ? 'Updating...' : 'Update Priority'}
                                         </Button>
                                     </div>
                                 )}

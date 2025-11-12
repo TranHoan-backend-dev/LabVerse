@@ -16,13 +16,13 @@ import java.io.Serializable;
 @Embeddable
 public class ReadingWorkflowId implements Serializable {
 
-    @Column(name = "collection_id", length = 36, nullable = false)
+    @Column(name = "collection_id", length = 255, nullable = false) // Increased to support encoded IDs
     private String collectionId;
 
-    @Column(name = "paper_id", length = 36, nullable = false)
+    @Column(name = "paper_id", length = 255, nullable = false) // Increased to support encoded IDs
     private String paperId;
 
-    @Column(name = "usersid", length = 36, nullable = false)
+    @Column(name = "usersid", length = 255, nullable = false) // Increased to support encoded IDs
     private String usersid; // Note: ERD uses "Usersid" (lowercase in DB)
 }
 
