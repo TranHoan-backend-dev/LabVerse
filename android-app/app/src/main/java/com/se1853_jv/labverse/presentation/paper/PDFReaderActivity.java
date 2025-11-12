@@ -690,7 +690,9 @@ public class PDFReaderActivity extends AppCompatActivity {
         final String finalJwtToken = jwtToken;
         
         // Calculate progress percentage (0-100)
-        int calculatedProgress = (int) Math.round((currentPage * 100.0) / totalPages);
+        // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
+        // For a 2-page PDF: page 0 = 50%, page 1 = 100%
+        int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
         if (calculatedProgress > 100) calculatedProgress = 100;
         if (calculatedProgress < 0) calculatedProgress = 0;
         
@@ -765,6 +767,33 @@ public class PDFReaderActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(String result) {
                             Log.d(TAG, "Reading progress synced to backend successfully");
+                            
+                            // Trigger status recalculation if reading in a collection (not personal library)
+                            if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
+                                try {
+                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler = 
+                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                    // finalCollectionId and finalPaperId from intent are already encoded
+                                    // recalculatePaperStatus expects encoded IDs, so we use them directly
+                                    Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
+                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId, 
+                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                            @Override
+                                            public void onSuccess(Object result) {
+                                                Log.d(TAG, "Collection paper status recalculated successfully");
+                                            }
+                                            
+                                            @Override
+                                            public void onError(String error) {
+                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                // Non-critical, status will be recalculated on next collection view
+                                            }
+                                        });
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
+                                    // Non-critical
+                                }
+                            }
                         }
 
                         @Override
