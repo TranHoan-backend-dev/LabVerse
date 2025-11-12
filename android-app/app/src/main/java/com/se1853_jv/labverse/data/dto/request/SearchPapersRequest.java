@@ -40,7 +40,7 @@ public class SearchPapersRequest {
     private Integer yearTo;
 
     @SerializedName("pageIndex")
-    @Default
+     @Default
     private Integer pageIndex = 0;
 
     @SerializedName("pageSize")
