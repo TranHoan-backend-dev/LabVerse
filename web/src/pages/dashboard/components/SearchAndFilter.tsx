@@ -28,6 +28,15 @@ const SearchAndFilter = ({
     filters,
     setFilters,
 }: SearchAndFilterProps) => {
+    const resetFilter = () => {
+        setFilters({
+            author: '',
+            journal: '',
+            yearFrom: '',
+            yearTo: '',
+        });
+    }
+
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-custom-sm">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -99,6 +108,12 @@ const SearchAndFilter = ({
                                         placeholder="2024"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2 text-center">
+                                <Button variant="outline" onClick={resetFilter}>
+                                    Reset
+                                </Button>
                             </div>
                         </div>
                     </DialogContent>

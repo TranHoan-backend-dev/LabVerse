@@ -30,8 +30,6 @@ public class AnnotationServiceImpl implements AnnotationService {
     
     @Override
     public NoteResponse createNote(String userId, CreateNoteRequest request) {
-        log.info("Creating note for user={}, paper={}, collection={}", userId, request.getPaperId(), request.getCollectionId());
-        
         Note note = Note.builder()
                 .id(UUID.randomUUID().toString())
                 .paperId(request.getPaperId())
@@ -44,15 +42,11 @@ public class AnnotationServiceImpl implements AnnotationService {
                 .build();
         
         Note savedNote = noteRepository.save(note);
-        
-        log.info("Note created successfully: {}", savedNote.getId());
         return mapToNoteResponse(savedNote);
     }
     
     @Override
     public HighlightResponse createHighlight(String userId, CreateHighlightRequest request) {
-        log.info("Creating highlight for user={}, paper={}, collection={}", userId, request.getPaperId(), request.getCollectionId());
-        
         Highlight highlight = Highlight.builder()
                 .id(UUID.randomUUID().toString())
                 .paperId(request.getPaperId())
@@ -65,15 +59,11 @@ public class AnnotationServiceImpl implements AnnotationService {
                 .build();
         
         Highlight savedHighlight = highlightRepository.save(highlight);
-        
-        log.info("Highlight created successfully: {}", savedHighlight.getId());
         return mapToHighlightResponse(savedHighlight);
     }
     
     @Override
     public List<NoteResponse> getNotes(String paperId, String collectionId, String userId) {
-        log.info("Getting notes for paper={}, collection={}, user={}", paperId, collectionId, userId);
-        
         List<Note> notes;
         if (userId != null && collectionId != null) {
             notes = noteRepository.findByUserIdAndPaperIdAndCollectionId(userId, paperId, collectionId);
@@ -92,8 +82,6 @@ public class AnnotationServiceImpl implements AnnotationService {
     
     @Override
     public List<HighlightResponse> getHighlights(String paperId, String collectionId, String userId) {
-        log.info("Getting highlights for paper={}, collection={}, user={}", paperId, collectionId, userId);
-        
         List<Highlight> highlights;
         if (userId != null && collectionId != null) {
             highlights = highlightRepository.findByUserIdAndPaperIdAndCollectionId(userId, paperId, collectionId);
@@ -112,8 +100,6 @@ public class AnnotationServiceImpl implements AnnotationService {
     
     @Override
     public void deleteNote(String userId, String noteId, String paperId, String collectionId) {
-        log.info("Deleting note={} for user={}", noteId, userId);
-        
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("Note not found"));
         
@@ -122,13 +108,10 @@ public class AnnotationServiceImpl implements AnnotationService {
         }
         
         noteRepository.deleteById(noteId);
-        log.info("Note deleted successfully: {}", noteId);
     }
     
     @Override
     public void deleteHighlight(String userId, String highlightId, String paperId, String collectionId) {
-        log.info("Deleting highlight={} for user={}", highlightId, userId);
-        
         Highlight highlight = highlightRepository.findById(highlightId)
                 .orElseThrow(() -> new IllegalArgumentException("Highlight not found"));
         
@@ -137,7 +120,6 @@ public class AnnotationServiceImpl implements AnnotationService {
         }
         
         highlightRepository.deleteById(highlightId);
-        log.info("Highlight deleted successfully: {}", highlightId);
     }
     
     private NoteResponse mapToNoteResponse(Note note) {
@@ -168,8 +150,6 @@ public class AnnotationServiceImpl implements AnnotationService {
     
     @Override
     public ExportAnnotationsResponse exportAnnotations(String paperId, String collectionId, String userId) {
-        log.info("Exporting annotations for paper={}, collection={}, user={}", paperId, collectionId, userId);
-        
         // Get all notes and highlights for this paper and collection
         List<Note> notes = noteRepository.findByPaperIdAndCollectionId(paperId, collectionId);
         List<Highlight> highlights = highlightRepository.findByPaperIdAndCollectionId(paperId, collectionId);
