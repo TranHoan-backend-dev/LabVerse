@@ -11,7 +11,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import PaperDetail from "./pages/paper/PaperDetail";
 import Collections from "./pages/Collections";
 import CollectionDetails from "./pages/CollectionDetails";
-import Profile from "./pages/Profile";
+import Profile from "./pages/profile/Profile";
 import Discover from "./pages/Discover";
 import ReadingLists from "./pages/ReadingLists";
 import NotFound from "./pages/NotFound";

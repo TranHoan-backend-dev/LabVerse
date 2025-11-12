@@ -30,7 +30,7 @@ import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.enumerate.AccessLevel;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.presentation.collection.adapter.CollectionPaperAdapter;
-import com.se1853_jv.labverse.presentation.paper.PDFReaderActivity;
+import com.se1853_jv.labverse.presentation.paper.PdfReaderActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -407,7 +407,7 @@ public class CollectionDetailsActivity extends AppCompatActivity {
                     }
 
                     // Open PDF Reader Activity
-                    Intent intent = new Intent(CollectionDetailsActivity.this, PDFReaderActivity.class);
+                    Intent intent = new Intent(CollectionDetailsActivity.this, PdfReaderActivity.class);
                     intent.putExtra("paperId", paperId);
                     String collectionIdValue = collection != null && collection.getId() != null ? collection.getId() : "";
                     intent.putExtra("collectionId", collectionIdValue);
