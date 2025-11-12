@@ -15,8 +15,6 @@ import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 
-import org.yaml.snakeyaml.scanner.Constant;
-
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -195,6 +193,42 @@ public class UserApiHandler {
                     Log.d(TAG, "Get user by email successful: " + result.getEmail());
                 } else {
                     String errorMessage = "User not found with email: " + email;
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
+                        }
+                    }
+                    Log.e(TAG, "Server Error: " + errorMessage);
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<UserResponse>> call, @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Tìm user bằng username
+     */
+    public void getUserByUsername(String username, ApiCallback<UserResponse> callback) {
+        Log.d(TAG, "getUserByUsername: " + username);
+        Call<BaseJsonResponse<UserResponse>> call = userApi.getUserByUsername(username);
+        call.enqueue(new Callback<BaseJsonResponse<UserResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<UserResponse>> call, 
+                                 @NonNull Response<BaseJsonResponse<UserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Get user by username successful: " + result.getUsername());
+                } else {
+                    String errorMessage = "User not found with username: " + username;
                     if (response.errorBody() != null) {
                         try {
                             errorMessage = response.errorBody().string();

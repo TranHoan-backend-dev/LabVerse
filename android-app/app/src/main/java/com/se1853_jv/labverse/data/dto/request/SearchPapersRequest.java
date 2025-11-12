@@ -6,6 +6,7 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -39,15 +40,18 @@ public class SearchPapersRequest {
     private Integer yearTo;
 
     @SerializedName("pageIndex")
+    @Default
     private Integer pageIndex = 0;
 
     @SerializedName("pageSize")
+    @Default
     private Integer pageSize = 10;
 
     @SerializedName("sortBy")
     private String sortBy; // "title", "publicationYear", "authors", "journal"
 
     @SerializedName("sortOrder")
+    @Default
     private String sortOrder = "asc"; // "asc" or "desc"
 }
 

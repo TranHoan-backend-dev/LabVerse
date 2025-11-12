@@ -65,6 +65,9 @@ public class TeamApiHandler {
         var client = new OkHttpClient.Builder()
                 .addInterceptor(tokenInterceptor)
                 .addInterceptor(logging)
+                .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
 
         var retrofit = new Retrofit.Builder()
