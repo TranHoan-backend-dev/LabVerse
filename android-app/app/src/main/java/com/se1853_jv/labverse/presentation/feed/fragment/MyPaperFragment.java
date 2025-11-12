@@ -41,7 +41,7 @@ import com.se1853_jv.labverse.presentation.feed.adapter.PersonalLibraryAdapter;
 import com.se1853_jv.labverse.presentation.feed.entity.MyPaperItem;
 import com.se1853_jv.labverse.presentation.feed.entity.Paper;
 import com.se1853_jv.labverse.presentation.feed.entity.Summary;
-import com.se1853_jv.labverse.presentation.paper.PDFReaderActivity;
+import com.se1853_jv.labverse.presentation.paper.PdfReaderActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -716,7 +716,7 @@ public class MyPaperFragment extends Fragment {
             return;
         }
 
-        Intent intent = new Intent(requireContext(), PDFReaderActivity.class);
+        Intent intent = new Intent(requireContext(), PdfReaderActivity.class);
         intent.putExtra("paperId", paper.getId());
         intent.putExtra("collectionId", "");
         intent.putExtra("pdfUrl", pdfUrl);
