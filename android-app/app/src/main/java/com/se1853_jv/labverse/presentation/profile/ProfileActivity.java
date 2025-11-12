@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -47,7 +48,7 @@ public class ProfileActivity extends BaseActivity {
     private ImageView ivProfileAvatar;
     private TextView tvProfileName, tvProfileTitle;
     private LinearLayout layoutChangePassword;
-
+    private MaterialToolbar toolbar;
     private UserApiHandler userApiHandler;
     private AuthApiHandler authApiHandler;
     private SessionManager sessionManager;
@@ -75,6 +76,8 @@ public class ProfileActivity extends BaseActivity {
         // setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
         loadUserData();
         handleEvents();
+
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void bindViews() {
@@ -91,6 +94,7 @@ public class ProfileActivity extends BaseActivity {
         tvProfileName = findViewById(R.id.tvProfileName);
         tvProfileTitle = findViewById(R.id.tvProfileTitle);
         layoutChangePassword = findViewById(R.id.layoutChangePassword);
+        toolbar = findViewById(R.id.toolbar);
     }
 
     private void setupToolbar() {
@@ -98,11 +102,11 @@ public class ProfileActivity extends BaseActivity {
         if (header != null) {
             ImageButton backBtn = header.findViewById(R.id.back_btn);
             TextView titleTv = header.findViewById(R.id.title);
-            
+
             if (backBtn != null) {
                 backBtn.setOnClickListener(v -> finish());
             }
-            
+
             if (titleTv != null) {
                 titleTv.setText(getString(R.string.profile));
             }
@@ -252,10 +256,10 @@ public class ProfileActivity extends BaseActivity {
             // If offline, logout locally immediately
             Log.d(TAG, "Device is offline, performing local logout");
             sessionManager.logout();
-            
+
             Toast.makeText(this, "Logged out successfully (offline mode)",
                     Toast.LENGTH_SHORT).show();
-            
+
             // Navigate to login screen
             navigateToLogin();
             return;
@@ -286,7 +290,7 @@ public class ProfileActivity extends BaseActivity {
                     sessionManager.logout();
 
                     Log.w(TAG, "Logout API error but proceeding with local logout: " + error);
-                    
+
                     Toast.makeText(ProfileActivity.this,
                             "Logged out locally (API unavailable)",
                             Toast.LENGTH_SHORT).show();
@@ -362,7 +366,7 @@ public class ProfileActivity extends BaseActivity {
      */
     private String mapRoleToDisplayName(String role) {
         if (role == null) return "";
-        
+
         String roleUpper = role.toUpperCase();
         if (roleUpper.equals("PI") || roleUpper.contains("PRINCIPAL")) {
             return getString(R.string.role_principal_investigator);
