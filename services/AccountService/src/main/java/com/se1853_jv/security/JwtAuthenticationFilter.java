@@ -39,9 +39,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwt = getJwtFromRequest(request);
-
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+            
+            if (!StringUtils.hasText(jwt)) {
+                logger.warn("No JWT token found in request for path: " + path);
+            } else if (!tokenProvider.validateToken(jwt)) {
+                logger.warn("Invalid JWT token for path: " + path);
+            } else {
                 String userId = tokenProvider.getUserIdFromToken(jwt);
+                logger.debug("Valid JWT token found for user: " + userId + " on path: " + path);
 
                 UserDetails userDetails = customUserDetailsService.loadUserById(userId);
                 UsernamePasswordAuthenticationToken authentication = 
@@ -49,9 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("SecurityContext set successfully for user: " + userId);
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Could not set user authentication in security context for path: " + path, ex);
         }
 
         filterChain.doFilter(request, response);

@@ -104,7 +104,6 @@ public class CollectionUserServiceImpl implements CollectionUserService {
         }
 
         collectionUserRepository.deleteById(id);
-        log.info("Removed member [{}] from collection [{}]", memberId, collectionId);
     }
 
     @Override
@@ -184,7 +183,7 @@ public class CollectionUserServiceImpl implements CollectionUserService {
 
             ApiFuture<DocumentReference> future =
                     firestore.collection(FIRESTORE_COLLECTION).add(data);
-            log.info("Synced member [{}] to Firestore: {}", response.getMemberId(), future.get().getId());
+            future.get(); // Wait for completion
         } catch (InterruptedException | ExecutionException e) {
             throw new DatabaseException("Error syncing to Firestore", e);
         }
@@ -234,7 +233,6 @@ public class CollectionUserServiceImpl implements CollectionUserService {
             // Send notification via Feign Client
             notificationServiceClient.createNotificationEvent(event);
             
-            log.info("Sent notification to user [{}] for being added to collection [{}]", memberId, collection.getName());
         } catch (Exception e) {
             // Log error but don't fail the add member operation
             log.error("Failed to send notification to user [{}]: {}", memberId, e.getMessage(), e);

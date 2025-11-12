@@ -408,6 +408,44 @@ public class CollectionApiHandler {
             }
         });
     }
+    
+    /**
+     * Trigger recalculation of paper status in collection
+     * This should be called after reading progress is updated
+     */
+    public void recalculatePaperStatus(@NonNull String encodedCollectionId, @NonNull String encodedPaperId, ApiCallback<Object> callback) {
+        Log.d(TAG, "recalculatePaperStatus: collectionId=" + encodedCollectionId + ", paperId=" + encodedPaperId);
+        Call<BaseJsonResponse<Object>> call = apiService.recalculatePaperStatus(encodedCollectionId, encodedPaperId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Response<BaseJsonResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    if (callback != null) {
+                        callback.onSuccess(result);
+                    }
+                    Log.d(TAG, "Paper status recalculated successfully");
+                } else {
+                    Log.w(TAG, "Failed to recalculate paper status: " + response.message());
+                    // Don't call onError - this is a background operation, failure is not critical
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<Object>> call,
+                                   @NonNull Throwable t) {
+                Log.w(TAG, "Error recalculating paper status: " + t.getMessage());
+                // Don't call onError - this is a background operation, failure is not critical
+                if (callback != null) {
+                    callback.onSuccess(null);
+                }
+            }
+        });
+    }
 }
 
 

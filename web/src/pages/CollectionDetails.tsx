@@ -38,9 +38,8 @@ const CollectionDetails = () => {
     const queryClient = useQueryClient();
     const [isAddPaperOpen, setIsAddPaperOpen] = useState(false);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+    const [isPriorityDialogOpen, setIsPriorityDialogOpen] = useState(false);
     const [selectedPaper, setSelectedPaper] = useState<CollectionPaperDetailResponse | null>(null);
-    const [selectedStatus, setSelectedStatus] = useState<string>('ToRead');
     const [selectedPriority, setSelectedPriority] = useState<string>('MEDIUM');
     const [newPaperId, setNewPaperId] = useState('');
     const [newMemberEmail, setNewMemberEmail] = useState('');
@@ -211,25 +210,28 @@ const CollectionDetails = () => {
         addPaperMutation.mutate(paperId);
     };
 
-    const updateStatusMutation = useMutation({
+    /**
+     * Update paper priority only (status is now calculated automatically, read-only)
+     */
+    const updatePriorityMutation = useMutation({
         mutationFn: async () => {
             if (!id || !user?.id || !selectedPaper) throw new Error('Missing required fields');
             return await updatePaperStatus({
                 collectionId: id,
                 paperId: selectedPaper.paperId,
                 userId: user.id,
-                status: selectedStatus,
+                // Status is not sent - it's calculated automatically by backend
                 priority: canSetPriority ? selectedPriority : undefined,
             });
         },
         onSuccess: () => {
-            toast.success('Paper status updated successfully');
+            toast.success('Paper priority updated successfully');
             queryClient.invalidateQueries({queryKey: ['collection-papers']});
-            setIsStatusDialogOpen(false);
+            setIsPriorityDialogOpen(false);
             setSelectedPaper(null);
         },
         onError: (error: Error) => {
-            toast.error(error.message || 'Failed to update paper status');
+            toast.error(error.message || 'Failed to update paper priority');
         },
     });
 
@@ -279,11 +281,18 @@ const CollectionDetails = () => {
         },
     });
 
-    const handleStatusClick = (paper: CollectionPaperDetailResponse) => {
+    /**
+     * Handle priority click (status is now read-only, calculated automatically)
+     * Only AUTHOR can change priority
+     */
+    const handlePriorityClick = (paper: CollectionPaperDetailResponse) => {
+        if (!canSetPriority) {
+            toast.error('Only collection authors can change paper priority');
+            return;
+        }
         setSelectedPaper(paper);
-        setSelectedStatus(paper.status || 'ToRead');
         setSelectedPriority(paper.priority || 'MEDIUM');
-        setIsStatusDialogOpen(true);
+        setIsPriorityDialogOpen(true);
     };
 
     const handleRemovePaper = (paper: CollectionPaperDetailResponse) => {
@@ -616,8 +625,8 @@ const CollectionDetails = () => {
                                                             <div className="flex gap-2">
                                                                 {paper.status && (
                                                                     <Badge
-                                                                        className={`${getStatusColor(paper.status)} text-white cursor-pointer`}
-                                                                        onClick={() => handleStatusClick(paper)}
+                                                                        className={`${getStatusColor(paper.status)} text-white`}
+                                                                        title="Status is calculated automatically based on all members' reading progress"
                                                                     >
                                                                         {paper.status}
                                                                     </Badge>
@@ -625,8 +634,9 @@ const CollectionDetails = () => {
                                                                 {paper.priority && (
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className={`${getPriorityColor(paper.priority)} text-white cursor-pointer`}
-                                                                        onClick={() => canSetPriority && handleStatusClick(paper)}
+                                                                        className={`${getPriorityColor(paper.priority)} text-white ${canSetPriority ? 'cursor-pointer hover:opacity-80' : ''}`}
+                                                                        onClick={() => canSetPriority && handlePriorityClick(paper)}
+                                                                        title={canSetPriority ? 'Click to change priority' : 'Only collection authors can change priority'}
                                                                     >
                                                                         {paper.priority}
                                                                     </Badge>
@@ -746,54 +756,39 @@ const CollectionDetails = () => {
                             </TabsContent>
                         </Tabs>
 
-                        {/* Status/Priority Update Dialog */}
-                        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+                        {/* Priority Update Dialog (Status is now read-only, calculated automatically) */}
+                        <Dialog open={isPriorityDialogOpen} onOpenChange={setIsPriorityDialogOpen}>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Update Paper Status</DialogTitle>
+                                    <DialogTitle>Update Paper Priority</DialogTitle>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Status is calculated automatically based on all members' reading progress
+                                    </p>
                                 </DialogHeader>
                                 {selectedPaper && (
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="status">Status</Label>
+                                            <Label htmlFor="priority">Priority</Label>
                                             <Select
-                                                value={selectedStatus}
-                                                onValueChange={setSelectedStatus}
+                                                value={selectedPriority}
+                                                onValueChange={setSelectedPriority}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue/>
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="ToRead">To Read</SelectItem>
-                                                    <SelectItem value="Reading">Reading</SelectItem>
-                                                    <SelectItem value="Finished">Finished</SelectItem>
+                                                    <SelectItem value="HIGH">High</SelectItem>
+                                                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                                                    <SelectItem value="LOW">Low</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        {canSetPriority && (
-                                            <div className="space-y-2">
-                                                <Label htmlFor="priority">Priority</Label>
-                                                <Select
-                                                    value={selectedPriority}
-                                                    onValueChange={setSelectedPriority}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue/>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="HIGH">High</SelectItem>
-                                                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                        <SelectItem value="LOW">Low</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
                                         <Button
-                                            onClick={() => updateStatusMutation.mutate()}
-                                            disabled={updateStatusMutation.isPending}
+                                            onClick={() => updatePriorityMutation.mutate()}
+                                            disabled={updatePriorityMutation.isPending}
                                             className="w-full"
                                         >
-                                            {updateStatusMutation.isPending ? 'Updating...' : 'Update Status'}
+                                            {updatePriorityMutation.isPending ? 'Updating...' : 'Update Priority'}
                                         </Button>
                                     </div>
                                 )}

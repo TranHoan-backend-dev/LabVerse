@@ -1,7 +1,6 @@
 package com.se1853_jv.labverse.presentation.paper;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,7 +12,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -44,7 +42,7 @@ import java.util.UUID;
  * - Display annotations overlay
  * - Offline support với OfflineSyncHelper (Phần 11)
  */
-public class PDFReaderActivity extends AppCompatActivity {
+public class PdfReaderActivity extends AppCompatActivity {
     private static final String TAG = "PDFReaderActivity";
     
     private PDFView pdfView;
@@ -161,7 +159,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
-                        Toast.makeText(PDFReaderActivity.this, 
+                        Toast.makeText(PdfReaderActivity.this,
                             "Error loading PDF: " + e.getMessage(), 
                             Toast.LENGTH_LONG).show();
                     });
@@ -208,7 +206,7 @@ public class PDFReaderActivity extends AppCompatActivity {
             })
             .onError(t -> {
                 Log.e(TAG, "Error loading PDF", t);
-                Toast.makeText(PDFReaderActivity.this, 
+                Toast.makeText(PdfReaderActivity.this,
                     "Error loading PDF: " + t.getMessage(), 
                     Toast.LENGTH_LONG).show();
             })
@@ -295,7 +293,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         note.setId(response.id);
                         loadedNotes.add(note);
                         displayNoteOverlay(note);
-                        Toast.makeText(PDFReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
                     });
                 }
 
@@ -307,7 +305,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         syncHelper.saveNote(note, "CREATE");
                         loadedNotes.add(note);
                         displayNoteOverlay(note);
-                        Toast.makeText(PDFReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -358,7 +356,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         highlight.setId(response.id);
                         loadedHighlights.add(highlight);
                         displayHighlightOverlay(highlight);
-                        Toast.makeText(PDFReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
                     });
                 }
 
@@ -370,7 +368,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         syncHelper.saveHighlight(highlight, "CREATE");
                         loadedHighlights.add(highlight);
                         displayHighlightOverlay(highlight);
-                        Toast.makeText(PDFReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -690,7 +688,9 @@ public class PDFReaderActivity extends AppCompatActivity {
         final String finalJwtToken = jwtToken;
         
         // Calculate progress percentage (0-100)
-        int calculatedProgress = (int) Math.round((currentPage * 100.0) / totalPages);
+        // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
+        // For a 2-page PDF: page 0 = 50%, page 1 = 100%
+        int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
         if (calculatedProgress > 100) calculatedProgress = 100;
         if (calculatedProgress < 0) calculatedProgress = 0;
         
@@ -765,6 +765,33 @@ public class PDFReaderActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(String result) {
                             Log.d(TAG, "Reading progress synced to backend successfully");
+                            
+                            // Trigger status recalculation if reading in a collection (not personal library)
+                            if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
+                                try {
+                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler = 
+                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                    // finalCollectionId and finalPaperId from intent are already encoded
+                                    // recalculatePaperStatus expects encoded IDs, so we use them directly
+                                    Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
+                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId, 
+                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                            @Override
+                                            public void onSuccess(Object result) {
+                                                Log.d(TAG, "Collection paper status recalculated successfully");
+                                            }
+                                            
+                                            @Override
+                                            public void onError(String error) {
+                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                // Non-critical, status will be recalculated on next collection view
+                                            }
+                                        });
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
+                                    // Non-critical
+                                }
+                            }
                         }
 
                         @Override
@@ -873,7 +900,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                 public void onError(String error) {
                     runOnUiThread(() -> {
                         progressDialog.dismiss();
-                        Toast.makeText(PDFReaderActivity.this, "Export failed: " + error, Toast.LENGTH_LONG).show();
+                        Toast.makeText(PdfReaderActivity.this, "Export failed: " + error, Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Error exporting annotations: " + error);
                     });
                 }
@@ -1017,7 +1044,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                     public void onSuccess(Void data) {
                         runOnUiThread(() -> {
                             progressDialog.dismiss();
-                            Toast.makeText(PDFReaderActivity.this, "Annotations imported successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(PdfReaderActivity.this, "Annotations imported successfully", Toast.LENGTH_SHORT).show();
                             // Reload annotations to display imported ones
                             loadAnnotations();
                         });
@@ -1027,7 +1054,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                     public void onError(String error) {
                         runOnUiThread(() -> {
                             progressDialog.dismiss();
-                            Toast.makeText(PDFReaderActivity.this, "Import failed: " + error, Toast.LENGTH_LONG).show();
+                            Toast.makeText(PdfReaderActivity.this, "Import failed: " + error, Toast.LENGTH_LONG).show();
                             Log.e(TAG, "Error importing annotations: " + error);
                         });
                     }

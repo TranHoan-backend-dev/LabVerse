@@ -194,15 +194,27 @@ public class UserApiHandler {
                     callback.onSuccess(result);
                     Log.d(TAG, "Get user by email successful: " + result.getEmail());
                 } else {
-                    String errorMessage = "User not found with email: " + email;
-                    if (response.errorBody() != null) {
-                        try {
-                            errorMessage = response.errorBody().string();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error parsing error body", e);
+                    String errorMessage;
+                    int statusCode = response.code();
+                    
+                    if (statusCode == 401 || statusCode == 403) {
+                        // Token expired or unauthorized
+                        errorMessage = "Your session has expired. Please login again.";
+                        Log.w(TAG, "Authentication failed (status " + statusCode + "). Token may be expired.");
+                    } else {
+                        errorMessage = "User not found with email: " + email;
+                        if (response.errorBody() != null) {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                if (errorBody != null && !errorBody.isEmpty()) {
+                                    errorMessage = errorBody;
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing error body", e);
+                            }
                         }
                     }
-                    Log.e(TAG, "Server Error: " + errorMessage);
+                    Log.e(TAG, "Server Error: " + errorMessage + " (Status: " + statusCode + ")");
                     callback.onError(errorMessage);
                 }
             }
