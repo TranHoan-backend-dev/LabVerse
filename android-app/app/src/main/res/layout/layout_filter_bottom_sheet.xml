@@ -135,7 +135,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="@string/reset"
-                android:textColor="@android:color/black"
+                android:textColor="@color/white"
                 android:backgroundTint="@android:color/darker_gray"
                 app:cornerRadius="12dp" />
 

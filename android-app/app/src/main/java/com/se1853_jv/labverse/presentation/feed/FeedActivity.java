@@ -28,6 +28,10 @@ import com.se1853_jv.labverse.presentation.team.TeamListActivity;
 import java.util.List;
 
 public class FeedActivity extends BaseActivity {
+    private TabLayoutMediator mediator;
+    private ViewPager2 pager;
+    private TabLayout tabLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +46,6 @@ public class FeedActivity extends BaseActivity {
         setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav);
         setupTabs();
         setupImportPaperButton();
-        getMockData();
         handleFilterPapers();
 
         // Setup notification button click listener
@@ -57,10 +60,6 @@ public class FeedActivity extends BaseActivity {
         // Refresh notification badge when returning to this activity
         HeaderHelper.loadNotificationBadge(this);
     }
-
-    private TabLayoutMediator mediator;
-    private ViewPager2 pager;
-    private TabLayout tabLayout;
 
     private void setupTabs() {
         pager = findViewById(R.id.viewPager);
@@ -225,15 +224,6 @@ public class FeedActivity extends BaseActivity {
                 }
             }
         });
-    }
-
-    private void getMockData() {
-        List<DiscoveryItem> items = ParseFileUtils.fromJsonAsset(
-                FeedActivity.this,
-                "feed/discovery.json",
-                new TypeToken<List<DiscoveryItem>>() {
-                }.getType()
-        );
     }
 
     private void handleFilterPapers() {
