@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus, BookOpen } from "lucide-react";
 import PaperCard from "@/components/PaperCard";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-// import {toast} from "sonner";
+import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
-import { getPaginatedPapers } from "@/services/paper.service.ts";
+import { getPaginatedPapers, importPaper } from "@/services/paper.service.ts";
 import Header from "@/pages/Header.tsx";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
+import { CreatePaperRequest } from "@/types/paper.type";
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
     const [isImportOpen, setIsImportOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [newPaper, setNewPaper] = useState({
@@ -26,6 +28,7 @@ const Dashboard = () => {
         keywords: [],
         publicationYear: new Date().getFullYear(),
         title: '',
+        file: new File([], ''),
     });
     const [page, setPage] = useState(1);
     const pageSize = 12;
@@ -37,58 +40,57 @@ const Dashboard = () => {
     });
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['papers', user?.id, searchQuery, page],
-        queryFn: async () => await getPaginatedPapers(page, pageSize, searchQuery),
+        queryKey: ['papers', user?.id, searchQuery, page, filters],
+        queryFn: async () => await getPaginatedPapers(page, pageSize, searchQuery, filters),
         enabled: !!user,
         retry: 1,
     });
 
-    const papers = data?.data?.content ?? [];
+    const papers = data?.data?.papers ?? [];
     const total = data?.data?.totalElements ?? 0;
     const totalPages = data?.data?.totalPages ?? Math.max(1, Math.ceil(total / pageSize));
 
     const importMutation = useMutation({
-        // TODO: xu ly import paper
-        // mutationFn: async () => {
-        //     const authorsArray = newPaper.authors
-        //         .split(',')
-        //         .map(a => a.trim())
-        //         .filter(a => a);
-        //
-        //     const payload = {
-        //         title: newPaper.title,
-        //         authors: authorsArray,
-        //         journal: newPaper.journal || null,
-        //         year: newPaper.year || null,
-        //         description: newPaper.description || null,
-        //         doi: newPaper.doi || null,
-        //     };
-        //
-        //     const res = await
-        //
-        //     if (!res.ok) throw new Error('Failed to import paper');
-        // },
-        // onSuccess: () => {
-        //     toast.success('Paper imported successfully');
-        //     queryClient.invalidateQueries({queryKey: ['papers']});
-        //     setIsImportOpen(false);
-        //     setNewPaper({
-        //         title: '',
-        //         authors: '',
-        //         journal: '',
-        //         year: new Date().getFullYear(),
-        //         description: '',
-        //         doi: '',
-        //     });
-        // },
-        // onError: () => {
-        //     toast.error('Failed to import paper');
-        // },
-    });
+        mutationFn: async () => {
+            console.log(newPaper.file.size == 0)
+            if (newPaper.file.size == 0) throw new Error('No file provided. Please select a PDF file to import.');
 
-    const handleFilterRequest = () => {
-        
-    }
+            const payload: CreatePaperRequest = {
+                file: newPaper.file,
+                title: newPaper.title,
+                authors: newPaper.authors,
+                journal: newPaper.journal || null,
+                publicationYear: newPaper.publicationYear || null,
+                doi: newPaper.doi || null,
+                description: newPaper.description || null,
+                userId: user!.id,
+            };
+
+            const res = await importPaper(payload);
+
+            if (res.status !== 200) throw new Error('Failed to import paper');
+        },
+        onSuccess: () => {
+            toast.success('Paper imported successfully');
+            queryClient.invalidateQueries({ queryKey: ['papers'] });
+            setIsImportOpen(false);
+            setNewPaper({
+                authors: '',
+                dataUrl: '',
+                description: '',
+                doi: '',
+                id: '',
+                journal: '',
+                keywords: [],
+                publicationYear: new Date().getFullYear(),
+                title: '',
+                file: new File([], ''),
+            });
+        },
+        onError: (e: Error) => {
+            toast.error(e.message);
+        },
+    });
 
     return (
         <>
@@ -106,7 +108,7 @@ const Dashboard = () => {
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="space-y-8">
                         {/* Page Header */}
-                        <DashboardHeader 
+                        <DashboardHeader
                             isImportOpen={isImportOpen}
                             setIsImportOpen={setIsImportOpen}
                             newPaper={newPaper}
@@ -120,7 +122,6 @@ const Dashboard = () => {
                             setSearchQuery={setSearchQuery}
                             filters={filters}
                             setFilters={setFilters}
-                            setPage={setPage}
                         />
 
                         {/* Papers Grid */}

@@ -88,19 +88,19 @@ class PaperController(
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadPdfWithFile(
-        @RequestParam("file") file: MultipartFile,
-        @RequestParam("title") title: String,
-        @RequestParam("authors") authors: String,
-        @RequestParam("journal") journal: String,
-        @RequestParam("publicationYear") publicationYear: Int,
-        @RequestParam(value = "doi", required = false) doi: String?,
-        @RequestParam(value = "description", required = false) description: String?,
-        @RequestParam(value = "keywords", required = false) keywords: String?,
-        @RequestParam(value = "tags", required = false) tags: String?,
+        @RequestParam file: MultipartFile,
+        @RequestParam title: String,
+        @RequestParam authors: String,
+        @RequestParam journal: String,
+        @RequestParam publicationYear: Int,
+        @RequestParam doi: String,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) keywords: String?,
+        @RequestParam(required = false) tags: String?,
         @RequestHeader(value = "X-User-Id", required = false) userId: String?
     ): ResponseEntity<WrapperApiResponse> {
         logger.info { "Request to uploadPdfWithFile controller, userId: $userId, filename: ${file.originalFilename}" }
-        
+
         // Validate file
         if (file.isEmpty) {
             return ResponseEntity.badRequest().body(
@@ -112,7 +112,7 @@ class PaperController(
                 )
             )
         }
-        
+
         if (file.contentType != "application/pdf") {
             return ResponseEntity.badRequest().body(
                 WrapperApiResponse(
@@ -123,7 +123,7 @@ class PaperController(
                 )
             )
         }
-        
+
         try {
             // Check if S3Service is available
             if (s3Service == null) {
@@ -140,11 +140,11 @@ class PaperController(
             // Upload file to S3
             val s3Url = s3Service.uploadPdf(file.inputStream, file.contentType ?: "application/pdf")
             logger.info { "File uploaded to S3: $s3Url" }
-            
+
             // Parse keywords and tags if provided
             val keywordsList = keywords?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
             val tagsList = tags?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
-            
+
             // Create paper request
             val request = UploadPdfRequest(
                 dataUrl = s3Url,
@@ -152,15 +152,15 @@ class PaperController(
                 authors = authors,
                 journal = journal,
                 publicationYear = publicationYear,
-                doi = if (doi.isNullOrBlank()) null else doi,
+                doi = doi,
                 description = if (description.isNullOrBlank()) null else description,
                 keywords = keywordsList,
                 tags = tagsList
             )
-            
+
             // Create paper
             paperService.createNewPaper(request, userId)
-            
+
             return ResponseEntity.ok(
                 WrapperApiResponse(
                     HttpStatus.OK.value(),

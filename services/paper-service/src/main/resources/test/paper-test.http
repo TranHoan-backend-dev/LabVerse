@@ -5,7 +5,6 @@
 GET {{url}}/details?id={{id}}
 Accept: application/json
 
-
 ### Get references
 GET {{url}}/references?id={{id}}
 Accept: application/json
@@ -80,7 +79,7 @@ Accept: application/json
 HEAD {{url}}/health
 
 ### Get all papers - No search query
-GET {{url}}/all?index=0&size=10
+GET {{url}}/all?index=0&size=12
 Accept: application/json
 
 ### Get all papers - With search query
@@ -107,6 +106,7 @@ Accept: application/json
 
 ### Get all papers - Pagination
 GET {{url}}/all?index=1&size=5
+
 ### Get paper with pagination and missing some request params #2
 GET {{url}}/all?index=1&author=Hoan&journal=hehe
 Accept: application/json

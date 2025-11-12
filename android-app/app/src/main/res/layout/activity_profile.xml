@@ -21,6 +21,7 @@
         app:menu="@menu/profile_toolbar_menu"
         app:navigationIcon="@drawable/ic_arrow_back_2"
         app:title="Profile"
+        app:titleCentered="true"
         app:titleTextColor="@color/light_black" />
 
     <androidx.core.widget.NestedScrollView
