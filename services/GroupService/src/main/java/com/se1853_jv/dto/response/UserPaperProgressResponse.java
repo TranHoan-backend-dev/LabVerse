@@ -1,14 +1,16 @@
-package com.se1853_jv.readingservice.dto.response;
+package com.se1853_jv.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserPaperProgressResponse {
     private String userId; // Encoded
     private String status;
@@ -16,7 +18,4 @@ public class UserPaperProgressResponse {
     private Integer progress;
     private LocalDateTime lastUpdated;
 }
-
-
-
 

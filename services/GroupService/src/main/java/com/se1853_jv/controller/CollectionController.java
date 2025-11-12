@@ -89,4 +89,12 @@ public class CollectionController {
         collectionService.deleteCollection(id, encodedUserId);
         return ResponseEntity.ok(WrapperApiResponse.success("Collection deleted successfully"));
     }
+    
+    @PostMapping("/papers/recalculate-status")
+    public ResponseEntity<WrapperApiResponse> recalculatePaperStatus(
+            @RequestParam("collectionId") String encodedCollectionId,
+            @RequestParam("paperId") String encodedPaperId) {
+        collectionService.recalculatePaperStatus(encodedCollectionId, encodedPaperId);
+        return ResponseEntity.ok(WrapperApiResponse.success("Paper status recalculated successfully"));
+    }
 }
