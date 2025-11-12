@@ -20,7 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/teams")
+@RequestMapping("/v1/api/teams")
 public class TeamController {
 
     private final TeamService teamService;

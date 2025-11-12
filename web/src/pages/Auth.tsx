@@ -4,6 +4,7 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {BookOpen} from "lucide-react";
 import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "@/contexts/AuthContext";
@@ -11,6 +12,7 @@ import {Helmet} from "react-helmet-async";
 
 const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
+    const [roleName, setRoleName] = useState<'PI' | 'RESEARCHER' | 'STUDENT' | ''>('');
     const {signIn, signUp, user} = useAuth();
     const navigate = useNavigate();
 
@@ -46,10 +48,16 @@ const Auth = () => {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
         const fullName = formData.get('fullName') as string;
-        const affiliation = formData.get('affiliation') as string;
+        const username = formData.get('username') as string;
+
+        if (!roleName) {
+            alert('Please select a role');
+            setIsLoading(false);
+            return;
+        }
 
         try {
-            await signUp(email, password, fullName, affiliation);
+            await signUp(email, password, fullName, username, roleName as 'PI' | 'RESEARCHER' | 'STUDENT');
         } catch (error) {
             // Error handled in context
         } finally {
@@ -138,6 +146,18 @@ const Auth = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
+                                            <Label htmlFor="signup-username">Username</Label>
+                                            <Input
+                                                id="signup-username"
+                                                name="username"
+                                                type="text"
+                                                placeholder="johndoe"
+                                                required
+                                                minLength={3}
+                                                maxLength={50}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
                                             <Label htmlFor="signup-email">Email</Label>
                                             <Input
                                                 id="signup-email"
@@ -148,13 +168,17 @@ const Auth = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="signup-affiliation">Affiliation</Label>
-                                            <Input
-                                                id="signup-affiliation"
-                                                name="affiliation"
-                                                type="text"
-                                                placeholder="University or Lab"
-                                            />
+                                            <Label htmlFor="signup-role">Role</Label>
+                                            <Select value={roleName} onValueChange={(value) => setRoleName(value as 'PI' | 'RESEARCHER' | 'STUDENT')} required>
+                                                <SelectTrigger id="signup-role">
+                                                    <SelectValue placeholder="Select your role" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="STUDENT">Student</SelectItem>
+                                                    <SelectItem value="RESEARCHER">Researcher</SelectItem>
+                                                    <SelectItem value="PI">Principal Investigator (PI)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="signup-password">Password</Label>

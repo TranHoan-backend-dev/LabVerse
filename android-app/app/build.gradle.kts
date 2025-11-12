@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     id("io.freefair.lombok") version "9.0.0"
@@ -9,13 +7,6 @@ android {
     namespace = "com.se1853_jv.labverse"
     compileSdk = 36
 
-    // Đọc Cloudinary credentials từ local.properties
-    val localProperties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { localProperties.load(it) }
-    }
-
     defaultConfig {
         applicationId = "com.se1853_jv.labverse"
         minSdk = 24
@@ -24,23 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Inject Cloudinary credentials vào BuildConfig từ local.properties
-        buildConfigField(
-            "String",
-            "CLOUDINARY_CLOUD_NAME",
-            "\"${localProperties.getProperty("cloudinary.cloud.name", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "CLOUDINARY_API_KEY",
-            "\"${localProperties.getProperty("cloudinary.api.key", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "CLOUDINARY_API_SECRET",
-            "\"${localProperties.getProperty("cloudinary.api.secret", "")}\""
-        )
     }
 
     buildTypes {
@@ -59,6 +33,13 @@ android {
     
     buildFeatures {
         buildConfig = true
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        // Force update evernote.android.job to fix PendingIntent FLAG_IMMUTABLE issue on Android 12+
+        force("com.evernote:android-job:1.4.2")
     }
 }
 
@@ -89,7 +70,10 @@ dependencies {
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
-    implementation(libs.cloudinary.android)
+    // Force update evernote.android.job to fix PendingIntent FLAG_IMMUTABLE issue on Android 12+
+    implementation("com.evernote:android-job:1.4.2") {
+        exclude(group = "com.google.android.gms")
+    }
 
     implementation(libs.android.pdf.viewer)
 

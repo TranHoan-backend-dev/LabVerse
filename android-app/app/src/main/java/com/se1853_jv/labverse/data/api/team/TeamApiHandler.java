@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
+import com.se1853_jv.labverse.data.Constants;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.dto.request.AddTeamMemberRequest;
 import com.se1853_jv.labverse.data.dto.request.CreateTeamRequest;
@@ -33,7 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class TeamApiHandler {
     private static final String TAG = "TeamApiHandler";
-    private static final String BASE_URL = "http://10.0.2.2:8081/api/";
+    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL;
     
     private final TeamApi teamApi;
     private final SessionManager sessionManager;

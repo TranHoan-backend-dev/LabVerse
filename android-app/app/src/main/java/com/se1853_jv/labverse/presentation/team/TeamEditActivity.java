@@ -92,7 +92,7 @@ public class TeamEditActivity extends AppCompatActivity {
                             selectedImageUri = imageUri;
                             ivTeamIcon.setImageURI(imageUri);
                             Toast.makeText(this, "Team icon selected", Toast.LENGTH_SHORT).show();
-                            // TODO: Upload image to Cloudinary and get URL
+                            // TODO: Upload image to S3 and get URL
                         }
                     }
                 }

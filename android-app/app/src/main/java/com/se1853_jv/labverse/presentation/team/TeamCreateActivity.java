@@ -45,7 +45,7 @@ public class TeamCreateActivity extends AppCompatActivity {
     private Button btnCreateTeam;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private Uri selectedImageUri;
-    private String iconUrl; // Will be set after uploading to Cloudinary
+    private String iconUrl; // Will be set after uploading to S3
 
     private TeamApiHandler teamApiHandler;
     private TeamRepository teamRepository;
@@ -82,7 +82,7 @@ public class TeamCreateActivity extends AppCompatActivity {
                             selectedImageUri = imageUri;
                             ivTeamIcon.setImageURI(imageUri);
                             Toast.makeText(this, "Team icon selected", Toast.LENGTH_SHORT).show();
-                            // TODO: Upload image to Cloudinary and get URL
+                            // TODO: Upload image to S3 and get URL
                             // For now, we'll leave iconUrl as null
                         }
                     }

@@ -10,6 +10,7 @@ import com.se1853_jv.service.EncoderService
 import com.se1853_jv.service.boundary.PaperService
 import mu.KotlinLogging
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -45,18 +46,14 @@ class PaperServiceImpl(
         return response
     }
 
-    override fun getAllPapers(searchQuery: String?, pageIndex: Int, pageSize: Int?): List<PaperResponse> {
-        // Delegate to the full method with null filters
-        return getAllPapers(searchQuery, pageIndex, pageSize, null, null, null, null)
-    }
-
     override fun getAllPapers(
         searchQuery: String?, pageIndex: Int, pageSize: Int?,
         author: String?, journal: String?, publicationYearFrom: Int?,
         publicationYearTo: Int?
-    ): List<PaperResponse> {
+    ): PageImpl<PaperResponse> {
         logger.info { "Getting all papers with search query: $searchQuery" }
-        val allPapers: Page<Paper> = paperRepo.findAll(PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE))
+        val pageRequest = PageRequest.of(pageIndex, pageSize ?: PAGE_SIZE)
+        val allPapers: Page<Paper> = paperRepo.findAll(pageRequest)
         var data = allPapers.content
 
         data = if (searchQuery.isNullOrBlank()) {
@@ -93,7 +90,8 @@ class PaperServiceImpl(
             }
         }
 
-        return data.map { convert(it) }
+        val response = data.map { convert(it) }
+        return PageImpl(response, pageRequest, response.size.toLong())
     }
 
     override fun deleteById(id: String) {

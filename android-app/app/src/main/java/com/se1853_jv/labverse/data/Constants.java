@@ -5,5 +5,6 @@ public class Constants {
     public static String PAPER_ENDPOINT_URL = BASE_URL + "paper-service/";
     public static String GROUP_ENDPOINT_URL = BASE_URL + "group-service/";
     public static String NOTIFICATION_ENDPOINT_URL = BASE_URL + "notification-service/";
+    public static String ACCOUNT_ENDPOINT_URL = BASE_URL + "account-service/";
 
 }

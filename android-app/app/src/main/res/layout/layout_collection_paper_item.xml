@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
@@ -14,7 +14,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="16dp">
 
         <TextView
@@ -24,8 +24,8 @@
             android:text="Paper Title"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorOnSurface"
-            app:layout_constraintEnd_toStartOf="@id/chip_paper_status"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/chip_paper_status"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginEnd="8dp" />
 
@@ -48,8 +48,8 @@
             android:text="Authors"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintEnd_toStartOf="@id/chip_paper_priority"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/chip_paper_priority"
             app:layout_constraintTop_toBottomOf="@id/text_paper_title"
             android:layout_marginEnd="8dp" />
 
@@ -61,9 +61,9 @@
             android:text="HIGH"
             android:textAppearance="?attr/textAppearanceLabelSmall"
             app:chipMinHeight="24dp"
+            app:layout_constraintBottom_toTopOf="@+id/button_remove_paper"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chip_paper_status"
-            android:layout_marginTop="8dp" />
+            app:layout_constraintTop_toBottomOf="@id/chip_paper_status" />
 
         <TextView
             android:id="@+id/text_paper_journal"
@@ -73,23 +73,37 @@
             android:text="Journal • Year"
             android:textAppearance="?attr/textAppearanceBodySmall"
             android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintEnd_toStartOf="@id/button_remove_paper"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_remove_paper"
             app:layout_constraintTop_toBottomOf="@id/text_paper_authors"
             android:layout_marginEnd="8dp" />
+
+        <!-- Progress Bar sát đáy -->
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_remove_paper"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="78dp"
+            android:layout_height="42dp"
             android:text="Remove"
             android:textAppearance="?attr/textAppearanceLabelSmall"
             android:textColor="?attr/colorError"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chip_paper_priority"
-            android:layout_marginTop="8dp" />
+            app:layout_constraintTop_toBottomOf="@id/chip_paper_priority" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:max="100"
+            android:progress="0"
+            android:progressTint="@color/third_green"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button_remove_paper"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
-

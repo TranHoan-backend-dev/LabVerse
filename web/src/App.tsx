@@ -7,9 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import PaperDetail from "./pages/PaperDetail";
+import Dashboard from "./pages/dashboard/Dashboard";
+import PaperDetail from "./pages/paper/PaperDetail";
 import Collections from "./pages/Collections";
+import CollectionDetails from "./pages/CollectionDetails";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import ReadingLists from "./pages/ReadingLists";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/paper/:id" element={<ProtectedRoute><PaperDetail /></ProtectedRoute>} />
             <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+            <Route path="/collections/:id" element={<ProtectedRoute><CollectionDetails /></ProtectedRoute>} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/reading-lists" element={<ProtectedRoute><ReadingLists /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

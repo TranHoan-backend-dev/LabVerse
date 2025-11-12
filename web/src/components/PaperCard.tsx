@@ -4,15 +4,20 @@ import { Button } from "@/components/ui/button";
 import { FileText, Calendar, Users, ExternalLink } from "lucide-react";
 
 interface PaperCardProps {
-  title: string;
-  authors: string[];
+  authors: string;
+  dataUrl?: string;
+  description?: string;
+  doi: string;
+  id: string;
   journal?: string | null;
-  year?: number | null;
+  keywords?: string[] | null;
+  publicationYear?: number | null;
+  title: string;
   status?: string | null;
   priority?: string | null;
 }
 
-const PaperCard = ({ title, authors, journal, year, status, priority }: PaperCardProps) => {
+const PaperCard = ({ title, authors, journal, publicationYear: year, status, priority }: PaperCardProps) => {
   const statusColors: Record<string, string> = {
     "To Read": "bg-muted text-muted-foreground",
     "Reading": "bg-accent/10 text-accent",
@@ -26,17 +31,17 @@ const PaperCard = ({ title, authors, journal, year, status, priority }: PaperCar
   };
 
   return (
-    <Card className="hover:shadow-custom-md transition-smooth group">
-      <CardContent className="p-6 space-y-4">
+    <Card className="hover:shadow-custom-md transition-smooth group h-[260px] flex flex-col">
+      <CardContent className="p-6 space-y-4 flex-1 overflow-hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-3">
             <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-smooth">
               {title}
             </h3>
-            
+
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span className="line-clamp-1">{authors.join(", ")}</span>
+              <span className="line-clamp-1">{authors}</span>
             </div>
 
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
