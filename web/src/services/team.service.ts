@@ -1,5 +1,4 @@
 import {BASE_API_URL, GROUP_SERVICE_PREDICATE, METHOD} from "@/type/constant.ts";
-import {IdEncoder} from "@/utils/idEncoder.ts";
 import {tokenStorage} from "@/utils/token";
 
 const endpoints = ["teams"] as const;
@@ -111,8 +110,7 @@ export const getTeams = async (
 
 // Get team by ID
 export const getTeamById = async (teamId: string): Promise<TeamResponse> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}`, {
         method: METHOD.GET.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -123,43 +121,33 @@ export const getTeamById = async (teamId: string): Promise<TeamResponse> => {
 
 // Create team
 export const createTeam = async (request: CreateTeamRequest): Promise<TeamResponse> => {
-    const encodedUserId = IdEncoder.encode(request.userId);
     const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}`, {
         method: METHOD.POST.toString(),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': getAuthToken() || ''
         },
-        body: JSON.stringify({
-            ...request,
-            userId: encodedUserId
-        })
+        body: JSON.stringify(request)
     });
     return handleResponse<TeamResponse>(response);
 }
 
 // Update team
 export const updateTeam = async (teamId: string, request: UpdateTeamRequest): Promise<TeamResponse> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const encodedUserId = IdEncoder.encode(request.userId);
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}`, {
         method: METHOD.PUT.toString(),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': getAuthToken() || ''
         },
-        body: JSON.stringify({
-            ...request,
-            userId: encodedUserId
-        })
+        body: JSON.stringify(request)
     });
     return handleResponse<TeamResponse>(response);
 }
 
 // Delete team
 export const deleteTeam = async (teamId: string): Promise<void> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}`, {
         method: METHOD.DELETE.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -170,8 +158,7 @@ export const deleteTeam = async (teamId: string): Promise<void> => {
 
 // Get team members
 export const getTeamMembers = async (teamId: string): Promise<TeamMemberResponse[]> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/members`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}/members`, {
         method: METHOD.GET.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -182,27 +169,20 @@ export const getTeamMembers = async (teamId: string): Promise<TeamMemberResponse
 
 // Add team member
 export const addTeamMember = async (teamId: string, request: AddTeamMemberRequest): Promise<TeamMemberResponse> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const encodedMemberId = IdEncoder.encode(request.memberId);
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/members`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}/members`, {
         method: METHOD.POST.toString(),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': getAuthToken() || ''
         },
-        body: JSON.stringify({
-            ...request,
-            memberId: encodedMemberId
-        })
+        body: JSON.stringify(request)
     });
     return handleResponse<TeamMemberResponse>(response);
 }
 
 // Remove team member
 export const removeTeamMember = async (teamId: string, memberId: string): Promise<void> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const encodedMemberId = IdEncoder.encode(memberId);
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/members/${encodedMemberId}`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}/members/${memberId}`, {
         method: METHOD.DELETE.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -217,9 +197,7 @@ export const updateMemberRole = async (
     memberId: string,
     request: UpdateMemberRoleRequest
 ): Promise<TeamMemberResponse> => {
-    const encodedId = teamId.includes('-') ? IdEncoder.encode(teamId) : teamId;
-    const encodedMemberId = IdEncoder.encode(memberId);
-    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/members/${encodedMemberId}/role`, {
+    const response = await fetch(`${BASE_API_URL}/${GROUP_SERVICE_PREDICATE}/${endpoints[0]}/${teamId}/members/${memberId}/role`, {
         method: METHOD.PUT.toString(),
         headers: {
             'Content-Type': 'application/json',

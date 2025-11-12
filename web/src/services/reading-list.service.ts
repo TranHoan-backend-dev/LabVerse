@@ -1,5 +1,4 @@
 import {BASE_API_URL, READING_SERVICE_PREDICATE, METHOD} from "@/type/constant.ts";
-import {IdEncoder} from "@/utils/idEncoder.ts";
 import {tokenStorage} from "@/utils/token";
 
 const endpoints = ["reading-lists"] as const;
@@ -54,7 +53,6 @@ function getAuthToken(): string | null {
 
 // Create reading list
 export const createReadingList = async (request: CreateReadingListRequest): Promise<ReadingListResponse> => {
-    const encodedUserId = IdEncoder.encode(request.userId);
     const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}`, {
         method: METHOD.POST.toString(),
         headers: {
@@ -64,7 +62,7 @@ export const createReadingList = async (request: CreateReadingListRequest): Prom
         body: JSON.stringify({
             name: request.name,
             description: request.description,
-            userId: encodedUserId
+            userId: request.userId
         })
     });
     return handleResponse<ReadingListResponse>(response);
@@ -72,8 +70,7 @@ export const createReadingList = async (request: CreateReadingListRequest): Prom
 
 // Get reading lists by user
 export const getReadingListsByUser = async (userId: string): Promise<ReadingListResponse[]> => {
-    const encodedUserId = IdEncoder.encode(userId);
-    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/user/${encodedUserId}`, {
+    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/user/${userId}`, {
         method: METHOD.GET.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -84,9 +81,7 @@ export const getReadingListsByUser = async (userId: string): Promise<ReadingList
 
 // Get reading list by ID
 export const getReadingListById = async (listId: string): Promise<ReadingListResponse> => {
-    // List ID from response is already encoded, use directly
-    const encodedId = listId.includes('-') ? IdEncoder.encode(listId) : listId;
-    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}`, {
+    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${listId}`, {
         method: METHOD.GET.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
@@ -100,18 +95,13 @@ export const updateReadingListPapers = async (
     listId: string,
     request: UpdateReadingListPapersRequest
 ): Promise<ReadingListResponse> => {
-    const encodedId = listId.includes('-') ? IdEncoder.encode(listId) : listId;
-    // Paper IDs from paper service are already encoded
-    const encodedPaperIds = request.paperIds.map(id => 
-        id.includes('-') ? IdEncoder.encode(id) : id
-    );
-    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/papers`, {
+    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${listId}/papers`, {
         method: METHOD.PUT.toString(),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': getAuthToken() || ''
         },
-        body: JSON.stringify({ paperIds: encodedPaperIds })
+        body: JSON.stringify({ paperIds: request.paperIds })
     });
     return handleResponse<ReadingListResponse>(response);
 }
@@ -121,23 +111,20 @@ export const updateReadingListUsers = async (
     listId: string,
     request: UpdateReadingListUsersRequest
 ): Promise<ReadingListResponse> => {
-    const encodedId = listId.includes('-') ? IdEncoder.encode(listId) : listId;
-    const encodedUserIds = request.userIds.map(id => IdEncoder.encode(id));
-    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}/users`, {
+    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${listId}/users`, {
         method: METHOD.PUT.toString(),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': getAuthToken() || ''
         },
-        body: JSON.stringify({ userIds: encodedUserIds })
+        body: JSON.stringify({ userIds: request.userIds })
     });
     return handleResponse<ReadingListResponse>(response);
 }
 
 // Delete reading list
 export const deleteReadingList = async (listId: string): Promise<void> => {
-    const encodedId = listId.includes('-') ? IdEncoder.encode(listId) : listId;
-    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${encodedId}`, {
+    const response = await fetch(`${BASE_API_URL}/${READING_SERVICE_PREDICATE}/${endpoints[0]}/${listId}`, {
         method: METHOD.DELETE.toString(),
         headers: {
             'Authorization': getAuthToken() || ''
