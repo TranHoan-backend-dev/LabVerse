@@ -30,6 +30,12 @@ const NotificationBell = () => {
     queryFn: getNotifications,
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2, // Retry 2 times on failure
+    retryDelay: 5000, // Wait 5 seconds between retries
+    // Don't throw error, just log it and return empty array
+    onError: (error: Error) => {
+      console.warn('Failed to fetch notifications:', error.message);
+    },
   });
 
   // Mark as read mutation
@@ -42,6 +48,7 @@ const NotificationBell = () => {
       toast.error(error.message || 'Failed to mark notification as read');
     },
   });
+
 
   // Count unread notifications
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -105,6 +112,7 @@ const NotificationBell = () => {
             <div className="space-y-1">
               {notifications.map((notification) => {
                 const isExpanded = selectedNotification?.id === notification.id;
+
                 return (
                   <DropdownMenuItem
                     key={notification.id}

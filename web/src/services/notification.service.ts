@@ -9,6 +9,7 @@ export interface Notification {
   message: string;
   linkTo: string | null;
   isRead: boolean;
+  read?: boolean; // Backend might return 'read' instead of 'isRead'
   createdAt: string;
 }
 
@@ -31,6 +32,13 @@ export const getNotifications = async (): Promise<Notification[]> => {
         throw new Error("Session expired. Please login again.");
       }
       
+      // If service is unavailable (503), return empty array instead of throwing error
+      // This prevents the UI from crashing when notification service is down
+      if (response.status === 503) {
+        console.warn("Notification service is unavailable (503). Returning empty notifications.");
+        return [];
+      }
+      
       let errorMessage = `Failed to get notifications: ${response.statusText} (${response.status})`;
       
       if (isJson) {
@@ -50,11 +58,24 @@ export const getNotifications = async (): Promise<Notification[]> => {
     }
 
     const notifications: Notification[] = await response.json();
-    return notifications;
+    // Normalize read/isRead field - backend might return 'read' or 'isRead'
+    return notifications.map(n => ({
+      ...n,
+      isRead: n.isRead ?? n.read ?? false
+    }));
   } catch (error: any) {
+    // If network error or service unavailable, return empty array
+    // This prevents the UI from crashing when notification service is down
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error(`Cannot connect to Notification Service at ${NOTIFICATION_SERVICE_URL}. Please make sure the service is running.`);
+      console.warn(`Cannot connect to Notification Service at ${NOTIFICATION_SERVICE_URL}. Returning empty notifications.`);
+      return [];
     }
+    // Re-throw if it's already handled (503 case)
+    if (error.message && error.message.includes('503')) {
+      return [];
+    }
+    // For other errors, still throw to let caller handle it
+    console.error('Error fetching notifications:', error);
     throw error;
   }
 };
