@@ -5,8 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PaperRepository : MongoRepository<Paper, String> {
+interface PaperRepository : MongoRepository<Paper, String>, PaperRepositoryCustom {
     fun existsByMetadataDoi(doi: String): Boolean
-    fun findByCreatedBy(userId: String): List<Paper>
     fun findByCreatedByOrderByIdDesc(userId: String): List<Paper>
 }
