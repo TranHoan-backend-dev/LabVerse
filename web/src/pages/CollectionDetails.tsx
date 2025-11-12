@@ -30,6 +30,8 @@ import {BASE_API_URL} from "@/type/constant.ts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
 import {getAuthHeaders} from "@/utils/token";
+import ProgressDashboard from "@/pages/collection/components/ProgressDashboard";
+import {BarChart3} from "lucide-react";
 
 const CollectionDetails = () => {
     const {id} = useParams<{id: string}>();
@@ -44,7 +46,7 @@ const CollectionDetails = () => {
     const [newPaperId, setNewPaperId] = useState('');
     const [newMemberEmail, setNewMemberEmail] = useState('');
     const [newMemberAccessLevel, setNewMemberAccessLevel] = useState<'READ_ONLY' | 'CONTRIBUTOR' | 'AUTHOR'>('CONTRIBUTOR');
-    const [activeTab, setActiveTab] = useState<'papers' | 'members'>('papers');
+    const [activeTab, setActiveTab] = useState<'papers' | 'members' | 'progress'>('papers');
     
     // Papers list pagination
     const [papersPage, setPapersPage] = useState(0);
@@ -389,7 +391,7 @@ const CollectionDetails = () => {
                             </div>
                         </div>
 
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'papers' | 'members')}>
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'papers' | 'members' | 'progress')}>
                             <div className="flex items-center justify-between">
                                 <TabsList>
                                     <TabsTrigger value="papers">
@@ -400,6 +402,12 @@ const CollectionDetails = () => {
                                         <Users className="h-4 w-4 mr-2"/>
                                         Members
                                     </TabsTrigger>
+                                    {isOwner && (
+                                        <TabsTrigger value="progress">
+                                            <BarChart3 className="h-4 w-4 mr-2"/>
+                                            Progress
+                                        </TabsTrigger>
+                                    )}
                                 </TabsList>
                                 {activeTab === 'papers' && canAddPaper && (
                                     <Dialog open={isAddPaperOpen}                                     onOpenChange={(open) => {
@@ -754,6 +762,17 @@ const CollectionDetails = () => {
                                     </Card>
                                 )}
                             </TabsContent>
+
+                            {isOwner && (
+                                <TabsContent value="progress" className="mt-6">
+                                    {id && (
+                                        <ProgressDashboard 
+                                            collectionId={id} 
+                                            members={members}
+                                        />
+                                    )}
+                                </TabsContent>
+                            )}
                         </Tabs>
 
                         {/* Priority Update Dialog (Status is now read-only, calculated automatically) */}
