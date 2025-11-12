@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
+import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -46,8 +47,8 @@ import java.util.UUID;
  * - Display annotations overlay
  * - Offline support với OfflineSyncHelper (Phần 11)
  */
-public class PDFReaderActivity extends AppCompatActivity {
-    private static final String TAG = "PDFReaderActivity";
+public class PdfReaderActivity extends AppCompatActivity {
+    private static final String TAG = "PdfReaderActivity";
     
     private PDFView pdfView;
     private Toolbar toolbar;
@@ -174,7 +175,7 @@ public class PDFReaderActivity extends AppCompatActivity {
         workflowRepository = db.readingWorkflowRepository();
         
         // Log collectionId for debugging
-        Log.d(TAG, "PDFReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
+        Log.d(TAG, "PdfReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
         
         // Set default collectionId if null or empty (personal library)
         if (collectionId == null || collectionId.isEmpty()) {
@@ -227,7 +228,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
-                        Toast.makeText(PDFReaderActivity.this, 
+                        Toast.makeText(PdfReaderActivity.this,
                             "Error loading PDF: " + e.getMessage(), 
                             Toast.LENGTH_LONG).show();
                     });
@@ -267,7 +268,7 @@ public class PDFReaderActivity extends AppCompatActivity {
             })
             .onError(t -> {
                 Log.e(TAG, "Error loading PDF", t);
-                Toast.makeText(PDFReaderActivity.this, 
+                Toast.makeText(PdfReaderActivity.this,
                     "Error loading PDF: " + t.getMessage(), 
                     Toast.LENGTH_LONG).show();
             })
@@ -286,7 +287,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                     showNoteContentDialog(note);
                 }
             });
-            
+
             // Set up touch listener for placement mode
             annotationOverlayView.setOnTouchListener((v, event) -> {
                 // Only handle placement touch if in placement mode
@@ -311,7 +312,7 @@ public class PDFReaderActivity extends AppCompatActivity {
             Log.w(TAG, "Neither annotationOverlayView nor pdfView is available for touch handling");
         }
     }
-    
+
     /**
      * Show dialog với nội dung note khi user tap vào note marker
      */
@@ -325,7 +326,7 @@ public class PDFReaderActivity extends AppCompatActivity {
 
     private boolean handlePlacementTouch(MotionEvent event) {
         Log.d(TAG, "handlePlacementTouch: noteMode=" + notePlacementMode + ", highlightMode=" + highlightPlacementMode + ", action=" + event.getAction());
-        
+
         if ((!notePlacementMode && !highlightPlacementMode) || pdfView == null) {
             Log.d(TAG, "Touch ignored: placement modes are off or pdfView is null");
             return false;
@@ -444,7 +445,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         note.setId(response.id);
                         loadedNotes.add(note);
                         displayNoteOverlay(note);
-                        Toast.makeText(PDFReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
                     });
                 }
 
@@ -456,7 +457,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         syncHelper.saveNote(note, "CREATE");
                         loadedNotes.add(note);
                         displayNoteOverlay(note);
-                        Toast.makeText(PDFReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Note saved (will sync later)", Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -505,7 +506,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         highlight.setId(response.id);
                         loadedHighlights.add(highlight);
                         displayHighlightOverlay(highlight);
-                        Toast.makeText(PDFReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Text highlighted", Toast.LENGTH_SHORT).show();
                     });
                 }
 
@@ -517,7 +518,7 @@ public class PDFReaderActivity extends AppCompatActivity {
                         syncHelper.saveHighlight(highlight, "CREATE");
                         loadedHighlights.add(highlight);
                         displayHighlightOverlay(highlight);
-                        Toast.makeText(PDFReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PdfReaderActivity.this, "Highlight saved (will sync later)", Toast.LENGTH_SHORT).show();
                     });
                 }
             });
@@ -846,7 +847,9 @@ public class PDFReaderActivity extends AppCompatActivity {
         final String finalJwtToken = jwtToken;
         
         // Calculate progress percentage (0-100)
-        int calculatedProgress = (int) Math.round((currentPage * 100.0) / totalPages);
+        // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
+        // For a 2-page PDF: page 0 = 50%, page 1 = 100%
+        int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
         if (calculatedProgress > 100) calculatedProgress = 100;
         if (calculatedProgress < 0) calculatedProgress = 0;
         
@@ -921,6 +924,33 @@ public class PDFReaderActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(String result) {
                             Log.d(TAG, "Reading progress synced to backend successfully");
+
+                            // Trigger status recalculation if reading in a collection (not personal library)
+                            if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
+                                try {
+                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler =
+                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                    // finalCollectionId and finalPaperId from intent are already encoded
+                                    // recalculatePaperStatus expects encoded IDs, so we use them directly
+                                    Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
+                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId,
+                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                            @Override
+                                            public void onSuccess(Object result) {
+                                                Log.d(TAG, "Collection paper status recalculated successfully");
+                                            }
+
+                                            @Override
+                                            public void onError(String error) {
+                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                // Non-critical, status will be recalculated on next collection view
+                                            }
+                                        });
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
+                                    // Non-critical
+                                }
+                            }
                         }
 
                         @Override

@@ -9,6 +9,10 @@ import lombok.*;
 public class CollectionUserResponse {
     private String collectionId;
     private String memberId;
+    private String memberName;
+    private String memberEmail;
+    private String memberAvatarUrl;
+    private String role;
     private Boolean isAuthor; // Deprecated, kept for backward compatibility
     private AccessLevel accessLevel;
 

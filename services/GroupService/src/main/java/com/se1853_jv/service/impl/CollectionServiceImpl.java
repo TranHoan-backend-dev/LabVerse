@@ -5,7 +5,9 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.se1853_jv.dto.request.*;
 import com.se1853_jv.dto.response.*;
+import com.se1853_jv.dto.response.PaperProgressResponse;
 import com.se1853_jv.dto.response.PaperResponse;
+import com.se1853_jv.dto.response.UserPaperProgressResponse;
 import com.se1853_jv.exception.*;
 import com.se1853_jv.model.*;
 import com.se1853_jv.model.Collection;
@@ -13,6 +15,7 @@ import com.se1853_jv.model.enumerate.AccessLevel;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.service.CollectionService;
 import com.se1853_jv.service.PaperService;
+import com.se1853_jv.service.ReadingServiceClient;
 import com.se1853_jv.service.UserServiceClient;
 import com.se1853_jv.util.IdEncoder;
 import feign.FeignException;
@@ -36,6 +39,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final CollectionUserRepository collectionUserRepository;
     private final PaperService paperServiceClient;
     private final UserServiceClient userServiceClient;
+    private final ReadingServiceClient readingServiceClient;
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "collections";
 
@@ -99,7 +103,14 @@ public class CollectionServiceImpl implements CollectionService {
         String decodedId = IdEncoder.decode(encodedId);
         Collection entity = collectionRepository.findById(decodedId)
                 .orElseThrow(() -> new ResourceNotFoundException("Collection not found: " + encodedId));
-        return CollectionResponse.fromEntity(entity);
+        
+        // Get counts
+        long paperCount = collectionPaperRepository.findByIdCollectionId(entity.getId()).size();
+        long memberCount = collectionUserRepository.findByIdCollectionId(entity.getId()).size();
+        
+        CollectionResponse response = CollectionResponse.fromEntity(entity, paperCount, memberCount);
+        setCreatorInfo(response, entity.getId());
+        return response;
     }
 
     @Override
@@ -222,7 +233,6 @@ public class CollectionServiceImpl implements CollectionService {
                 log.warn("Paper not found in paper-service: {}", paperId);
                 throw new ResourceNotFoundException("Paper not found: " + paperId);
             }
-            log.info("Paper validated successfully: {}", paperId);
         } catch (FeignException.NotFound e) {
             log.error("Paper not found in paper-service: {}", paperId);
             throw new ResourceNotFoundException("Paper not found: " + paperId);
@@ -269,17 +279,20 @@ public class CollectionServiceImpl implements CollectionService {
             verifyUserCanUpdatePaperStatus(collectionId, userId, request.getPriority(), currentPriority);
         }
 
-        // Always allow status update (AUTHOR, CONTRIBUTOR, READ_ONLY can all update status)
-        if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            entity.setStatus(request.getStatus());
-        }
-        
+        // Status is now calculated automatically based on ReadingWorkflow of all members
+        // Users cannot manually update status - it's read-only
         // Only update priority if it's provided and user has permission
         // If priority is null or empty, keep the current priority (don't update)
         if (request.getPriority() != null && !request.getPriority().isBlank()) {
             entity.setPriority(request.getPriority());
         }
         // If priority is null/empty, entity.getPriority() remains unchanged
+        
+        // Auto-calculate and update status based on all members' reading progress
+        String calculatedStatus = calculatePaperStatus(collectionId, paperId);
+        if (calculatedStatus != null) {
+            entity.setStatus(calculatedStatus);
+        }
 
         return CollectionPaperResponse.fromEntity(collectionPaperRepository.save(entity));
     }
@@ -310,7 +323,6 @@ public class CollectionServiceImpl implements CollectionService {
 
         // Remove paper from collection
         collectionPaperRepository.delete(collectionPaper);
-        log.info("Paper [{}] removed from collection [{}] by user [{}]", paperId, collectionId, userId);
     }
 
     @Override
@@ -363,6 +375,20 @@ public class CollectionServiceImpl implements CollectionService {
                     }
 
                     if (paper != null && paper.getTitle() != null && !paper.getTitle().isEmpty()) {
+                        // Calculate status automatically based on all members' reading progress
+                        String calculatedStatus = calculatePaperStatus(collectionId, paperId);
+                        String currentStatus = cp.getStatus();
+                        
+                        // Update status in database if it changed (case-insensitive comparison)
+                        if (calculatedStatus != null && 
+                            (currentStatus == null || !calculatedStatus.equalsIgnoreCase(currentStatus))) {
+                            cp.setStatus(calculatedStatus);
+                            cp = collectionPaperRepository.saveAndFlush(cp); // Save and flush immediately
+                        }
+                        
+                        // Use status from entity (which may have been updated)
+                        String statusToReturn = calculatedStatus != null ? calculatedStatus : cp.getStatus();
+                        
                         return CollectionPaperDetailResponse.builder()
                                 .paperId(IdEncoder.encode(paperId))
                                 .title(paper.getTitle())
@@ -370,7 +396,7 @@ public class CollectionServiceImpl implements CollectionService {
                                 .journal(paper.getJournal() != null ? paper.getJournal() : "")
                                 .publicationYear(paper.getPublicationYear() != null ? paper.getPublicationYear() : 0)
                                 .priority(cp.getPriority())
-                                .status(cp.getStatus())
+                                .status(statusToReturn)
                                 .addingDate(cp.getAddingDate())
                                 .build();
                     }
@@ -382,6 +408,20 @@ public class CollectionServiceImpl implements CollectionService {
             }
 
             // Fallback if paper not found or error
+            // Calculate status automatically
+            String calculatedStatus = calculatePaperStatus(collectionId, paperId);
+            String currentStatus = cp.getStatus();
+            
+            // Update status in database if it changed (case-insensitive comparison)
+            if (calculatedStatus != null && 
+                (currentStatus == null || !calculatedStatus.equalsIgnoreCase(currentStatus))) {
+                cp.setStatus(calculatedStatus);
+                cp = collectionPaperRepository.saveAndFlush(cp); // Save and flush immediately
+            }
+            
+            // Use status from entity (which may have been updated)
+            String statusToReturn = calculatedStatus != null ? calculatedStatus : cp.getStatus();
+            
             return CollectionPaperDetailResponse.builder()
                     .paperId(IdEncoder.encode(paperId))
                     .title("Unknown Paper")
@@ -389,7 +429,7 @@ public class CollectionServiceImpl implements CollectionService {
                     .journal("Unknown")
                     .publicationYear(0)
                     .priority(cp.getPriority())
-                    .status(cp.getStatus())
+                    .status(statusToReturn)
                     .addingDate(cp.getAddingDate())
                     .build();
         }).toList();
@@ -517,7 +557,6 @@ public class CollectionServiceImpl implements CollectionService {
             // Delete the collection
             collectionRepository.delete(collection);
 
-            log.info("Collection [{}] deleted successfully by user [{}]", collectionId, userId);
 
         } catch (Exception e) {
             if (e instanceof ResourceNotFoundException || e instanceof BadRequestException) {
@@ -599,6 +638,195 @@ public class CollectionServiceImpl implements CollectionService {
         }
     }
 
+    /**
+     * Calculate paper status automatically based on all members' reading progress
+     * Status logic:
+     * - "ToRead": No members have started reading (all ReadingWorkflow are unread or don't exist)
+     * - "Reading": Some members are reading but not all have finished (at least one has progress > 0 and < 100, or not all members have progress = 100)
+     * - "Finished": All members have finished reading (all ReadingWorkflow have progress = 100)
+     * 
+     * @param collectionId The collection ID
+     * @param paperId The paper ID
+     * @return Calculated status: "ToRead", "Reading", or "Finished", or null if error
+     */
+    private String calculatePaperStatus(String collectionId, String paperId) {
+        try {
+            // Get all members of the collection
+            List<CollectionUser> members = collectionUserRepository.findByIdCollectionId(collectionId);
+            if (members.isEmpty()) {
+                // No members, default to "ToRead"
+                return "ToRead";
+            }
+            
+            int totalMembers = members.size();
+            
+            // Get paper progress from ReadingService
+            String encodedCollectionId = IdEncoder.encode(collectionId);
+            String encodedPaperId = IdEncoder.encode(paperId);
+            
+            PaperProgressResponse progressResponse;
+            try {
+                var wrapperResponse = readingServiceClient.getPaperProgress(encodedCollectionId, encodedPaperId);
+                
+                if (wrapperResponse == null || wrapperResponse.getData() == null) {
+                    log.warn(">>> Could not get paper progress for collection {} paper {}, defaulting to ToRead", 
+                            collectionId, paperId);
+                    return "ToRead";
+                }
+                
+                Object data = wrapperResponse.getData();
+                
+                // Handle different response types
+                if (data instanceof PaperProgressResponse) {
+                    progressResponse = (PaperProgressResponse) data;
+                } else if (data instanceof Map) {
+                    // Convert Map to PaperProgressResponse
+                    Map<String, Object> progressMap = (Map<String, Object>) data;
+                    
+                    progressResponse = new PaperProgressResponse();
+                    progressResponse.setPaperId((String) progressMap.get("paperId"));
+                    if (progressMap.get("totalReaders") != null) {
+                        progressResponse.setTotalReaders(((Number) progressMap.get("totalReaders")).longValue());
+                    }
+                    if (progressMap.get("unreadCount") != null) {
+                        progressResponse.setUnreadCount(((Number) progressMap.get("unreadCount")).longValue());
+                    }
+                    if (progressMap.get("readingCount") != null) {
+                        progressResponse.setReadingCount(((Number) progressMap.get("readingCount")).longValue());
+                    }
+                    if (progressMap.get("finishedCount") != null) {
+                        progressResponse.setFinishedCount(((Number) progressMap.get("finishedCount")).longValue());
+                    }
+                    if (progressMap.get("averageProgress") != null) {
+                        progressResponse.setAverageProgress(((Number) progressMap.get("averageProgress")).doubleValue());
+                    }
+                    // Handle userProgressList
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> userProgressMapList = (List<Map<String, Object>>) progressMap.get("userProgressList");
+                    
+                    if (userProgressMapList != null && !userProgressMapList.isEmpty()) {
+                        List<UserPaperProgressResponse> userProgressList = userProgressMapList.stream()
+                                .map(userMap -> {
+                                    UserPaperProgressResponse userProgress = new UserPaperProgressResponse();
+                                    userProgress.setUserId((String) userMap.get("userId"));
+                                    userProgress.setStatus((String) userMap.get("status"));
+                                    if (userMap.get("lastPage") != null) {
+                                        userProgress.setLastPage(((Number) userMap.get("lastPage")).intValue());
+                                    }
+                                    if (userMap.get("progress") != null) {
+                                        userProgress.setProgress(((Number) userMap.get("progress")).intValue());
+                                    }
+                                    return userProgress;
+                                })
+                                .collect(java.util.stream.Collectors.toList());
+                        progressResponse.setUserProgressList(userProgressList);
+                    }
+                } else {
+                    return "ToRead";
+                }
+            } catch (feign.FeignException.ServiceUnavailable e) {
+                log.warn("ReadingService is not available (503), cannot calculate status for collection {} paper {}, defaulting to ToRead. Error: {}", 
+                        collectionId, paperId, e.getMessage());
+                return "ToRead";
+            } catch (feign.FeignException e) {
+                log.warn("Error calling ReadingService for collection {} paper {}: {}, defaulting to ToRead", 
+                        collectionId, paperId, e.getMessage());
+                return "ToRead";
+            }
+            
+            
+            // Use userProgressList to calculate status more accurately
+            // This ensures we check actual progress for each member
+            List<UserPaperProgressResponse> userProgressList = progressResponse.getUserProgressList();
+            
+            // Create a map of member IDs for quick lookup
+            java.util.Set<String> memberIds = members.stream()
+                    .map(m -> m.getId().getMemberId())
+                    .collect(java.util.stream.Collectors.toSet());
+            
+            // Count members who have started reading (have workflow with progress > 0)
+            long membersStarted = 0;
+            long membersFinished = 0;
+            
+            if (userProgressList != null && !userProgressList.isEmpty()) {
+                for (UserPaperProgressResponse userProgress : userProgressList) {
+                    String userId = IdEncoder.decode(userProgress.getUserId());
+                    Integer progress = userProgress.getProgress();
+                    String status = userProgress.getStatus();
+                    
+                    // Check if this user is a member of the collection
+                    if (memberIds.contains(userId)) {
+                        // Count members who have started (progress > 0 or status is not unread)
+                        if (progress != null && progress > 0) {
+                            membersStarted++;
+                            // Count members who have finished (progress = 100 or status = finished)
+                            if (progress >= 100 || "finished".equalsIgnoreCase(status)) {
+                                membersFinished++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If no member has started reading
+            if (membersStarted == 0) {
+                return "ToRead";
+            }
+            
+            // If all members have finished reading (progress = 100%)
+            if (membersFinished == totalMembers) {
+                return "Finished";
+            }
+            
+            // If at least one member has started reading but not all have finished
+            // This includes cases where some members haven't started yet
+            if (membersStarted > 0) {
+                return "Reading";
+            }
+            
+            // Default: no one has started reading
+            return "ToRead";
+            
+        } catch (Exception e) {
+            log.error("Error calculating paper status for collection {} paper {}: {}", 
+                    collectionId, paperId, e.getMessage(), e);
+            // Return null to indicate error, caller will use existing status
+            return null;
+        }
+    }
+
+    @Override
+    public void recalculatePaperStatus(String encodedCollectionId, String encodedPaperId) {
+        try {
+            String collectionId = IdEncoder.decode(encodedCollectionId);
+            String paperId = IdEncoder.decode(encodedPaperId);
+            
+            CollectionPaperId compositeId = new CollectionPaperId(paperId, collectionId);
+            CollectionPaper collectionPaper = collectionPaperRepository.findById(compositeId).orElse(null);
+            
+            if (collectionPaper == null) {
+                log.warn("Paper not found in collection for status recalculation: collectionId={}, paperId={}", 
+                        collectionId, paperId);
+                return;
+            }
+            
+            // Calculate new status
+            String calculatedStatus = calculatePaperStatus(collectionId, paperId);
+            String currentStatus = collectionPaper.getStatus();
+            
+            // Update if status changed (case-insensitive comparison)
+            if (calculatedStatus != null && 
+                (currentStatus == null || !calculatedStatus.equalsIgnoreCase(currentStatus))) {
+                collectionPaper.setStatus(calculatedStatus);
+                collectionPaperRepository.saveAndFlush(collectionPaper); // Save and flush immediately
+            }
+        } catch (Exception e) {
+            log.error("Error recalculating paper status: collectionId={}, paperId={}, error={}", 
+                    encodedCollectionId, encodedPaperId, e.getMessage(), e);
+            // Don't throw exception - this is a background operation
+        }
+    }
+
     private void storeToFirestore(CollectionResponse response) {
         try {
             Map<String, Object> data = new HashMap<>();
@@ -606,7 +834,7 @@ public class CollectionServiceImpl implements CollectionService {
             data.put("name", response.getName());
             data.put("timestamp", LocalDateTime.now().toString());
             ApiFuture<DocumentReference> future = firestore.collection(COLLECTION_NAME).add(data);
-            log.info("Stored collection [{}] into Firestore: {}", response.getName(), future.get().getId());
+            future.get(); // Wait for completion
         } catch (InterruptedException | ExecutionException e) {
             throw new DatabaseException("Error storing to Firestore", e);
         }

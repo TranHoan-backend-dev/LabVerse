@@ -14,8 +14,10 @@ import com.se1853_jv.model.Collection;
 import com.se1853_jv.model.enumerate.AccessLevel;
 import com.se1853_jv.repository.*;
 import com.se1853_jv.dto.NotificationRequestEvent;
+import com.se1853_jv.dto.response.WrapperApiResponse;
 import com.se1853_jv.service.CollectionUserService;
 import com.se1853_jv.service.NotificationServiceClient;
+import com.se1853_jv.service.UserServiceClient;
 import com.se1853_jv.util.IdEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ public class CollectionUserServiceImpl implements CollectionUserService {
     private final CollectionUserRepository collectionUserRepository;
     private final Firestore firestore;
     private final NotificationServiceClient notificationServiceClient;
+    private final UserServiceClient userServiceClient;
 
     private static final String FIRESTORE_COLLECTION = "collection_members";
 
@@ -75,6 +78,9 @@ public class CollectionUserServiceImpl implements CollectionUserService {
 
         CollectionUser saved = collectionUserRepository.save(entity);
         CollectionUserResponse response = CollectionUserResponse.fromEntity(saved);
+        
+        // Populate user info (name, email, avatar, role)
+        populateUserInfo(response, memberId);
 
         syncToFirestore(response);
         
@@ -98,7 +104,6 @@ public class CollectionUserServiceImpl implements CollectionUserService {
         }
 
         collectionUserRepository.deleteById(id);
-        log.info("Removed member [{}] from collection [{}]", memberId, collectionId);
     }
 
     @Override
@@ -106,12 +111,19 @@ public class CollectionUserServiceImpl implements CollectionUserService {
         String collectionId = IdEncoder.decode(encodedCollectionId);
 
         List<CollectionUser> members = collectionUserRepository.findByIdCollectionId(collectionId);
+        
+        // Return empty list if no members found (frontend expects empty array, not exception)
         if (members.isEmpty()) {
-            throw new ResourceNotFoundException("No members found for this collection");
+            return new ArrayList<>();
         }
 
         return members.stream()
-                .map(CollectionUserResponse::fromEntity)
+                .map(entity -> {
+                    CollectionUserResponse response = CollectionUserResponse.fromEntity(entity);
+                    String memberId = entity.getId().getMemberId();
+                    populateUserInfo(response, memberId);
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -151,6 +163,10 @@ public class CollectionUserServiceImpl implements CollectionUserService {
 
         CollectionUser saved = collectionUserRepository.save(member);
         CollectionUserResponse response = CollectionUserResponse.fromEntity(saved);
+        
+        // Populate user info (name, email, avatar, role)
+        populateUserInfo(response, memberId);
+        
         syncToFirestore(response);
         
         return response;
@@ -167,9 +183,35 @@ public class CollectionUserServiceImpl implements CollectionUserService {
 
             ApiFuture<DocumentReference> future =
                     firestore.collection(FIRESTORE_COLLECTION).add(data);
-            log.info("Synced member [{}] to Firestore: {}", response.getMemberId(), future.get().getId());
+            future.get(); // Wait for completion
         } catch (InterruptedException | ExecutionException e) {
             throw new DatabaseException("Error syncing to Firestore", e);
+        }
+    }
+
+    /**
+     * Populate user information (name, email, avatar, role) from AccountService
+     */
+    private void populateUserInfo(CollectionUserResponse response, String memberId) {
+        try {
+            String encodedMemberId = IdEncoder.encode(memberId);
+            WrapperApiResponse userResponse = userServiceClient.getUserById(encodedMemberId);
+            
+            if (userResponse != null && userResponse.getData() != null) {
+                Object data = userResponse.getData();
+                if (data instanceof Map) {
+                    Map<String, Object> userMap = (Map<String, Object>) data;
+                    response.setMemberName((String) userMap.getOrDefault("fullName", null));
+                    response.setMemberEmail((String) userMap.getOrDefault("email", null));
+                    response.setMemberAvatarUrl((String) userMap.getOrDefault("avatarUrl", null));
+                    // Role is a String in UserResponse
+                    response.setRole((String) userMap.getOrDefault("role", null));
+                } else {
+                    log.warn("Unexpected user data type for member ID {}: {}", memberId, data != null ? data.getClass().getName() : "null");
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error fetching user info for member ID {}: {}", memberId, e.getMessage());
         }
     }
 
@@ -191,7 +233,6 @@ public class CollectionUserServiceImpl implements CollectionUserService {
             // Send notification via Feign Client
             notificationServiceClient.createNotificationEvent(event);
             
-            log.info("Sent notification to user [{}] for being added to collection [{}]", memberId, collection.getName());
         } catch (Exception e) {
             // Log error but don't fail the add member operation
             log.error("Failed to send notification to user [{}]: {}", memberId, e.getMessage(), e);

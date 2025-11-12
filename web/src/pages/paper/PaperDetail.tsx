@@ -3,14 +3,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from "react-helmet-async";
 import { getPaperDetails } from "@/services/paper.service.ts";
 import Header from "@/pages/Header.tsx";
 import PaperDetailsHeader from "./components/PaperDetailsHeader";
-import TabContents from "./components/Tabs";
+import PaperDetailsMainContent from "./components/PaperDetailsMainContent";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const PaperDetail = () => {
     const { id } = useParams();
@@ -82,6 +84,7 @@ const PaperDetail = () => {
             </div>
         );
     }
+    console.log('Paper details: ', paper);
 
     const title = paper?.title || "Research Paper";
     const description =
@@ -115,49 +118,91 @@ const PaperDetail = () => {
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="max-w-4xl mx-auto space-y-6">
-                        <div>
-                            {/* Paper title */}
-                            <PaperDetailsHeader
-                                paper={paper}
-                                toggleFavoriteMutation={toggleFavoriteMutation}
-                                deleteMutation={deleteMutation}
-                            />
+                        <PaperDetailsMainContent
+                            paper={paper}
+                            toggleFavoriteMutation={toggleFavoriteMutation}
+                            deleteMutation={deleteMutation}
+                        />
 
-                            {/* Badge */}
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                <Badge variant={paper.status === 'Finished' ? 'default' : 'secondary'}>
-                                    {paper.status}
-                                </Badge>
-                                <Badge
-                                    variant={paper.priority === 'High' ? 'destructive' : paper.priority === 'Medium' ? 'default' : 'outline'}>
-                                    {paper.priority} Priority
-                                </Badge>
-                            </div>
-                            <div className="text-sm text-muted-foreground space-y-1">
-                                <p>
-                                    <strong>Authors:</strong>
-                                    {paper.authors?.join(', ')}
-                                </p>
-                                {paper.journal && <p><strong>Journal:</strong> {paper.journal}</p>}
-                                {paper.year && <p><strong>Year:</strong> {paper.year}</p>}
-                                {paper.doi && (
-                                    <p className="flex items-center gap-2">
-                                        <strong>DOI:</strong>
-                                        <a
-                                            href={`https://doi.org/${paper.doi}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary hover:underline inline-flex items-center gap-1"
-                                        >
-                                            {paper.doi}
-                                            <ExternalLink className="h-3 w-3" />
-                                        </a>
-                                    </p>
-                                )}
-                            </div>
-                        </div>
+                        <Tabs defaultValue="description" className="w-full">
+                            <TabsList>
+                                <TabsTrigger value="description">Description</TabsTrigger>
+                                <TabsTrigger value="details">Details</TabsTrigger>
+                                <TabsTrigger value="notes">Notes</TabsTrigger>
+                            </TabsList>
 
-                        <TabContents paper={paper} />
+                            <TabsContent value="description" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Description</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm leading-relaxed">
+                                            {paper.description || 'No description available.'}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="details" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Paper Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {paper.keywords && paper.keywords.length > 0 && (
+                                            <div>
+                                                <h3 className="font-semibold mb-2">Keywords</h3>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {paper.keywords.map((keyword, index) => (
+                                                        <Badge key={index} variant="outline">{keyword}</Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {paper.dataUrl && (
+                                            <div>
+                                                <h3 className="font-semibold mb-2">PDF</h3>
+                                                <a
+                                                    href={paper.pdf_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                                                >
+                                                    <FileText className="h-4 w-4" />
+                                                    View PDF
+                                                </a>
+                                            </div>
+                                        )}
+
+                                        {paper.total_pages && (
+                                            <div>
+                                                <h3 className="font-semibold mb-2">Reading Progress</h3>
+                                                <p className="text-sm">
+                                                    Page {paper.last_read_page} of {paper.total_pages}
+                                                    {' '}({Math.round((paper.last_read_page / paper.total_pages) * 100)}%)
+                                                </p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="notes" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Notes & Annotations</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">
+                                            Annotations feature coming soon. You'll be able to add highlights and notes
+                                            to your papers.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </main>
             </div>

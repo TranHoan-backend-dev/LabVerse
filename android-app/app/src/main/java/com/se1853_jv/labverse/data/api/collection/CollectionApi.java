@@ -79,6 +79,11 @@ public interface CollectionApi {
             @Path("collectionId") String collectionId,
             @Path("memberId") String memberId,
             @Body UpdateMemberAccessRequest request);
+    
+    @POST("collections/papers/recalculate-status")
+    Call<BaseJsonResponse<Object>> recalculatePaperStatus(
+            @Query("collectionId") String encodedCollectionId,
+            @Query("paperId") String encodedPaperId);
 }
 
 

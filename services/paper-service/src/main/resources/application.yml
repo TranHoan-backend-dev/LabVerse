@@ -6,6 +6,10 @@ spring:
   cloud:
     compatibility-verifier:
       enabled: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 eureka:
   client:
     register-with-eureka: true
@@ -26,10 +30,3 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-
-#aws:
-#  s3:
-#    access-key: ${AWS_ACCESS_KEY:}
-#    secret-key: ${AWS_SECRET_KEY:}
-#    region: ${AWS_REGION:us-east-1}
-#    bucket: ${AWS_S3_BUCKET:}

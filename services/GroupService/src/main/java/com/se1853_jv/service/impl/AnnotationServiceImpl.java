@@ -30,28 +30,28 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AnnotationServiceImpl implements AnnotationService {
-    
+
     private final NoteRepository noteRepository;
     private final HighlightRepository highlightRepository;
     private final AnnotationExportRepository annotationExportRepository;
     private final ObjectMapper objectMapper;
-    
+
     @Override
     public NoteResponse createNote(String userId, CreateNoteRequest request) {
         // Decode encoded IDs from Android (paperId and collectionId from request)
         // userId from JWT token is already a valid UUID, no need to decode
         String decodedPaperId = IdEncoder.decode(request.getPaperId());
         String decodedCollectionId = IdEncoder.decode(request.getCollectionId());
-        
+
         // Use decoded IDs if they are valid UUIDs, otherwise use original
-        String paperId = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$") 
+        String paperId = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
                 ? decodedPaperId : request.getPaperId();
         String collectionId = decodedCollectionId != null && decodedCollectionId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
                 ? decodedCollectionId : request.getCollectionId();
         String finalUserId = userId; // userId from JWT is already UUID, no decode needed
-        
+
         log.info("Creating note for user={}, paper={}, collection={}", finalUserId, paperId, collectionId);
-        
+
         Note note = Note.builder()
                 .id(UUID.randomUUID().toString())
                 .paperId(paperId)
@@ -63,29 +63,29 @@ public class AnnotationServiceImpl implements AnnotationService {
                 .pageNumber(request.getPageNumber())
                 .createdAt(LocalDateTime.now())
                 .build();
-        
+
         Note savedNote = noteRepository.save(note);
-        
+
         log.info("Note created successfully: {}", savedNote.getId());
         return mapToNoteResponse(savedNote);
     }
-    
+
     @Override
     public HighlightResponse createHighlight(String userId, CreateHighlightRequest request) {
         // Decode encoded IDs from Android (paperId and collectionId from request)
         // userId from JWT token is already a valid UUID, no need to decode
         String decodedPaperId = IdEncoder.decode(request.getPaperId());
         String decodedCollectionId = IdEncoder.decode(request.getCollectionId());
-        
+
         // Use decoded IDs if they are valid UUIDs, otherwise use original
         String paperId = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
                 ? decodedPaperId : request.getPaperId();
         String collectionId = decodedCollectionId != null && decodedCollectionId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
                 ? decodedCollectionId : request.getCollectionId();
         String finalUserId = userId; // userId from JWT is already UUID, no decode needed
-        
+
         log.info("Creating highlight for user={}, paper={}, collection={}", finalUserId, paperId, collectionId);
-        
+
         Highlight highlight = Highlight.builder()
                 .id(UUID.randomUUID().toString())
                 .paperId(paperId)
@@ -97,27 +97,27 @@ public class AnnotationServiceImpl implements AnnotationService {
                 .pageNumber(request.getPageNumber())
                 .createdAt(LocalDateTime.now())
                 .build();
-        
+
         Highlight savedHighlight = highlightRepository.save(highlight);
-        
+
         log.info("Highlight created successfully: {}", savedHighlight.getId());
         return mapToHighlightResponse(savedHighlight);
     }
-    
+
     @Override
     public List<NoteResponse> getNotes(String paperId, String collectionId, String userId) {
         // Decode encoded IDs from Android
         String decodedPaperId = paperId != null ? IdEncoder.decode(paperId) : null;
         String decodedCollectionId = collectionId != null ? IdEncoder.decode(collectionId) : null;
         String decodedUserId = userId != null ? IdEncoder.decode(userId) : null;
-        
+
         // Use decoded IDs, fallback to original if decode fails
         String finalPaperId = decodedPaperId != null ? decodedPaperId : paperId;
         String finalCollectionId = decodedCollectionId != null ? decodedCollectionId : collectionId;
         String finalUserId = decodedUserId != null ? decodedUserId : userId;
-        
+
         log.info("Getting notes for paper={}, collection={}, user={}", finalPaperId, finalCollectionId, finalUserId);
-        
+
         List<Note> notes;
         if (finalUserId != null && finalCollectionId != null) {
             notes = noteRepository.findByUserIdAndPaperIdAndCollectionId(finalUserId, finalPaperId, finalCollectionId);
@@ -128,26 +128,26 @@ public class AnnotationServiceImpl implements AnnotationService {
         } else {
             notes = noteRepository.findByPaperId(finalPaperId);
         }
-        
+
         return notes.stream()
                 .map(this::mapToNoteResponse)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<HighlightResponse> getHighlights(String paperId, String collectionId, String userId) {
         // Decode encoded IDs from Android
         String decodedPaperId = paperId != null ? IdEncoder.decode(paperId) : null;
         String decodedCollectionId = collectionId != null ? IdEncoder.decode(collectionId) : null;
         String decodedUserId = userId != null ? IdEncoder.decode(userId) : null;
-        
+
         // Use decoded IDs, fallback to original if decode fails
         String finalPaperId = decodedPaperId != null ? decodedPaperId : paperId;
         String finalCollectionId = decodedCollectionId != null ? decodedCollectionId : collectionId;
         String finalUserId = decodedUserId != null ? decodedUserId : userId;
-        
+
         log.info("Getting highlights for paper={}, collection={}, user={}", finalPaperId, finalCollectionId, finalUserId);
-        
+
         List<Highlight> highlights;
         if (finalUserId != null && finalCollectionId != null) {
             highlights = highlightRepository.findByUserIdAndPaperIdAndCollectionId(finalUserId, finalPaperId, finalCollectionId);
@@ -158,42 +158,42 @@ public class AnnotationServiceImpl implements AnnotationService {
         } else {
             highlights = highlightRepository.findByPaperId(finalPaperId);
         }
-        
+
         return highlights.stream()
                 .map(this::mapToHighlightResponse)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public void deleteNote(String userId, String noteId, String paperId, String collectionId) {
         log.info("Deleting note={} for user={}", noteId, userId);
-        
+
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("Note not found"));
-        
+
         if (!note.getUserId().equals(userId) || !note.getPaperId().equals(paperId) || !note.getCollectionId().equals(collectionId)) {
             throw new IllegalArgumentException("Note does not belong to user or collection");
         }
-        
+
         noteRepository.deleteById(noteId);
         log.info("Note deleted successfully: {}", noteId);
     }
-    
+
     @Override
     public void deleteHighlight(String userId, String highlightId, String paperId, String collectionId) {
         log.info("Deleting highlight={} for user={}", highlightId, userId);
-        
+
         Highlight highlight = highlightRepository.findById(highlightId)
                 .orElseThrow(() -> new IllegalArgumentException("Highlight not found"));
-        
+
         if (!highlight.getUserId().equals(userId) || !highlight.getPaperId().equals(paperId) || !highlight.getCollectionId().equals(collectionId)) {
             throw new IllegalArgumentException("Highlight does not belong to user or collection");
         }
-        
+
         highlightRepository.deleteById(highlightId);
         log.info("Highlight deleted successfully: {}", highlightId);
     }
-    
+
     private NoteResponse mapToNoteResponse(Note note) {
         try {
             return NoteResponse.builder()
@@ -211,7 +211,7 @@ public class AnnotationServiceImpl implements AnnotationService {
             throw new IllegalStateException("Failed to map note to response: " + e.getMessage(), e);
         }
     }
-    
+
     private HighlightResponse mapToHighlightResponse(Highlight highlight) {
         try {
             return HighlightResponse.builder()
@@ -229,7 +229,7 @@ public class AnnotationServiceImpl implements AnnotationService {
             throw new IllegalStateException("Failed to map highlight to response: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Safely parse a string to UUID, handling both valid UUIDs and potentially encoded strings
      */
@@ -237,7 +237,7 @@ public class AnnotationServiceImpl implements AnnotationService {
         if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
         }
-        
+
         // First try to parse directly as UUID
         try {
             return UUID.fromString(id);
@@ -252,32 +252,32 @@ public class AnnotationServiceImpl implements AnnotationService {
             }
         }
     }
-    
+
     @Override
     public ExportAnnotationsResponse exportAnnotations(String paperId, String collectionId, String userId) {
         // userId from JWT token is already a valid UUID, no need to decode
         // Only decode paperId and collectionId from query parameters
         String decodedPaperId = IdEncoder.decode(paperId);
         String decodedCollectionId = IdEncoder.decode(collectionId);
-        
+
         // Check if decode succeeded (result is a valid UUID format)
         // IdEncoder.decode() returns original string if decode fails, so check if it's a valid UUID
         boolean isPaperIdUuid = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
         boolean isCollectionIdUuid = decodedCollectionId != null && decodedCollectionId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-        
+
         // Use decoded IDs if they are valid UUIDs, otherwise use original
         String finalPaperId = isPaperIdUuid ? decodedPaperId : paperId;
         String finalCollectionId = isCollectionIdUuid ? decodedCollectionId : collectionId;
         String finalUserId = userId; // userId from JWT is already UUID, no decode needed
-        
+
         log.info("Exporting annotations: original paperId={}, decoded={}, final={}", paperId, decodedPaperId, finalPaperId);
         log.info("Exporting annotations: original collectionId={}, decoded={}, final={}", collectionId, decodedCollectionId, finalCollectionId);
         log.info("Exporting annotations for paper={}, collection={}, user={}", finalPaperId, finalCollectionId, finalUserId);
-        
+
         // Get all notes and highlights for this paper and collection
         List<Note> notes = noteRepository.findByPaperIdAndCollectionId(finalPaperId, finalCollectionId);
         List<Highlight> highlights = highlightRepository.findByPaperIdAndCollectionId(finalPaperId, finalCollectionId);
-        
+
         // Filter out notes with corrupted data and map to responses
         List<NoteResponse> noteResponses = notes.stream()
                 .filter(note -> {
@@ -294,7 +294,7 @@ public class AnnotationServiceImpl implements AnnotationService {
                 })
                 .map(this::mapToNoteResponse)
                 .collect(Collectors.toList());
-        
+
         // Filter out highlights with corrupted data and map to responses
         List<HighlightResponse> highlightResponses = highlights.stream()
                 .filter(highlight -> {
@@ -311,7 +311,7 @@ public class AnnotationServiceImpl implements AnnotationService {
                 })
                 .map(this::mapToHighlightResponse)
                 .collect(Collectors.toList());
-        
+
         ExportAnnotationsResponse exportResponse = ExportAnnotationsResponse.builder()
                 .paperId(finalPaperId)
                 .collectionId(finalCollectionId)
@@ -331,11 +331,11 @@ public class AnnotationServiceImpl implements AnnotationService {
         // Decode encoded IDs from Android
         String decodedCollectionId = collectionId != null ? IdEncoder.decode(collectionId) : null;
         String decodedPaperId = paperId != null ? IdEncoder.decode(paperId) : null;
-        
+
         // Use decoded IDs, fallback to original if decode fails
         String finalCollectionId = decodedCollectionId != null ? decodedCollectionId : collectionId;
         String finalPaperId = decodedPaperId != null ? decodedPaperId : paperId;
-        
+
         log.info("Listing exports for collection={}, paper={}", finalCollectionId, finalPaperId);
 
         List<AnnotationExport> exports = finalPaperId != null && !finalPaperId.isBlank()
@@ -382,24 +382,24 @@ public class AnnotationServiceImpl implements AnnotationService {
             String paperId = exportResponse.getPaperId();
             String collectionId = exportResponse.getCollectionId();
             String exportedBy = exportResponse.getExportedBy();
-            
+
             // Try to decode paperId and collectionId (in case they're still encoded)
             // exportedBy is already a valid UUID from JWT token, no need to decode
             String decodedPaperId = IdEncoder.decode(paperId);
             String decodedCollectionId = IdEncoder.decode(collectionId);
-            
+
             // Check if decode succeeded (result is a valid UUID format)
             boolean isPaperIdUuid = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
             boolean isCollectionIdUuid = decodedCollectionId != null && decodedCollectionId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-            
+
             // Use decoded IDs if they are valid UUIDs, otherwise use original
             String finalPaperId = isPaperIdUuid ? decodedPaperId : paperId;
             String finalCollectionId = isCollectionIdUuid ? decodedCollectionId : collectionId;
             String finalExportedBy = exportedBy; // Already UUID from JWT, no decode needed
-            
-            log.info("Persisting export snapshot: original collectionId={}, decoded={}, final={}", 
+
+            log.info("Persisting export snapshot: original collectionId={}, decoded={}, final={}",
                     collectionId, decodedCollectionId, finalCollectionId);
-            log.debug("Persisting export snapshot: paperId={}, collectionId={}, exportedBy={}", 
+            log.debug("Persisting export snapshot: paperId={}, collectionId={}, exportedBy={}",
                     finalPaperId, finalCollectionId, finalExportedBy);
 
             String payload = objectMapper.writeValueAsString(exportResponse);

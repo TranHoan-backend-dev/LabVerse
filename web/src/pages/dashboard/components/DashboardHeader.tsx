@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
 interface DashboardHeaderProps {
     isImportOpen: boolean;
@@ -15,14 +16,16 @@ interface DashboardHeaderProps {
         publicationYear?: number;
         doi: string;
         description: string;
+        file: File;
     };
-    setNewPaper: React.Dispatch<React.SetStateAction<{
+    setNewPaper: Dispatch<SetStateAction<{
         title: string;
         authors: string;
         journal: string;
         publicationYear?: number | undefined;
         doi: string;
         description: string;
+        file: File;
     }>>;
     importMutation: {
         mutate: () => void;
@@ -128,6 +131,23 @@ const DashboardHeader = ({
                                     onChange={(e) => setNewPaper({ ...newPaper, description: e.target.value })}
                                     placeholder="Paper description..."
                                     rows={5}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="doi">Import pdf file</Label>
+                                <Input
+                                    id="pdf"
+                                    accept="application/pdf"
+                                    type="file"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        console.log(file);
+                                        if (file) {
+                                            setNewPaper({ ...newPaper, file });
+                                        }
+                                    }}
+                                    placeholder="10.1234/example"
                                 />
                             </div>
 

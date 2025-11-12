@@ -1,4 +1,5 @@
 import { BASE_API_URL, METHOD, PAPER_SERVICE_PREDICATE } from "@/type/constant.ts";
+import { CreatePaperRequest } from "@/types/paper.type";
 
 const endpoints = ["papers", "references", "tags"] as const;
 export type Endpoints = (typeof endpoints)[number];
@@ -44,9 +45,8 @@ export const getPaginatedPapers = async (
         yearTo: string,
     }) => {
     try {
-        // Convert 1-based page to 0-based index for Spring Data
         const pageIndex = Math.max(0, currentPage - 1);
-        
+
         const params = new URLSearchParams({
             index: pageIndex.toString(),
             size: pageSize.toString(),
@@ -58,7 +58,7 @@ export const getPaginatedPapers = async (
         });
 
         const url = `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/papers/all?${params.toString()}`;
-        const response = await fetch(url, { 
+        const response = await fetch(url, {
             method: METHOD.GET.toString(),
             headers: {
                 'Content-Type': 'application/json',
@@ -71,7 +71,8 @@ export const getPaginatedPapers = async (
         }
 
         const data = await response.json();
-        
+        console.log(data)
+
         // Check if response has the expected structure
         if (!data || data.status !== 200) {
             throw new Error(data?.message || 'Invalid response from server');
@@ -94,4 +95,35 @@ export const pingPaperServiceApi = async (endpoint: Endpoints) => {
     const status = response.status
     console.log(status)
     return status
+}
+
+export const importPaper = async (request: CreatePaperRequest) => {
+    const formData = new FormData();
+
+    console.log(request.file)
+    formData.append("file", request.file);
+    formData.append("title", request.title);
+    formData.append("authors", request.authors);
+    formData.append("journal", request.journal);
+    formData.append("publicationYear", request.publicationYear.toString());
+
+    if (request.doi) formData.append("doi", request.doi);
+    if (request.description) formData.append("description", request.description);
+    if (request.keywords) formData.append("keywords", request.keywords);
+    if (request.tags) formData.append("tags", request.tags);
+
+    try {
+        const response = await fetch(`${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/pdf/upload-with-file`, {
+            method: METHOD.POST.toString(),
+            headers: {
+                'X-User-Id': request.userId,
+            },
+            body: formData,
+        });
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Import paper failed:", error);
+    }
 }

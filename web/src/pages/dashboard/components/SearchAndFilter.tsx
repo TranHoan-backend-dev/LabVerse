@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Search, Filter } from "lucide-react";
+import { useState } from "react";
 
 interface SearchAndFilterProps {
     searchQuery: string;
@@ -13,7 +14,6 @@ interface SearchAndFilterProps {
         yearFrom: string,
         yearTo: string,
     }
-    setPage: (page: number) => void;
     setFilters: React.Dispatch<React.SetStateAction<{
         author: string;
         journal: string;
@@ -27,8 +27,16 @@ const SearchAndFilter = ({
     setSearchQuery,
     filters,
     setFilters,
-    setPage
 }: SearchAndFilterProps) => {
+    const resetFilter = () => {
+        setFilters({
+            author: '',
+            journal: '',
+            yearFrom: '',
+            yearTo: '',
+        });
+    }
+
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-custom-sm">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -102,12 +110,11 @@ const SearchAndFilter = ({
                                 </div>
                             </div>
 
-                            <Button
-                                className="w-full"
-                                onClick={() => setPage(1)}
-                            >
-                                Apply Filters
-                            </Button>
+                            <div className="space-y-2 text-center">
+                                <Button variant="outline" onClick={resetFilter}>
+                                    Reset
+                                </Button>
+                            </div>
                         </div>
                     </DialogContent>
                 </Dialog>

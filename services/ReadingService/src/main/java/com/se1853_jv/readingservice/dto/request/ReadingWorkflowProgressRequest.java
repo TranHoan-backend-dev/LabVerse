@@ -13,15 +13,15 @@ import lombok.Setter;
 public class ReadingWorkflowProgressRequest {
 
     @NotBlank
-    @Size(max = 36)
+    @Size(max = 255) // Increased to support encoded IDs (base64 can be longer than 36)
     private String collectionId;
 
     @NotBlank
-    @Size(max = 36)
+    @Size(max = 255) // Increased to support encoded IDs
     private String paperId;
 
     @NotBlank
-    @Size(max = 36)
+    @Size(max = 255) // Increased to support encoded IDs
     private String usersid; // ERD uses "Usersid"
 
     @NotNull

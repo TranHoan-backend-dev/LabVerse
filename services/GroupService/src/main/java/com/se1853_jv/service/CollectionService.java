@@ -31,5 +31,11 @@ public interface CollectionService {
     CollectionResponse updateCollection(String encodedCollectionId, UpdateCollectionRequest request);
 
     void deleteCollection(String encodedCollectionId, String encodedUserId);
+    
+    /**
+     * Recalculate and update paper status in collection based on all members' reading progress
+     * This is called after ReadingWorkflow is updated to keep collection status in sync
+     */
+    void recalculatePaperStatus(String encodedCollectionId, String encodedPaperId);
 }
 

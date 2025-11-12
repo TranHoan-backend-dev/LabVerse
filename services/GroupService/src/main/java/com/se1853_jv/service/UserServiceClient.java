@@ -10,5 +10,8 @@ public interface UserServiceClient {
     
     @GetMapping("/internal/api/users/{id}")
     WrapperApiResponse getUserById(@PathVariable("id") String encodedUserId);
+    
+    @GetMapping("/internal/api/users/email/{email}")
+    WrapperApiResponse getUserByEmail(@PathVariable("email") String email);
 }
 
