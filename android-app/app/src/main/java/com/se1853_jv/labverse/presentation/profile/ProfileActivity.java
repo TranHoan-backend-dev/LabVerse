@@ -39,6 +39,7 @@ import com.se1853_jv.labverse.presentation.user.fragment.ChangePasswordDialogFra
 
 public class ProfileActivity extends BaseActivity {
 
+    // <editor-fold> desc="attributes"
     private final String TAG = "ProfileActivity";
 
     private TextInputEditText etFullName, etEmail, etRole;
@@ -54,6 +55,7 @@ public class ProfileActivity extends BaseActivity {
     private SessionManager sessionManager;
     private UserResponse currentUser;
     private boolean isLoading = false;
+    // </editor-fold>
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,29 +74,11 @@ public class ProfileActivity extends BaseActivity {
 
         bindViews();
         setupToolbar();
-        // ProfileActivity layout doesn't have bottom navbar, skip setup
-        // setupBottomNavbar(findViewById(R.id.profile_root), R.id.bottom_navbar);
         loadUserData();
         handleEvents();
 
+        // Thiet lap hanh vi cho nut back
         toolbar.setNavigationOnClickListener(v -> finish());
-    }
-
-    private void bindViews() {
-        etFullName = findViewById(R.id.etFullName);
-        etEmail = findViewById(R.id.etEmail);
-        etRole = findViewById(R.id.etRole);
-        spinnerResearchField = findViewById(R.id.spinnerResearchField);
-        switchPushNotifications = findViewById(R.id.switchPushNotifications);
-        switchEmailUpdates = findViewById(R.id.switchEmailUpdates);
-        switchCollaboration = findViewById(R.id.switchCollaboration);
-        btnSaveChanges = findViewById(R.id.btnSaveChanges);
-        btnLogout = findViewById(R.id.btnLogout);
-        ivProfileAvatar = findViewById(R.id.ivProfileAvatar);
-        tvProfileName = findViewById(R.id.tvProfileName);
-        tvProfileTitle = findViewById(R.id.tvProfileTitle);
-        layoutChangePassword = findViewById(R.id.layoutChangePassword);
-        toolbar = findViewById(R.id.toolbar);
     }
 
     private void setupToolbar() {
@@ -112,7 +96,6 @@ public class ProfileActivity extends BaseActivity {
             }
         }
     }
-
 
     private void loadUserData() {
         if (isLoading) return;
@@ -152,7 +135,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     @SuppressLint("SetTextI18n")
-    private void displayUserData(UserResponse user) {
+    private void displayUserData(@NonNull UserResponse user) {
         // Display full name
         if (!TextUtils.isEmpty(user.getFullName())) {
             etFullName.setText(user.getFullName());
@@ -364,6 +347,7 @@ public class ProfileActivity extends BaseActivity {
     /**
      * Map backend role string to display name
      */
+    @NonNull
     private String mapRoleToDisplayName(String role) {
         if (role == null) return "";
 
@@ -377,6 +361,23 @@ public class ProfileActivity extends BaseActivity {
         }
         // Return original role if no match found
         return role;
+    }
+
+    private void bindViews() {
+        etFullName = findViewById(R.id.etFullName);
+        etEmail = findViewById(R.id.etEmail);
+        etRole = findViewById(R.id.etRole);
+        spinnerResearchField = findViewById(R.id.spinnerResearchField);
+        switchPushNotifications = findViewById(R.id.switchPushNotifications);
+        switchEmailUpdates = findViewById(R.id.switchEmailUpdates);
+        switchCollaboration = findViewById(R.id.switchCollaboration);
+        btnSaveChanges = findViewById(R.id.btnSaveChanges);
+        btnLogout = findViewById(R.id.btnLogout);
+        ivProfileAvatar = findViewById(R.id.ivProfileAvatar);
+        tvProfileName = findViewById(R.id.tvProfileName);
+        tvProfileTitle = findViewById(R.id.tvProfileTitle);
+        layoutChangePassword = findViewById(R.id.layoutChangePassword);
+        toolbar = findViewById(R.id.toolbar);
     }
 }
 
