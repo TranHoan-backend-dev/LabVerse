@@ -2,6 +2,7 @@ package com.se1853_jv.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -44,11 +45,21 @@ public class User {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
+
+    @Column(name = "otp_code", length = 6)
+    private String otpCode;
+
+    @Column(name = "otp_expires_at")
+    private LocalDateTime otpExpiresAt;
+
     public User() {
         this.id = UUID.randomUUID().toString();
         this.createdDate = LocalDate.now();
         this.updatedDate = LocalDate.now();
         this.isActive = true;
+        this.emailVerified = false;
     }
 
     // Getters and Setters
@@ -138,6 +149,30 @@ public class User {
 
     public void setIsActive(Boolean active) {
         isActive = active;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getOtpCode() {
+        return otpCode;
+    }
+
+    public void setOtpCode(String otpCode) {
+        this.otpCode = otpCode;
+    }
+
+    public LocalDateTime getOtpExpiresAt() {
+        return otpExpiresAt;
+    }
+
+    public void setOtpExpiresAt(LocalDateTime otpExpiresAt) {
+        this.otpExpiresAt = otpExpiresAt;
     }
 
     @PreUpdate

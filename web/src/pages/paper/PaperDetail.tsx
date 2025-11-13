@@ -7,7 +7,7 @@ import { ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from "react-helmet-async";
-import { getPaperDetails } from "@/services/paper.service.ts";
+import { getPaperDetails, addFavorite, removeFavorite } from "@/services/paper.service.ts";
 import Header from "@/pages/Header.tsx";
 import PaperDetailsHeader from "./components/PaperDetailsHeader";
 import PaperDetailsMainContent from "./components/PaperDetailsMainContent";
@@ -21,8 +21,8 @@ const PaperDetail = () => {
     const queryClient = useQueryClient();
 
     const { data, isLoading } = useQuery({
-        queryKey: ['paper', id],
-        queryFn: async () => await getPaperDetails(id),
+        queryKey: ['paper', id, user?.id],
+        queryFn: async () => await getPaperDetails(id!, user?.id),
         enabled: !!user && !!id,
     });
 
@@ -50,17 +50,21 @@ const PaperDetail = () => {
 
     const toggleFavoriteMutation = useMutation({
         mutationFn: async (isFavorite: boolean) => {
-            const { error } = await supabase
-                .from('papers')
-                .update({ is_favorite: !isFavorite })
-                .eq('id', id)
-                .eq('user_id', user?.id);
-
-            if (error) throw error;
+            if (!id || !user?.id) throw new Error('Paper ID or User ID is missing');
+            
+            if (isFavorite) {
+                await removeFavorite(id, user.id);
+            } else {
+                await addFavorite(id, user.id);
+            }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['paper', id] });
-            toast.success(paper?.is_favorite ? 'Removed from favorites' : 'Added to favorites');
+            queryClient.invalidateQueries({ queryKey: ['paper', id, user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['papers'] });
+            toast.success(paper?.isFavorite ? 'Removed from favorites' : 'Added to favorites');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Failed to update favorite');
         },
     });
 

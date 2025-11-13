@@ -7,15 +7,17 @@ import type {
   WrapperApiResponse,
   UpdateProfileRequest,
   ChangePasswordRequest,
+  GoogleLoginRequest,
+  VerifyOtpRequest,
 } from "@/types/auth.types";
 import { getAuthHeaders, tokenStorage } from "@/utils/token";
 
 export const ACCOUNT_SERVICE_URL = `${BASE_API_URL}/${ACCOUNT_SERVICE_PREDICATE}` 
 
 /**
- * Register a new user
+ * Register a new user (sends OTP to email)
  */
-export const register = async (request: RegisterRequest): Promise<AuthResponse> => {
+export const register = async (request: RegisterRequest): Promise<string> => {
   try {
     const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/register`, {
       method: "POST",
@@ -47,10 +49,60 @@ export const register = async (request: RegisterRequest): Promise<AuthResponse> 
       throw new Error("Invalid response format from server");
     }
 
+    const apiResponse: WrapperApiResponse<string> = await response.json();
+    
+    if (apiResponse.status !== 200) {
+      throw new Error(apiResponse.message || "Registration failed");
+    }
+
+    return apiResponse.message || "Verification code has been sent to your email";
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(`Cannot connect to Account Service at ${ACCOUNT_SERVICE_URL}. Please make sure the service is running.`);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Verify OTP code
+ */
+export const verifyOtp = async (request: VerifyOtpRequest): Promise<AuthResponse> => {
+  try {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
+    
+    if (!response.ok) {
+      let errorMessage = `OTP verification failed: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
+    }
+
     const apiResponse: WrapperApiResponse<AuthResponse> = await response.json();
     
     if (apiResponse.status !== 200 || !apiResponse.data) {
-      throw new Error(apiResponse.message || "Registration failed");
+      throw new Error(apiResponse.message || "OTP verification failed");
     }
 
     // Store token and user data
@@ -320,6 +372,67 @@ export const changePassword = async (request: ChangePasswordRequest): Promise<vo
     if (apiResponse.status !== 200) {
       throw new Error(apiResponse.message || "Failed to change password");
     }
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(`Cannot connect to Account Service at ${ACCOUNT_SERVICE_URL}. Please make sure the service is running.`);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Login with Google ID token
+ */
+export const googleLogin = async (request: GoogleLoginRequest): Promise<AuthResponse> => {
+  try {
+    const response = await fetch(`${ACCOUNT_SERVICE_URL}/auth/google`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType && contentType.includes("application/json");
+    
+    if (!response.ok) {
+      let errorMessage = `Google login failed: ${response.statusText} (${response.status})`;
+      
+      if (isJson) {
+        try {
+          const errorData: WrapperApiResponse = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use default message
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    if (!isJson) {
+      throw new Error("Invalid response format from server");
+    }
+
+    const apiResponse: WrapperApiResponse<AuthResponse> = await response.json();
+    
+    if (apiResponse.status !== 200 || !apiResponse.data) {
+      throw new Error(apiResponse.message || "Google login failed");
+    }
+
+    // Store token and user data
+    tokenStorage.setToken(apiResponse.data.token);
+    tokenStorage.setUser({
+      id: apiResponse.data.userId,
+      email: apiResponse.data.email,
+      username: apiResponse.data.username,
+      fullName: apiResponse.data.fullName,
+      avatarUrl: apiResponse.data.avatarUrl,
+      role: apiResponse.data.role,
+    });
+
+    return apiResponse.data;
   } catch (error: any) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error(`Cannot connect to Account Service at ${ACCOUNT_SERVICE_URL}. Please make sure the service is running.`);

@@ -8,8 +8,10 @@ import { tokenStorage } from '@/utils/token';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, username: string, roleName: 'PI' | 'RESEARCHER' | 'STUDENT') => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, username: string, roleName: 'PI' | 'RESEARCHER' | 'STUDENT') => Promise<string>;
+  verifyOtp: (email: string, otpCode: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -59,14 +61,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fullName: string,
     username: string,
     roleName: 'PI' | 'RESEARCHER' | 'STUDENT'
-  ) => {
+  ): Promise<string> => {
     try {
-      const authResponse = await accountService.register({
+      const message = await accountService.register({
         email,
         password,
         fullName,
         username,
         roleName,
+      });
+
+      toast.success(message || 'Verification code has been sent to your email');
+      return email; // Return email for OTP verification
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create account');
+      throw error;
+    }
+  };
+
+  const verifyOtp = async (email: string, otpCode: string) => {
+    try {
+      const authResponse = await accountService.verifyOtp({
+        email,
+        otpCode,
       });
 
       setUser({
@@ -78,10 +95,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role: authResponse.role,
       });
 
-      toast.success('Account created successfully!');
+      toast.success('Email verified successfully!');
       navigate('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+      toast.error(error.message || 'Failed to verify OTP');
       throw error;
     }
   };
@@ -106,6 +123,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async (idToken: string) => {
+    try {
+      const authResponse = await accountService.googleLogin({
+        idToken,
+      });
+
+      setUser({
+        id: authResponse.userId,
+        email: authResponse.email,
+        username: authResponse.username,
+        fullName: authResponse.fullName,
+        avatarUrl: authResponse.avatarUrl,
+        role: authResponse.role,
+      });
+
+      toast.success('Signed in with Google successfully!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign in with Google');
       throw error;
     }
   };
@@ -139,7 +179,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, signUp, verifyOtp, signIn, signInWithGoogle, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
