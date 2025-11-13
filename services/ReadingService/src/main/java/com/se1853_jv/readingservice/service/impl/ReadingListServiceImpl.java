@@ -45,6 +45,14 @@ public class ReadingListServiceImpl implements ReadingListService {
 
     @Override
     @Transactional(readOnly = true)
+    public ReadingListResponse getReadingListById(String listId) {
+        ReadingList readingList = readingListRepository.findById(listId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reading list not found"));
+        return toResponse(readingList);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ReadingListResponse> getReadingListsByUser(String userId) {
         List<ReadingList> lists = readingListRepository.findByUserId(userId);
         return lists.stream()

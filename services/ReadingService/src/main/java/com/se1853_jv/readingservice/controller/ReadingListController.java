@@ -51,6 +51,21 @@ public class ReadingListController {
         return ResponseEntity.ok(WrapperApiResponse.success(response));
     }
 
+    @GetMapping("/{listId}")
+    @Operation(summary = "Get reading list by ID", 
+               description = "Get a reading list by its ID. List ID should be encoded.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reading list retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Reading list not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid encoded list ID")
+    })
+    public ResponseEntity<WrapperApiResponse<ReadingListResponse>> getReadingListById(
+            @Parameter(description = "Encoded Reading List ID", required = true) @PathVariable String listId) {
+        String decodedListId = IdEncoder.decodeString(listId);
+        ReadingListResponse list = readingListService.getReadingListById(decodedListId);
+        return ResponseEntity.ok(WrapperApiResponse.success(list));
+    }
+
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get reading lists by user", 
                description = "Get all reading lists that contain the specified user. User ID should be encoded.")

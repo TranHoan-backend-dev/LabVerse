@@ -295,14 +295,33 @@ public class SyncWorker extends Worker {
      * Helper methods
      */
     private String extractPaperIdFromSyncItem(SyncQueue syncItem) {
-        // TODO: Extract paperId từ syncItem metadata hoặc database
-        // Có thể lưu paperId trong SyncQueue jsonData hoặc separate field
-        return "default-paper-id"; // Placeholder
+        try {
+            if ("NOTE".equals(syncItem.getSyncType())) {
+                Note note = gson.fromJson(syncItem.getJsonData(), Note.class);
+                return note.getPaperId() != null ? note.getPaperId() : "";
+            } else if ("HIGHLIGHT".equals(syncItem.getSyncType())) {
+                Highlight highlight = gson.fromJson(syncItem.getJsonData(), Highlight.class);
+                return highlight.getPaperId() != null ? highlight.getPaperId() : "";
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error extracting paperId from syncItem", e);
+        }
+        return "";
     }
     
     private String extractCollectionIdFromSyncItem(SyncQueue syncItem) {
-        // TODO: Extract collectionId từ syncItem
-        return "default-collection-id"; // Placeholder
+        try {
+            if ("NOTE".equals(syncItem.getSyncType())) {
+                Note note = gson.fromJson(syncItem.getJsonData(), Note.class);
+                return note.getCollectionId() != null ? note.getCollectionId() : "";
+            } else if ("HIGHLIGHT".equals(syncItem.getSyncType())) {
+                Highlight highlight = gson.fromJson(syncItem.getJsonData(), Highlight.class);
+                return highlight.getCollectionId() != null ? highlight.getCollectionId() : "";
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error extracting collectionId from syncItem", e);
+        }
+        return "";
     }
     
     private String getJwtToken() {

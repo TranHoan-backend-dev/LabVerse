@@ -1,7 +1,9 @@
 package com.se1853_jv.service
 
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -12,6 +14,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 
 @Service
+@ConditionalOnBean(S3Client::class)
 class S3Service(
     private val s3Client: S3Client,
     @Value("\${aws.s3.bucket}") private val bucketName: String,

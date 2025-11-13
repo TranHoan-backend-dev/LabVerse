@@ -71,10 +71,9 @@ public class ReadingWorkflowApiHandler {
      * Update reading progress
      */
     public void updateProgress(ReadingWorkflowProgressRequest request, ApiCallback<String> callback) {
-        // Encode IDs
-        request.setCollectionId(EncoderUtils.encode(request.getCollectionId()));
-        request.setPaperId(EncoderUtils.encode(request.getPaperId()));
-        request.setUsersid(EncoderUtils.encode(request.getUsersid()));
+        request.setCollectionId(EncoderUtils.decode(request.getCollectionId()));
+        request.setPaperId(EncoderUtils.decode(request.getPaperId()));
+        request.setUsersid(EncoderUtils.decode(request.getUsersid()));
 
         Log.d(TAG, "Updating reading progress: paperId=" + request.getPaperId() + 
                 ", progress=" + request.getProgress() + "%, lastPage=" + request.getLastPage());
@@ -115,10 +114,9 @@ public class ReadingWorkflowApiHandler {
      * Update reading status
      */
     public void updateStatus(ReadingWorkflowStatusRequest request, ApiCallback<String> callback) {
-        // Encode IDs
-        request.setCollectionId(EncoderUtils.encode(request.getCollectionId()));
-        request.setPaperId(EncoderUtils.encode(request.getPaperId()));
-        request.setUsersid(EncoderUtils.encode(request.getUsersid()));
+        request.setCollectionId(EncoderUtils.decode(request.getCollectionId()));
+        request.setPaperId(EncoderUtils.decode(request.getPaperId()));
+        request.setUsersid(EncoderUtils.decode(request.getUsersid()));
 
         Log.d(TAG, "Updating reading status: paperId=" + request.getPaperId() + 
                 ", status=" + request.getStatus());

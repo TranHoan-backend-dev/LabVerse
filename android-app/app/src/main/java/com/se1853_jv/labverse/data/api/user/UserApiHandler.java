@@ -15,8 +15,6 @@ import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.SessionManager;
 
-import org.yaml.snakeyaml.scanner.Constant;
-
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,7 +27,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApiHandler {
     private static final String TAG = "UserApiHandler";
-    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL + "users/";
+    private static final String BASE_URL = Constants.ACCOUNT_ENDPOINT_URL;
     
     private final UserApi userApi;
     private final SessionManager sessionManager;
@@ -62,6 +60,8 @@ public class UserApiHandler {
                 .addInterceptor(logging)
                 .build();
 
+        Log.d(TAG, "UserApiHandler BASE_URL: " + BASE_URL);
+        
         var retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
@@ -215,6 +215,42 @@ public class UserApiHandler {
                         }
                     }
                     Log.e(TAG, "Server Error: " + errorMessage + " (Status: " + statusCode + ")");
+                    callback.onError(errorMessage);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<UserResponse>> call, @NonNull Throwable t) {
+                Log.e(TAG, "API Error: " + t.getMessage());
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Tìm user bằng username
+     */
+    public void getUserByUsername(String username, ApiCallback<UserResponse> callback) {
+        Log.d(TAG, "getUserByUsername: " + username);
+        Call<BaseJsonResponse<UserResponse>> call = userApi.getUserByUsername(username);
+        call.enqueue(new Callback<BaseJsonResponse<UserResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<UserResponse>> call, 
+                                 @NonNull Response<BaseJsonResponse<UserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    var result = response.body().getData();
+                    callback.onSuccess(result);
+                    Log.d(TAG, "Get user by username successful: " + result.getUsername());
+                } else {
+                    String errorMessage = "User not found with username: " + username;
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMessage = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
+                        }
+                    }
+                    Log.e(TAG, "Server Error: " + errorMessage);
                     callback.onError(errorMessage);
                 }
             }

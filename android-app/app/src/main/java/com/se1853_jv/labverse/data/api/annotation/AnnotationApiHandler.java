@@ -26,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class AnnotationApiHandler {
     private static final String TAG = "AnnotationApiHandler";
-    private static final String BASE_URL = Constants.GROUP_ENDPOINT_URL;
+    private static final String BASE_URL = Constants.GROUP_ENDPOINT_URL + "annotations/";
     private final AnnotationApi apiService;
 
     public AnnotationApiHandler() {
@@ -239,6 +239,66 @@ public class AnnotationApiHandler {
             public void onFailure(@NonNull Call<BaseJsonResponse<Void>> call,
                                 @NonNull Throwable t) {
                 Log.e(TAG, "Failed to import annotations", t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Load danh sách bản export annotations.
+     */
+    public void listExports(String token, String paperId, String collectionId,
+                            ApiCallback<List<AnnotationApi.AnnotationExportSummaryResponse>> callback) {
+        Log.d(TAG, "Listing annotation exports for paper=" + paperId + ", collection=" + collectionId);
+
+        Call<BaseJsonResponse<List<AnnotationApi.AnnotationExportSummaryResponse>>> call =
+                apiService.listExports("Bearer " + token, paperId, collectionId);
+
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<List<AnnotationApi.AnnotationExportSummaryResponse>>> call,
+                                   @NonNull Response<BaseJsonResponse<List<AnnotationApi.AnnotationExportSummaryResponse>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body().getData());
+                } else {
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<List<AnnotationApi.AnnotationExportSummaryResponse>>> call,
+                                  @NonNull Throwable t) {
+                Log.e(TAG, "Failed to list exports", t);
+                callback.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Lấy chi tiết một bản export.
+     */
+    public void getExportDetail(String token, String exportId,
+                                ApiCallback<AnnotationApi.ExportAnnotationsResponse> callback) {
+        Log.d(TAG, "Getting export detail for id=" + exportId);
+
+        Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call =
+                apiService.getExportDetail("Bearer " + token, exportId);
+
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call,
+                                   @NonNull Response<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body().getData());
+                } else {
+                    callback.onError(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call,
+                                  @NonNull Throwable t) {
+                Log.e(TAG, "Failed to get export detail", t);
                 callback.onError(t.getMessage());
             }
         });

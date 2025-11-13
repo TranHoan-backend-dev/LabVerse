@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/tvSectionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Active Teams"
+            android:textColor="@color/light_black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSectionSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Monitor progress across your research teams"
+            android:textColor="@color/gray_400"
+            android:textSize="14sp" />
+
+        <!-- Create Team Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreateTeam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Create New Team"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="14dp"
+            app:icon="@drawable/ic_team"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            android:backgroundTint="@color/blue_500"
+            app:cornerRadius="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupFilters"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:chipSpacingHorizontal="8dp"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="All"
+                    android:textColor="@color/blue_400"
+                    app:chipBackgroundColor="@color/blue_50"
+                    app:chipStrokeColor="@color/blue_400"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Labs"
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Biomedical"
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Environment"
+                    android:textColor="@color/light_black"
+                    app:chipBackgroundColor="@color/gray_50" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <ImageButton
+                android:id="@+id/btnSort"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_icon_container"
+                android:contentDescription="Open filters"
+                android:padding="8dp"
+                android:src="@drawable/ic_filter"
+                app:tint="@color/blue_500" />
+
+        </LinearLayout>
+
+        <include
+            android:id="@+id/teamCard1"
+            layout="@layout/layout_team_card" />
+
+        <include
+            android:id="@+id/teamCard2"
+            layout="@layout/layout_team_card" />
+
+        <include
+            android:id="@+id/teamCard3"
+            layout="@layout/layout_team_card" />
+
+        <TextView
+            android:id="@+id/tvRecommended"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Recommended Teams"
+            android:textColor="@color/light_black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <include
+            android:id="@+id/teamCard4"
+            layout="@layout/layout_team_card" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
+
