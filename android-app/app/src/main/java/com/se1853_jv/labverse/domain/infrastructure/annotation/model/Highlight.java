@@ -33,4 +33,8 @@ public class Highlight {
 
     @NonNull
     Integer pageNumber;
+    
+    String paperId;
+    String collectionId;
+    String userId;
 }

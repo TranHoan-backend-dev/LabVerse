@@ -3,6 +3,7 @@ package com.se1853_jv.controller;
 import com.se1853_jv.config.JwtConfig;
 import com.se1853_jv.dto.request.CreateHighlightRequest;
 import com.se1853_jv.dto.request.CreateNoteRequest;
+import com.se1853_jv.dto.response.AnnotationExportSummaryResponse;
 import com.se1853_jv.dto.response.ExportAnnotationsResponse;
 import com.se1853_jv.dto.response.HighlightResponse;
 import com.se1853_jv.dto.response.NoteResponse;
@@ -218,6 +219,49 @@ public class AnnotationController {
     }
     
     /**
+     * Danh sách các bản export annotations khả dụng trong collection (lọc thêm theo paper nếu cung cấp).
+     */
+    @GetMapping("/exports")
+    public ResponseEntity<WrapperApiResponse<List<AnnotationExportSummaryResponse>>> listExports(
+            @RequestParam("collectionId") String collectionId,
+            @RequestParam(value = "paperId", required = false) String paperId
+    ) {
+        log.info("Request to list exports for collection={}, paper={}", collectionId, paperId);
+
+        List<AnnotationExportSummaryResponse> exports = annotationService.listExports(collectionId, paperId);
+
+        return ResponseEntity.ok(
+                WrapperApiResponse.<List<AnnotationExportSummaryResponse>>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("List exports successfully")
+                        .data(exports)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
+    /**
+     * Lấy chi tiết một bản export cụ thể bằng exportId.
+     */
+    @GetMapping("/exports/{exportId}")
+    public ResponseEntity<WrapperApiResponse<ExportAnnotationsResponse>> getExportDetail(
+            @PathVariable("exportId") String exportId
+    ) {
+        log.info("Request export detail for exportId={}", exportId);
+
+        ExportAnnotationsResponse export = annotationService.getExportDetail(exportId);
+
+        return ResponseEntity.ok(
+                WrapperApiResponse.<ExportAnnotationsResponse>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Get export detail successfully")
+                        .data(export)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
+    /**
      * Import annotations from exported data
      * POST /v1/api/annotations/import?paperId=...&collectionId=...
      */
@@ -232,8 +276,25 @@ public class AnnotationController {
         
         String userId = extractUserIdFromToken(authHeader);
         
-        // Validate paperId and collectionId match
-        if (!importData.getPaperId().equals(paperId) || !importData.getCollectionId().equals(collectionId)) {
+        // Decode query parameters (they come Base64 encoded from Android)
+        String decodedPaperId = com.se1853_jv.util.IdEncoder.decode(paperId);
+        String decodedCollectionId = com.se1853_jv.util.IdEncoder.decode(collectionId);
+        
+        // Check if decode succeeded (result is a valid UUID format)
+        boolean isPaperIdUuid = decodedPaperId != null && decodedPaperId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+        boolean isCollectionIdUuid = decodedCollectionId != null && decodedCollectionId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+        
+        // Use decoded IDs if they are valid UUIDs, otherwise use original
+        String finalPaperId = isPaperIdUuid ? decodedPaperId : paperId;
+        String finalCollectionId = isCollectionIdUuid ? decodedCollectionId : collectionId;
+        
+        log.info("Import annotations: original paperId={}, decoded={}, final={}", paperId, decodedPaperId, finalPaperId);
+        log.info("Import annotations: original collectionId={}, decoded={}, final={}", collectionId, decodedCollectionId, finalCollectionId);
+        
+        // Validate paperId and collectionId match (compare decoded query params with body UUIDs)
+        if (!importData.getPaperId().equals(finalPaperId) || !importData.getCollectionId().equals(finalCollectionId)) {
+            log.error("ID mismatch: body paperId={}, query paperId={}; body collectionId={}, query collectionId={}", 
+                    importData.getPaperId(), finalPaperId, importData.getCollectionId(), finalCollectionId);
             throw new IllegalArgumentException("Paper ID or Collection ID mismatch");
         }
         
@@ -241,8 +302,8 @@ public class AnnotationController {
         if (importData.getNotes() != null) {
             for (NoteResponse noteResponse : importData.getNotes()) {
                 CreateNoteRequest noteRequest = new CreateNoteRequest();
-                noteRequest.setPaperId(paperId);
-                noteRequest.setCollectionId(collectionId);
+                noteRequest.setPaperId(finalPaperId);
+                noteRequest.setCollectionId(finalCollectionId);
                 noteRequest.setContent(noteResponse.getContent());
                 noteRequest.setCoordinationX(noteResponse.getCoordinationX().intValue());
                 noteRequest.setCoordinationY(noteResponse.getCoordinationY().intValue());
@@ -256,8 +317,8 @@ public class AnnotationController {
         if (importData.getHighlights() != null) {
             for (HighlightResponse highlightResponse : importData.getHighlights()) {
                 CreateHighlightRequest highlightRequest = new CreateHighlightRequest();
-                highlightRequest.setPaperId(paperId);
-                highlightRequest.setCollectionId(collectionId);
+                highlightRequest.setPaperId(finalPaperId);
+                highlightRequest.setCollectionId(finalCollectionId);
                 highlightRequest.setColor(highlightResponse.getColor());
                 highlightRequest.setCoordinationX(highlightResponse.getCoordinationX().intValue());
                 highlightRequest.setCoordinationY(highlightResponse.getCoordinationY().intValue());

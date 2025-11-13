@@ -31,4 +31,8 @@ public class Note {
 
     @NonNull
     Integer pageNumber;
+    
+    String paperId;
+    String collectionId;
+    String userId;
 }

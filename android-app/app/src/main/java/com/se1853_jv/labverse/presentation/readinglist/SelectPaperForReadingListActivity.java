@@ -1,6 +1,7 @@
 package com.se1853_jv.labverse.presentation.readinglist;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
@@ -46,12 +48,18 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
     private RecyclerView recyclerPapers;
     private TextView textEmptyState;
     private ProgressBar progressBar;
+    private FloatingActionButton fabImportPaper;
     private SelectPaperAdapter adapter;
     
     private final List<PaperResearch> allPapers = new ArrayList<>();
     private final List<PaperResearch> filteredPapers = new ArrayList<>();
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
+    
+    private int currentPage = 0;
+    private static final int PAGE_SIZE = 50;
+    private boolean isLoading = false;
+    private boolean hasMorePages = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +80,10 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         setupToolbar();
         setupRecyclerView();
         setupSearch();
-        // TODO: xu ly phan trang
-        loadPapers(0, 10);
+        setupScrollListener();
+        setupFabImportPaper();
+        // Load tất cả papers (getAllPapers)
+        loadAllPapers(0, PAGE_SIZE);
     }
 
     private void initializeViews() {
@@ -82,6 +92,24 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         recyclerPapers = findViewById(R.id.recycler_papers);
         textEmptyState = findViewById(R.id.text_empty_state);
         progressBar = findViewById(R.id.progress_bar);
+        fabImportPaper = findViewById(R.id.fab_import_paper);
+    }
+    
+    private void setupFabImportPaper() {
+        if (fabImportPaper != null) {
+            fabImportPaper.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(SelectPaperForReadingListActivity.this, 
+                            com.se1853_jv.labverse.presentation.paper.ImportPaperByBibtexActivity.class);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    android.util.Log.e(TAG, "Error opening import paper activity: " + e.getMessage());
+                    Toast.makeText(SelectPaperForReadingListActivity.this, 
+                            "Failed to open import paper: " + e.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void setupToolbar() {
@@ -96,14 +124,34 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         adapter = new SelectPaperAdapter(new ArrayList<>(), this::addPaperToReadingList);
-        recyclerPapers.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerPapers.setLayoutManager(layoutManager);
         recyclerPapers.setAdapter(adapter);
+    }
+    
+    private void setupScrollListener() {
+        recyclerPapers.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                    
+                    // Load more khi scroll gần đến cuối danh sách
+                    if (!isLoading && hasMorePages && 
+                        (firstVisibleItemPosition + visibleItemCount) >= totalItemCount - 5) {
+                        loadMorePapers();
+                    }
+                }
+            }
+        });
     }
 
     private void setupSearch() {
-        // TODO: xu ly phan trang
-        int currentPage = 0;
-        int pageSize = 10;
         editSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -116,7 +164,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
                 }
                 
                 // Schedule new search with debounce
-                searchRunnable = () -> performSearch(s.toString(), currentPage, pageSize);
+                searchRunnable = () -> performSearch(s.toString());
                 searchHandler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY);
             }
 
@@ -125,17 +173,78 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         });
     }
 
-    private void performSearch(String query, int currentPage, int pageSize) {
+    private void performSearch(String query) {
         if (query == null || query.trim().isEmpty()) {
-            // Show all papers if search is empty
-            filterPapers("");
+            // Show all papers if search is empty - reload from beginning
+            currentPage = 0;
+            hasMorePages = true;
+            allPapers.clear();
+            loadAllPapers(0, PAGE_SIZE);
         } else {
-            // Filter locally first
-            filterPapers(query);
-            
-            // Then search on server
-            searchPapersOnServer(query, currentPage, pageSize);
+            // Reset pagination for new search
+            currentPage = 0;
+            hasMorePages = true;
+            // Clear existing papers when starting new search
+            allPapers.clear();
+            // Search on server
+            searchPapersOnServer(query, 0, PAGE_SIZE);
         }
+    }
+    
+    private void searchPapersOnServer(String query, int page, int pageSize) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            return;
+        }
+
+        if (isLoading) return;
+        isLoading = true;
+        showLoading(true);
+        
+        paperApiHandler.getAllPapers(query, page, pageSize, null, null, null, null, new ApiCallback<>() {
+            @Override
+            public void onSuccess(List<PaperResearch> response) {
+                runOnUiThread(() -> {
+                    isLoading = false;
+                    showLoading(false);
+                    if (response != null) {
+                        if (page == 0) {
+                            // First page of search - clear existing papers
+                            allPapers.clear();
+                        }
+                        if (response.isEmpty()) {
+                            hasMorePages = false;
+                        } else {
+                            // Add papers, avoiding duplicates
+                            for (PaperResearch paper : response) {
+                                if (!containsPaper(allPapers, paper.getId())) {
+                                    allPapers.add(paper);
+                                }
+                            }
+                            // Nếu số papers trả về ít hơn pageSize, không còn pages nào nữa
+                            if (response.size() < pageSize) {
+                                hasMorePages = false;
+                            } else {
+                                hasMorePages = true;
+                            }
+                        }
+                    } else {
+                        hasMorePages = false;
+                    }
+                    filterPapers(query);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    isLoading = false;
+                    showLoading(false);
+                    android.util.Log.e(TAG, "Error searching papers: " + error);
+                    hasMorePages = false;
+                    filterPapers(query); // Still show what we have
+                });
+            }
+        });
     }
 
     private void filterPapers(String query) {
@@ -157,39 +266,6 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         updateEmptyState();
     }
 
-    private void searchPapersOnServer(String query, int currentPage, int pageSize) {
-        if (!Connectivity.isInternetAvailable(this)) {
-            return;
-        }
-
-        showLoading(true);
-        
-        paperApiHandler.getAllPapers(query, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
-            @Override
-            public void onSuccess(List<PaperResearch> response) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-                    if (response != null && !response.isEmpty()) {
-                        // Merge new results with existing ones
-                        for (PaperResearch paper : response) {
-                            if (!containsPaper(allPapers, paper.getId())) {
-                                allPapers.add(paper);
-                            }
-                        }
-                        filterPapers(query);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-                    android.util.Log.e(TAG, "Error searching papers: " + error);
-                });
-            }
-        });
-    }
 
     private boolean containsPaper(List<PaperResearch> papers, String id) {
         if (id == null) return false;
@@ -201,40 +277,81 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
         return false;
     }
 
-    private void loadPapers(int currentPage, int pageSize) {
+    private void loadAllPapers(int page, int pageSize) {
         if (!Connectivity.isInternetAvailable(this)) {
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             updateEmptyState();
             return;
         }
 
+        if (isLoading) return;
+        isLoading = true;
         showLoading(true);
 
-        paperApiHandler.getAllPapers(null, currentPage, pageSize, null, null, null, null, new ApiCallback<List<PaperResearch>>() {
+        // Gọi getAllPapers với searchQuery = null để lấy tất cả papers
+        paperApiHandler.getAllPapers(null, page, pageSize, null, null, null, null, new ApiCallback<>() {
             @Override
             public void onSuccess(List<PaperResearch> response) {
                 runOnUiThread(() -> {
+                    isLoading = false;
                     showLoading(false);
-                    allPapers.clear();
                     if (response != null) {
-                        allPapers.addAll(response);
+                        if (page == 0) {
+                            // First page - clear existing papers
+                            allPapers.clear();
+                        }
+                        if (response.isEmpty()) {
+                            hasMorePages = false;
+                        } else {
+                            // Add papers, avoiding duplicates
+                            for (PaperResearch paper : response) {
+                                if (!containsPaper(allPapers, paper.getId())) {
+                                    allPapers.add(paper);
+                                }
+                            }
+                            // Nếu số papers trả về ít hơn pageSize, không còn pages nào nữa
+                            if (response.size() < pageSize) {
+                                hasMorePages = false;
+                            } else {
+                                hasMorePages = true;
+                            }
+                        }
+                    } else {
+                        hasMorePages = false;
                     }
-                    filterPapers(editSearch.getText().toString());
+                    filterPapers(editSearch.getText() != null ? editSearch.getText().toString() : "");
                 });
             }
 
             @Override
             public void onError(String error) {
                 runOnUiThread(() -> {
+                    isLoading = false;
                     showLoading(false);
                     android.util.Log.e(TAG, "Error loading papers: " + error);
                     Toast.makeText(SelectPaperForReadingListActivity.this,
                             "Failed to load papers: " + error,
                             Toast.LENGTH_SHORT).show();
+                    hasMorePages = false;
                     updateEmptyState();
                 });
             }
         });
+    }
+    
+    private void loadMorePapers() {
+        if (!Connectivity.isInternetAvailable(this) || isLoading || !hasMorePages) {
+            return;
+        }
+        
+        String searchQuery = editSearch.getText() != null ? editSearch.getText().toString().trim() : "";
+        currentPage++;
+        
+        if (searchQuery.isEmpty()) {
+            loadAllPapers(currentPage, PAGE_SIZE);
+        } else {
+            searchPapersOnServer(searchQuery, currentPage, PAGE_SIZE);
+        }
     }
 
     private void addPaperToReadingList(PaperResearch paper) {
@@ -254,7 +371,7 @@ public class SelectPaperForReadingListActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        readingListApiHandler.updatePapers(readingListId, request, new ApiCallback<ReadingListResponse>() {
+        readingListApiHandler.updatePapers(readingListId, request, new ApiCallback<>() {
             @Override
             public void onSuccess(ReadingListResponse response) {
                 runOnUiThread(() -> {

@@ -99,11 +99,18 @@ public class FilterDialogFragment extends BottomSheetDialogFragment {
     }
 
     private void resetFilters() {
+        // Reset all input fields
         if (authorInput != null) authorInput.setText("");
         if (journalDropdown != null) journalDropdown.setText(journalItems[0], false);
         if (yearFromInput != null) yearFromInput.setText("");
         if (yearToInput != null) yearToInput.setText("");
+        if (keywordsInput != null) keywordsInput.setText("");
 
+        // Notify listener to reset filters in SearchActivity
+        // Pass null to indicate all filters should be cleared
+        if (listener != null) {
+            listener.onFiltersApplied(null);
+        }
     }
 
     private void applyFilters() {

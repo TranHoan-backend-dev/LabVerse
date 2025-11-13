@@ -1,6 +1,7 @@
 package com.se1853_jv.labverse.presentation.paper;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -19,13 +21,19 @@ import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.annotation.AnnotationApiHandler;
+import com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler;
 import com.se1853_jv.labverse.data.service.storage.RemotePdfService;
 import com.se1853_jv.labverse.data.sync.OfflineSyncHelper;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
 import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.repo.ReadingWorkflowRepository;
+import com.se1853_jv.labverse.presentation.paper.view.AnnotationOverlayView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +42,7 @@ import java.util.UUID;
 
 /**
  * PDF Reader Activity - Phần 5: Integrated PDF Reader
- * 
+ * <p>
  * Features:
  * - Render PDF với AndroidPdfViewer
  * - User tap để add note
@@ -43,71 +51,127 @@ import java.util.UUID;
  * - Offline support với OfflineSyncHelper (Phần 11)
  */
 public class PdfReaderActivity extends AppCompatActivity {
-    private static final String TAG = "PDFReaderActivity";
-    
+    private static final String TAG = "PdfReaderActivity";
+
     private PDFView pdfView;
     private Toolbar toolbar;
     private ProgressBar progressBar;
+    private AnnotationOverlayView annotationOverlayView;
+    private MaterialButton btnAddNote, btnAddHighlight, btnImportAnnotations, btnExportAnnotations;
     private OfflineSyncHelper syncHelper;
     private AnnotationApiHandler apiHandler;
     private RemotePdfService remotePdfService;
-    private com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler workflowApiHandler;
-    private com.se1853_jv.labverse.domain.infrastructure.workflow.repo.ReadingWorkflowRepository workflowRepository;
-    
-    private String paperId;
-    private String collectionId;
-    private String userId;
-    private String jwtToken;
-    private String pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
+    private ReadingWorkflowApiHandler workflowApiHandler;
+    private ReadingWorkflowRepository workflowRepository;
+
+    private String paperId, collectionId, userId, jwtToken, pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
     private int totalPages = 0; // Total pages in PDF
-    
+
     private List<Note> loadedNotes = new ArrayList<>();
     private List<Highlight> loadedHighlights = new ArrayList<>();
+
+    private boolean notePlacementMode = false;
+    private boolean highlightPlacementMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_reader);
-        
+
         // Get data from intent
         paperId = getIntent().getStringExtra("paperId");
         collectionId = getIntent().getStringExtra("collectionId");
         pdfUrl = getIntent().getStringExtra("pdfUrl");
-        
+
         // Get user info from SessionManager
-        com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
-            new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        SessionManager sessionManager = new SessionManager(this);
         userId = sessionManager.getUserId();
         jwtToken = sessionManager.getToken();
-        
+
         if (paperId == null || pdfUrl == null) {
             Toast.makeText(this, "Missing paper ID or PDF URL", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        
+
         initializeComponents();
         setupToolbar();
         setupPDFViewer();
+        setupOverlayTouchHandler();
+        setupActionButtons();
         loadAnnotations();
+    }
+
+    private void setupActionButtons() {
+        if (btnAddNote != null) {
+            btnAddNote.setOnClickListener(v -> {
+                notePlacementMode = !notePlacementMode;
+                highlightPlacementMode = false;
+                updatePlacementButtonStates();
+                Log.d(TAG, "Note button clicked: notePlacementMode=" + notePlacementMode);
+                if (notePlacementMode) {
+                    Snackbar.make(v, R.string.pdf_reader_note_mode_hint, Snackbar.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (btnAddHighlight != null) {
+            btnAddHighlight.setOnClickListener(v -> {
+                highlightPlacementMode = !highlightPlacementMode;
+                notePlacementMode = false;
+                updatePlacementButtonStates();
+                Log.d(TAG, "Highlight button clicked: highlightPlacementMode=" + highlightPlacementMode);
+                if (highlightPlacementMode) {
+                    Snackbar.make(v, R.string.pdf_reader_highlight_mode_hint, Snackbar.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (btnImportAnnotations != null) {
+            btnImportAnnotations.setOnClickListener(v -> startImportAnnotationsFlow());
+        }
+
+        if (btnExportAnnotations != null) {
+            btnExportAnnotations.setOnClickListener(v -> exportAnnotations());
+        }
+    }
+
+    private void updatePlacementButtonStates() {
+        if (btnAddNote != null) {
+            btnAddNote.setAlpha(notePlacementMode ? 1f : 0.85f);
+        }
+        if (btnAddHighlight != null) {
+            btnAddHighlight.setAlpha(highlightPlacementMode ? 1f : 0.85f);
+        }
+    }
+
+    private void resetPlacementModes() {
+        notePlacementMode = false;
+        highlightPlacementMode = false;
+        updatePlacementButtonStates();
     }
 
     private void initializeComponents() {
         pdfView = findViewById(R.id.pdfView);
         toolbar = findViewById(R.id.toolbar);
         progressBar = findViewById(R.id.progressBar);
+        annotationOverlayView = findViewById(R.id.annotationOverlay);
+        btnAddNote = findViewById(R.id.btnAddNote);
+        btnAddHighlight = findViewById(R.id.btnAddHighlight);
+        btnImportAnnotations = findViewById(R.id.btnImportAnnotations);
+        btnExportAnnotations = findViewById(R.id.btnExportAnnotations);
         syncHelper = new OfflineSyncHelper(this);
         apiHandler = new AnnotationApiHandler();
         remotePdfService = new RemotePdfService();
         workflowApiHandler = new com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler(this);
-        
+
         // Get workflow repository from database
         var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
         workflowRepository = db.readingWorkflowRepository();
-        
+
         // Log collectionId for debugging
-        Log.d(TAG, "PDFReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
-        
+        Log.d(TAG, "PdfReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
+
         // Set default collectionId if null or empty (personal library)
         if (collectionId == null || collectionId.isEmpty()) {
             collectionId = "PERSONAL_LIBRARY"; // Special collection ID for personal library
@@ -132,39 +196,39 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        
+
         // Download PDF from Firebase Storage and cache locally
         remotePdfService.downloadPdfFromUrl(
-            pdfUrl,
-            paperId,
-            this,
-            new RemotePdfService.DownloadCallback() {
-                @Override
-                public void onSuccess(File localFile) {
-                    // Hide progress bar
-                    runOnUiThread(() -> {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
-                    
-                    // Load PDF from local file
-                    loadPdfFromFile(localFile);
-                }
+                pdfUrl,
+                paperId,
+                this,
+                new RemotePdfService.DownloadCallback() {
+                    @Override
+                    public void onSuccess(File localFile) {
+                        // Hide progress bar
+                        runOnUiThread(() -> {
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
 
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e(TAG, "Error downloading PDF", e);
-                    runOnUiThread(() -> {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(View.GONE);
-                        }
-                        Toast.makeText(PdfReaderActivity.this,
-                            "Error loading PDF: " + e.getMessage(), 
-                            Toast.LENGTH_LONG).show();
-                    });
+                        // Load PDF from local file
+                        loadPdfFromFile(localFile);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Error downloading PDF", e);
+                        runOnUiThread(() -> {
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            Toast.makeText(PdfReaderActivity.this,
+                                    "Error loading PDF: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        });
+                    }
                 }
-            }
         );
     }
 
@@ -174,116 +238,199 @@ public class PdfReaderActivity extends AppCompatActivity {
     private void loadPdfFromFile(File pdfFile) {
         // Load last read page from database
         int lastReadPage = loadLastReadPage();
-        
+
         pdfView.fromFile(pdfFile)
-            .defaultPage(lastReadPage) // Start from last read page
-            .enableSwipe(true)
-            .swipeHorizontal(false) // Vertical scrolling (recommended for research papers)
-            .enableDoubletap(true)
-            .autoSpacing(true) // Add spacing between pages
-            .pageFling(false) // Disable page fling for smooth scrolling
-            .onPageChange(new OnPageChangeListener() {
-                @Override
-                public void onPageChanged(int page, int pageCount) {
-                    // Update reading progress
-                    totalPages = pageCount;
-                    updateReadingProgress(page, pageCount);
+                .defaultPage(lastReadPage) // Start from last read page
+                .enableSwipe(true)
+                .swipeHorizontal(false) // Vertical scrolling (recommended for research papers)
+                .enableDoubletap(true)
+                .autoSpacing(true) // Add spacing between pages
+                .pageFling(false) // Disable page fling for smooth scrolling
+                .onPageChange(new OnPageChangeListener() {
+                    @Override
+                    public void onPageChanged(int page, int pageCount) {
+                        // Update reading progress
+                        totalPages = pageCount;
+                        if (annotationOverlayView != null) {
+                            annotationOverlayView.setCurrentPage(page);
+                        }
+                        updateReadingProgress(page, pageCount);
+                    }
+                })
+                .onLoad(nbPages -> {
+                    totalPages = nbPages;
+                    Log.d(TAG, "PDF loaded: " + nbPages + " pages");
+                })
+                .onError(t -> {
+                    Log.e(TAG, "Error loading PDF", t);
+                    Toast.makeText(PdfReaderActivity.this,
+                            "Error loading PDF: " + t.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                })
+                .load();
+
+        annotationOverlayView.setCurrentPage(lastReadPage);
+
+    }
+
+    private void setupOverlayTouchHandler() {
+        if (annotationOverlayView != null) {
+            // Set up note click listener to show note content
+            annotationOverlayView.setOnNoteClickListener(note -> {
+                // Only show note dialog if not in placement mode
+                if (!notePlacementMode && !highlightPlacementMode) {
+                    showNoteContentDialog(note);
                 }
-            })
-            .onTap(new OnTapListener() {
-                @Override
-                public boolean onTap(MotionEvent e) {
-                    // User tap → Show dialog to add note
-                    float x = e.getX();
-                    float y = e.getY();
-                    showAddNoteDialog((int) x, (int) y, pdfView.getCurrentPage());
-                    return true;
+            });
+
+            // Set up touch listener for placement mode
+            annotationOverlayView.setOnTouchListener((v, event) -> {
+                // Only handle placement touch if in placement mode
+                // Otherwise, let AnnotationOverlayView handle note clicks
+                if (notePlacementMode || highlightPlacementMode) {
+                    boolean handled = handlePlacementTouch(event);
+                    Log.d(TAG, "AnnotationOverlay touch (placement mode): action=" + event.getAction() + ", handled=" + handled);
+                    return handled;
                 }
-            })
-            .onLoad(nbPages -> {
-                totalPages = nbPages;
-                Log.d(TAG, "PDF loaded: " + nbPages + " pages");
-            })
-            .onError(t -> {
-                Log.e(TAG, "Error loading PDF", t);
-                Toast.makeText(PdfReaderActivity.this,
-                    "Error loading PDF: " + t.getMessage(), 
-                    Toast.LENGTH_LONG).show();
-            })
-            .load();
-        
-        // Setup long press listener for highlight
-        pdfView.setOnLongClickListener(v -> {
-            // Get tap position from PDF viewer
-            // Note: AndroidPdfViewer doesn't provide direct tap coordinates
-            // You may need to use custom gesture detector
-            showHighlightColorPicker();
+                // Return false to let AnnotationOverlayView.onTouchEvent handle note clicks
+                return false;
+            });
+            Log.d(TAG, "Touch listener set on annotationOverlayView");
+        } else if (pdfView != null) {
+            pdfView.setOnTouchListener((v, event) -> {
+                boolean handled = handlePlacementTouch(event);
+                Log.d(TAG, "PDFView touch: action=" + event.getAction() + ", handled=" + handled);
+                return handled;
+            });
+            Log.d(TAG, "Touch listener set on pdfView");
+        } else {
+            Log.w(TAG, "Neither annotationOverlayView nor pdfView is available for touch handling");
+        }
+    }
+
+    /**
+     * Show dialog với nội dung note khi user tap vào note marker
+     */
+    private void showNoteContentDialog(Note note) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Note")
+                .setMessage(note.getContent() != null ? note.getContent() : "No content")
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
+    private boolean handlePlacementTouch(MotionEvent event) {
+        Log.d(TAG, "handlePlacementTouch: noteMode=" + notePlacementMode + ", highlightMode=" + highlightPlacementMode + ", action=" + event.getAction());
+
+        if ((!notePlacementMode && !highlightPlacementMode) || pdfView == null) {
+            Log.d(TAG, "Touch ignored: placement modes are off or pdfView is null");
+            return false;
+        }
+
+        if (event.getAction() != MotionEvent.ACTION_UP) {
+            return false; // Only handle ACTION_UP
+        }
+
+        int page = pdfView.getCurrentPage();
+        int width = annotationOverlayView != null ? annotationOverlayView.getWidth() : pdfView.getWidth();
+        int height = annotationOverlayView != null ? annotationOverlayView.getHeight() : pdfView.getHeight();
+
+        if (width == 0 || height == 0) {
+            Log.w(TAG, "View dimensions are zero: width=" + width + ", height=" + height);
+            return false;
+        }
+
+        float x = event.getX();
+        float y = event.getY();
+        int normalizedX = normalizeCoordinate(x, width);
+        int normalizedY = normalizeCoordinate(y, height);
+
+        Log.d(TAG, "Touch coordinates: x=" + x + ", y=" + y + ", normalized: (" + normalizedX + ", " + normalizedY + "), page=" + page);
+
+        if (notePlacementMode) {
+            resetPlacementModes();
+            showAddNoteDialog(normalizedX, normalizedY, page);
             return true;
-        });
+        }
+
+        if (highlightPlacementMode) {
+            resetPlacementModes();
+            showHighlightColorPicker(normalizedX, normalizedY, page);
+            return true;
+        }
+
+        return false;
+    }
+
+    private int normalizeCoordinate(float value, float dimension) {
+        if (dimension == 0f) return 0;
+        float ratio = value / dimension;
+        ratio = Math.max(0f, Math.min(1f, ratio));
+        return Math.round(ratio * 10000f);
     }
 
     /**
      * Show dialog để user nhập note content
      */
-    private void showAddNoteDialog(int x, int y, int page) {
+    private void showAddNoteDialog(int normalizedX, int normalizedY, int page) {
         EditText input = new EditText(this);
         input.setHint("Enter your note...");
-        
+
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Add Note")
-            .setView(input)
-            .setPositiveButton("Save", (dialog, which) -> {
-                String noteContent = input.getText().toString().trim();
-                if (!noteContent.isEmpty()) {
-                    createNote(noteContent, (long) x, (long) y, page);
-                }
-            })
-            .setNegativeButton("Cancel", null)
-            .show();
+                .setTitle("Add Note")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String noteContent = input.getText().toString().trim();
+                    if (!noteContent.isEmpty()) {
+                        createNote(noteContent, normalizedX, normalizedY, page);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     /**
      * Show color picker để user chọn highlight color
      */
-    private void showHighlightColorPicker() {
+    private void showHighlightColorPicker(int normalizedX, int normalizedY, int page) {
         String[] colors = {"#FFFF00", "#00FF00", "#00FFFF", "#FF00FF", "#FF0000"};
         String[] colorNames = {"Yellow", "Green", "Cyan", "Magenta", "Red"};
-        
+
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Select Highlight Color")
-            .setItems(colorNames, (dialog, which) -> {
-                // Get current page
-                int page = pdfView.getCurrentPage();
-                // Create highlight (tọa độ sẽ được lấy từ gesture hoặc selection)
-                createHighlight(colors[which], page);
-            })
-            .show();
+                .setTitle("Select Highlight Color")
+                .setItems(colorNames, (dialog, which) -> {
+                    createHighlight(colors[which], page, normalizedX, normalizedY);
+                })
+                .show();
     }
 
     /**
      * Create note với offline support
      */
-    private void createNote(String content, long x, long y, int page) {
+    private void createNote(String content, int normalizedX, int normalizedY, int page) {
         Note note = Note.builder()
-            .id(UUID.randomUUID().toString())
-            .content(content)
-            .coordinationX(x)
-            .coordinationY(y)
-            .pageNumber(page)
-            .build();
-        
+                .id(UUID.randomUUID().toString())
+                .content(content)
+                .coordinationX((long) normalizedX)
+                .coordinationY((long) normalizedY)
+                .pageNumber(page)
+                .paperId(paperId)
+                .collectionId(collectionId != null ? collectionId : "")
+                .userId(userId)
+                .build();
+
         // Try to create via API if online, otherwise save for offline sync
         if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
             // Create API request
-            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request = 
-                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request =
+                    new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
             request.paperId = paperId;
             request.collectionId = collectionId != null ? collectionId : "";
             request.content = content;
-            request.coordinationX = (int) x;
-            request.coordinationY = (int) y;
+            request.coordinationX = normalizedX;
+            request.coordinationY = normalizedY;
             request.pageNumber = page;
-            
+
             // Call API
             apiHandler.createNote(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>() {
                 @Override
@@ -321,32 +468,30 @@ public class PdfReaderActivity extends AppCompatActivity {
     /**
      * Create highlight với offline support
      */
-    private void createHighlight(String color, int page) {
-        // Get coordinates from current page center (can be improved with text selection)
-        // For now, using center of page as placeholder
-        long x = 200L; // Center X
-        long y = 300L; // Center Y
-        
+    private void createHighlight(String color, int page, int normalizedX, int normalizedY) {
         Highlight highlight = Highlight.builder()
-            .id(UUID.randomUUID().toString())
-            .colorCode(color)
-            .coordinationX(x)
-            .coordinationY(y)
-            .pageNumber(page)
-            .build();
-        
+                .id(UUID.randomUUID().toString())
+                .colorCode(color)
+                .coordinationX((long) normalizedX)
+                .coordinationY((long) normalizedY)
+                .pageNumber(page)
+                .paperId(paperId)
+                .collectionId(collectionId != null ? collectionId : "")
+                .userId(userId)
+                .build();
+
         // Try to create via API if online, otherwise save for offline sync
         if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
             // Create API request
-            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request = 
-                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request =
+                    new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
             request.paperId = paperId;
             request.collectionId = collectionId != null ? collectionId : "";
             request.color = color;
-            request.coordinationX = (int) x;
-            request.coordinationY = (int) y;
+            request.coordinationX = normalizedX;
+            request.coordinationY = normalizedY;
             request.pageNumber = page;
-            
+
             // Call API
             apiHandler.createHighlight(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>() {
                 @Override
@@ -386,9 +531,10 @@ public class PdfReaderActivity extends AppCompatActivity {
      * TODO: Implement actual overlay rendering
      */
     private void displayNoteOverlay(Note note) {
-        // TODO: Render note icon/annotation tại tọa độ (note.coordinationX, note.coordinationY)
-        // Có thể dùng custom view overlay hoặc annotation library
-        Log.d(TAG, "Display note: " + note.getId() + " at page " + note.getPageNumber());
+        if (annotationOverlayView == null) {
+            return;
+        }
+        runOnUiThread(() -> annotationOverlayView.addNote(note));
     }
 
     /**
@@ -396,14 +542,22 @@ public class PdfReaderActivity extends AppCompatActivity {
      * TODO: Implement actual overlay rendering
      */
     private void displayHighlightOverlay(Highlight highlight) {
-        // TODO: Render highlight tại tọa độ với màu highlight.colorCode
-        Log.d(TAG, "Display highlight: " + highlight.getId() + " at page " + highlight.getPageNumber());
+        if (annotationOverlayView == null) {
+            return;
+        }
+        runOnUiThread(() -> annotationOverlayView.addHighlight(highlight));
     }
 
     /**
      * Load annotations từ API hoặc local database
      */
     private void loadAnnotations() {
+        loadedNotes = new ArrayList<>();
+        loadedHighlights = new ArrayList<>();
+        if (annotationOverlayView != null) {
+            annotationOverlayView.setNotes(loadedNotes);
+            annotationOverlayView.setHighlights(loadedHighlights);
+        }
         // Check offline first
         if (!com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this)) {
             // Load từ local Room DB
@@ -418,9 +572,11 @@ public class PdfReaderActivity extends AppCompatActivity {
      * Load annotations từ local Room DB (offline)
      */
     private void loadAnnotationsFromLocal() {
-        // TODO: Query từ Room DB
-        // NoteRepository và HighlightRepository
         Log.d(TAG, "Loading annotations from local database");
+        if (annotationOverlayView != null) {
+            annotationOverlayView.setNotes(loadedNotes);
+            annotationOverlayView.setHighlights(loadedHighlights);
+        }
     }
 
     /**
@@ -432,19 +588,18 @@ public class PdfReaderActivity extends AppCompatActivity {
             loadAnnotationsFromLocal();
             return;
         }
-        
+
         // collectionId can be null for personal collections
         String collectionIdParam = collectionId != null ? collectionId : "";
-        
+
         // Load notes
         apiHandler.getNotes(jwtToken, paperId, collectionIdParam, userId, new com.se1853_jv.labverse.data.api.ApiCallback<List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>>() {
             @Override
             public void onSuccess(List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse> notes) {
                 runOnUiThread(() -> {
                     loadedNotes = notes != null ? convertToNotes(notes) : new ArrayList<>();
-                    // Display notes
-                    for (Note note : loadedNotes) {
-                        displayNoteOverlay(note);
+                    if (annotationOverlayView != null) {
+                        annotationOverlayView.setNotes(loadedNotes);
                     }
                     Log.d(TAG, "Loaded " + loadedNotes.size() + " notes from API");
                 });
@@ -457,16 +612,15 @@ public class PdfReaderActivity extends AppCompatActivity {
                 loadAnnotationsFromLocal();
             }
         });
-        
+
         // Load highlights
         apiHandler.getHighlights(jwtToken, paperId, collectionIdParam, userId, new com.se1853_jv.labverse.data.api.ApiCallback<List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>>() {
             @Override
             public void onSuccess(List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse> highlights) {
                 runOnUiThread(() -> {
                     loadedHighlights = highlights != null ? convertToHighlights(highlights) : new ArrayList<>();
-                    // Display highlights
-                    for (Highlight highlight : loadedHighlights) {
-                        displayHighlightOverlay(highlight);
+                    if (annotationOverlayView != null) {
+                        annotationOverlayView.setHighlights(loadedHighlights);
                     }
                     Log.d(TAG, "Loaded " + loadedHighlights.size() + " highlights from API");
                 });
@@ -489,7 +643,7 @@ public class PdfReaderActivity extends AppCompatActivity {
             ensurePersonalLibraryCollectionExistsSync();
         }).start();
     }
-    
+
     /**
      * Ensure personal library collection exists in database (synchronous, must be called on background thread)
      */
@@ -497,11 +651,11 @@ public class PdfReaderActivity extends AppCompatActivity {
         try {
             var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
             var collectionRepository = db.collectionRepository();
-            
+
             // Check if personal library collection exists
-            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections personalCollection = 
-                collectionRepository.getById("PERSONAL_LIBRARY");
-            
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections personalCollection =
+                    collectionRepository.getById("PERSONAL_LIBRARY");
+
             if (personalCollection == null) {
                 // Create personal library collection
                 personalCollection = com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections.builder()
@@ -515,7 +669,7 @@ public class PdfReaderActivity extends AppCompatActivity {
             Log.e(TAG, "Error ensuring personal library collection exists", e);
         }
     }
-    
+
     /**
      * Ensure all foreign key entities exist before creating ReadingWorkflow
      * Returns true if all entities exist or were created successfully
@@ -523,20 +677,20 @@ public class PdfReaderActivity extends AppCompatActivity {
     private boolean ensureForeignKeysExist(String userId, String paperId, String collectionId) {
         try {
             var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
-            
+
             // Ensure User exists
             var userRepository = db.userRepository();
             com.se1853_jv.labverse.domain.infrastructure.user.model.Users user = userRepository.getById(userId);
             if (user == null) {
                 Log.w(TAG, "User not found in database: " + userId + ". Creating minimal user record.");
                 // Create minimal user record from SessionManager
-                com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
-                    new com.se1853_jv.labverse.data.utils.SessionManager(this);
+                com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                        new com.se1853_jv.labverse.data.utils.SessionManager(this);
                 String email = sessionManager.getEmail();
                 String username = sessionManager.getUsername();
                 String fullName = sessionManager.getFullName();
                 String role = sessionManager.getRole();
-                
+
                 // Use default roleId if role is not available
                 String roleId = "role_researcher"; // Default role
                 if (role != null) {
@@ -547,7 +701,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         roleId = "role_student";
                     }
                 }
-                
+
                 // Ensure role exists in Roles table
                 var roleRepository = db.roleRepository();
                 com.se1853_jv.labverse.domain.infrastructure.role.model.Roles roleEntity = roleRepository.getById(roleId);
@@ -565,7 +719,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         // Continue anyway - might already exist
                     }
                 }
-                
+
                 long currentTime = System.currentTimeMillis();
                 user = com.se1853_jv.labverse.domain.infrastructure.user.model.Users.builder()
                         .id(userId)
@@ -586,7 +740,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                     return false;
                 }
             }
-            
+
             // Ensure PaperResearch exists
             var paperRepository = db.paperRepository();
             com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch paper = paperRepository.getById(paperId);
@@ -611,11 +765,11 @@ public class PdfReaderActivity extends AppCompatActivity {
                     return false;
                 }
             }
-            
+
             // Ensure Collection exists
             var collectionRepository = db.collectionRepository();
-            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections collection = 
-                collectionRepository.getById(collectionId);
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections collection =
+                    collectionRepository.getById(collectionId);
             if (collection == null) {
                 // Create collection if it doesn't exist
                 if ("PERSONAL_LIBRARY".equals(collectionId)) {
@@ -641,7 +795,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                     }
                 }
             }
-            
+
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Error ensuring foreign keys exist", e);
@@ -656,7 +810,7 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (userId == null || paperId == null) {
             return 0;
         }
-        
+
         try {
             String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
             // Note: We don't need to ensure collection exists here since we're only reading
@@ -669,7 +823,7 @@ public class PdfReaderActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error loading last read page", e);
         }
-        
+
         return 0;
     }
 
@@ -680,25 +834,25 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (userId == null || paperId == null || totalPages == 0) {
             return;
         }
-        
+
         // Make variables final for lambda
         final String finalUserId = userId;
         final String finalPaperId = paperId;
         final String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
         final String finalJwtToken = jwtToken;
-        
+
         // Calculate progress percentage (0-100)
         // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
         // For a 2-page PDF: page 0 = 50%, page 1 = 100%
         int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
         if (calculatedProgress > 100) calculatedProgress = 100;
         if (calculatedProgress < 0) calculatedProgress = 0;
-        
+
         final int progress = calculatedProgress;
         final int finalCurrentPage = currentPage;
-        
+
         Log.d(TAG, "Reading progress: " + progress + "% (page " + currentPage + "/" + totalPages + ")");
-        
+
         // Run on background thread
         new Thread(() -> {
             try {
@@ -707,10 +861,10 @@ public class PdfReaderActivity extends AppCompatActivity {
                     Log.e(TAG, "Failed to ensure foreign keys exist, skipping workflow creation");
                     return;
                 }
-                
+
                 // Get or create ReadingWorkflow
                 ReadingWorkflow workflow = workflowRepository.getByCompositeKey(finalUserId, finalPaperId, finalCollectionId);
-                
+
                 com.se1853_jv.labverse.domain.enumerate.WorkflowStatus newStatus;
                 if (progress == 0) {
                     newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.UNREAD;
@@ -719,7 +873,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                 } else {
                     newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.READING;
                 }
-                
+
                 if (workflow == null) {
                     // Create new workflow
                     workflow = ReadingWorkflow.builder()
@@ -746,47 +900,47 @@ public class PdfReaderActivity extends AppCompatActivity {
                     workflow = updatedWorkflow;
                     Log.d(TAG, "Updated ReadingWorkflow");
                 }
-                
+
                 // Sync to backend via OfflineSyncHelper (handles online/offline)
                 final ReadingWorkflow finalWorkflow = workflow;
                 syncHelper.updateReadingProgress(finalWorkflow);
-                
+
                 // Also try direct API call if online
                 if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && finalJwtToken != null) {
-                    com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request = 
-                        new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
+                    com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request =
+                            new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
                     request.setCollectionId(finalCollectionId);
                     request.setPaperId(finalPaperId);
                     request.setUsersid(finalUserId);
                     request.setLastPage(finalCurrentPage);
                     request.setProgress(progress);
-                    
+
                     workflowApiHandler.updateProgress(request, new com.se1853_jv.labverse.data.api.ApiCallback<String>() {
                         @Override
                         public void onSuccess(String result) {
                             Log.d(TAG, "Reading progress synced to backend successfully");
-                            
+
                             // Trigger status recalculation if reading in a collection (not personal library)
                             if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
                                 try {
-                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler = 
-                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                    com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler =
+                                            new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
                                     // finalCollectionId and finalPaperId from intent are already encoded
                                     // recalculatePaperStatus expects encoded IDs, so we use them directly
                                     Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
-                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId, 
-                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
-                                            @Override
-                                            public void onSuccess(Object result) {
-                                                Log.d(TAG, "Collection paper status recalculated successfully");
-                                            }
-                                            
-                                            @Override
-                                            public void onError(String error) {
-                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
-                                                // Non-critical, status will be recalculated on next collection view
-                                            }
-                                        });
+                                    collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId,
+                                            new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                                @Override
+                                                public void onSuccess(Object result) {
+                                                    Log.d(TAG, "Collection paper status recalculated successfully");
+                                                }
+
+                                                @Override
+                                                public void onError(String error) {
+                                                    Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                    // Non-critical, status will be recalculated on next collection view
+                                                }
+                                            });
                                 } catch (Exception e) {
                                     Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
                                     // Non-critical
@@ -801,7 +955,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         }
                     });
                 }
-                
+
             } catch (Exception e) {
                 Log.e(TAG, "Error updating reading progress", e);
             }
@@ -815,12 +969,12 @@ public class PdfReaderActivity extends AppCompatActivity {
         List<Note> notes = new ArrayList<>();
         for (var response : responses) {
             Note note = Note.builder()
-                .id(response.id)
-                .content(response.content)
-                .coordinationX((long) response.coordinationX)
-                .coordinationY((long) response.coordinationY)
-                .pageNumber(response.pageNumber)
-                .build();
+                    .id(response.id)
+                    .content(response.content)
+                    .coordinationX((long) response.coordinationX)
+                    .coordinationY((long) response.coordinationY)
+                    .pageNumber(response.pageNumber)
+                    .build();
             notes.add(note);
         }
         return notes;
@@ -833,12 +987,12 @@ public class PdfReaderActivity extends AppCompatActivity {
         List<Highlight> highlights = new ArrayList<>();
         for (var response : responses) {
             Highlight highlight = Highlight.builder()
-                .id(response.id)
-                .colorCode(response.color)
-                .coordinationX((long) response.coordinationX)
-                .coordinationY((long) response.coordinationY)
-                .pageNumber(response.pageNumber)
-                .build();
+                    .id(response.id)
+                    .colorCode(response.color)
+                    .coordinationX((long) response.coordinationX)
+                    .coordinationY((long) response.coordinationY)
+                    .pageNumber(response.pageNumber)
+                    .build();
             highlights.add(highlight);
         }
         return highlights;
@@ -860,15 +1014,12 @@ public class PdfReaderActivity extends AppCompatActivity {
             exportAnnotations();
             return true;
         } else if (id == R.id.import_annotations) {
-            importAnnotations();
+            startImportAnnotationsFlow();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Export annotations to JSON file
-     */
     private void exportAnnotations() {
         if (collectionId == null) {
             Toast.makeText(this, "Cannot export: No collection ID", Toast.LENGTH_SHORT).show();
@@ -886,25 +1037,25 @@ public class PdfReaderActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        apiHandler.exportAnnotations(jwtToken, paperId, collectionId, 
-            new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
-                @Override
-                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
-                    runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        saveExportToFile(exportData);
-                    });
-                }
+        apiHandler.exportAnnotations(jwtToken, paperId, collectionId,
+                new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
+                    @Override
+                    public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            saveExportToFile(exportData);
+                        });
+                    }
 
-                @Override
-                public void onError(String error) {
-                    runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(PdfReaderActivity.this, "Export failed: " + error, Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "Error exporting annotations: " + error);
-                    });
-                }
-            });
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            showStatusDialog(false, getString(R.string.pdf_reader_export_failed) + "\n" + error);
+                            Log.e(TAG, "Error exporting annotations: " + error);
+                        });
+                    }
+                });
     }
 
     /**
@@ -931,25 +1082,25 @@ public class PdfReaderActivity extends AppCompatActivity {
             // Share file via Android ShareSheet
             android.content.Intent shareIntent = new android.content.Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/json");
-            
+
             // Use FileProvider to share file
             android.net.Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
-                this,
-                getPackageName() + ".provider",
-                exportFile
+                    this,
+                    getPackageName() + ".provider",
+                    exportFile
             );
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             // Show success dialog with share option
             new MaterialAlertDialogBuilder(this)
-                .setTitle("Export Successful")
-                .setMessage("Annotations exported successfully!")
-                .setPositiveButton("Share", (dialog, which) -> {
-                    startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
-                })
-                .setNegativeButton("OK", null)
-                .show();
+                    .setTitle("Export Successful")
+                    .setMessage(getString(R.string.pdf_reader_export_success))
+                    .setPositiveButton("Share", (dialog, which) -> {
+                        startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
+                    })
+                    .setNegativeButton("OK", null)
+                    .show();
 
             Log.d(TAG, "Annotations exported to: " + exportFile.getAbsolutePath());
         } catch (Exception e) {
@@ -958,95 +1109,33 @@ public class PdfReaderActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Import annotations from JSON file
-     */
-    private void importAnnotations() {
+    private void startImportAnnotationsFlow() {
         if (collectionId == null) {
             Toast.makeText(this, "Cannot import: No collection ID", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Open file picker
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/json");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(Intent.createChooser(intent, "Select JSON file"), IMPORT_ANNOTATIONS_REQUEST_CODE);
-    }
-
-    private static final int IMPORT_ANNOTATIONS_REQUEST_CODE = 1001;
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        if (requestCode == IMPORT_ANNOTATIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            Uri fileUri = data.getData();
-            if (fileUri != null) {
-                loadAndImportAnnotations(fileUri);
-            }
+        if (jwtToken == null) {
+            Toast.makeText(this, "Cannot import: Not authenticated", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    /**
-     * Load JSON file and import annotations
-     */
-    private void loadAndImportAnnotations(Uri fileUri) {
-        try {
-            // Read JSON file
-            java.io.InputStream inputStream = getContentResolver().openInputStream(fileUri);
-            if (inputStream == null) {
-                Toast.makeText(this, "Cannot read file", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Loading shared annotations...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
-            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream));
-            StringBuilder jsonBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonBuilder.append(line);
-            }
-            reader.close();
-            inputStream.close();
-
-            // Parse JSON
-            com.google.gson.Gson gson = new com.google.gson.Gson();
-            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse importData = 
-                gson.fromJson(jsonBuilder.toString(), com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse.class);
-
-            // Validate paperId and collectionId
-            if (!importData.paperId.equals(paperId)) {
-                Toast.makeText(this, "Cannot import: Paper ID mismatch", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            if (!importData.collectionId.equals(collectionId)) {
-                Toast.makeText(this, "Cannot import: Collection ID mismatch", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            // Show progress dialog
-            android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
-            progressDialog.setMessage("Importing annotations...");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-
-            // Import via API
-            if (jwtToken == null) {
-                progressDialog.dismiss();
-                Toast.makeText(this, "Cannot import: Not authenticated", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            apiHandler.importAnnotations(jwtToken, paperId, collectionId, importData,
-                new com.se1853_jv.labverse.data.api.ApiCallback<Void>() {
+        apiHandler.listExports(jwtToken, paperId, collectionId,
+                new com.se1853_jv.labverse.data.api.ApiCallback<List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.AnnotationExportSummaryResponse>>() {
                     @Override
-                    public void onSuccess(Void data) {
+                    public void onSuccess(List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.AnnotationExportSummaryResponse> data) {
                         runOnUiThread(() -> {
                             progressDialog.dismiss();
-                            Toast.makeText(PdfReaderActivity.this, "Annotations imported successfully", Toast.LENGTH_SHORT).show();
-                            // Reload annotations to display imported ones
-                            loadAnnotations();
+                            if (data == null || data.isEmpty()) {
+                                showStatusDialog(false, getString(R.string.pdf_reader_no_exports));
+                                return;
+                            }
+                            showExportSelectionDialog(data);
                         });
                     }
 
@@ -1054,16 +1143,91 @@ public class PdfReaderActivity extends AppCompatActivity {
                     public void onError(String error) {
                         runOnUiThread(() -> {
                             progressDialog.dismiss();
-                            Toast.makeText(PdfReaderActivity.this, "Import failed: " + error, Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "Error importing annotations: " + error);
+                            showStatusDialog(false, getString(R.string.pdf_reader_import_failed) + "\n" + error);
+                            Log.e(TAG, "Failed to load export list: " + error);
                         });
                     }
                 });
+    }
 
-        } catch (Exception e) {
-            Log.e(TAG, "Error reading import file", e);
-            Toast.makeText(this, "Error reading file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+    private void showExportSelectionDialog(List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.AnnotationExportSummaryResponse> exports) {
+        String[] items = new String[exports.size()];
+
+        for (int i = 0; i < exports.size(); i++) {
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.AnnotationExportSummaryResponse summary = exports.get(i);
+            String exportedAt = summary.exportedAt != null ? summary.exportedAt.replace("T", " ") : "";
+            String line = summary.exportedBy + " • " + exportedAt +
+                    " (" + summary.totalNotes + " notes, " + summary.totalHighlights + " highlights)";
+            items[i] = line;
         }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Select shared annotations")
+                .setItems(items, (dialog, which) -> fetchExportDetailAndImport(exports.get(which).exportId))
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void fetchExportDetailAndImport(String exportId) {
+        if (jwtToken == null) {
+            return;
+        }
+
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Importing annotations...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        apiHandler.getExportDetail(jwtToken, exportId, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
+            @Override
+            public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse data) {
+                if (data == null) {
+                    runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        showStatusDialog(false, getString(R.string.pdf_reader_import_failed));
+                    });
+                    return;
+                }
+
+                apiHandler.importAnnotations(jwtToken, paperId, collectionId, data,
+                        new com.se1853_jv.labverse.data.api.ApiCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                runOnUiThread(() -> {
+                                    progressDialog.dismiss();
+                                    showStatusDialog(true, getString(R.string.pdf_reader_import_success));
+                                    loadAnnotations();
+                                });
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                runOnUiThread(() -> {
+                                    progressDialog.dismiss();
+                                    showStatusDialog(false, getString(R.string.pdf_reader_import_failed) + "\n" + error);
+                                    Log.e(TAG, "Import failed: " + error);
+                                });
+                            }
+                        });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    showStatusDialog(false, getString(R.string.pdf_reader_import_failed) + "\n" + error);
+                    Log.e(TAG, "Failed to fetch export detail: " + error);
+                });
+            }
+        });
+    }
+
+    private void showStatusDialog(boolean success, String message) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(success ? "Success" : "Oops")
+                .setMessage(message)
+                .setPositiveButton(R.string.close, null)
+                .show();
     }
 }
 

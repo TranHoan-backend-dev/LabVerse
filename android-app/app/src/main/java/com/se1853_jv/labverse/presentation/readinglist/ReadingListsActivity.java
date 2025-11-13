@@ -8,13 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,7 +32,9 @@ import com.se1853_jv.labverse.data.api.readinglist.ReadingListApiHandler;
 import com.se1853_jv.labverse.data.dto.request.CreateReadingListRequest;
 import com.se1853_jv.labverse.data.dto.response.ReadingListResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
+import com.se1853_jv.labverse.data.utils.EncoderUtils;
 import com.se1853_jv.labverse.data.utils.SessionManager;
+import com.se1853_jv.labverse.presentation.common.BaseActivity;
 import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.readinglist.ReadingListDetailActivity;
 import com.se1853_jv.labverse.presentation.readinglist.adapter.ReadingListAdapter;
@@ -42,7 +44,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ReadingListsActivity extends AppCompatActivity {
+public class ReadingListsActivity extends BaseActivity {
     private static final String TAG = "ReadingListsActivity";
 
     private RecyclerView recyclerViewReadingLists;
@@ -85,6 +87,10 @@ public class ReadingListsActivity extends AppCompatActivity {
         // Setup header
         HeaderHelper.setupProfileClickListeners(this);
         HeaderHelper.setupListsNavigationClickListener(this);
+
+        // Setup bottom navbar (index 2 = reading list button)
+        ViewGroup rootLayout = findViewById(android.R.id.content);
+        setupBottomNavbar(rootLayout, R.id.bottomNav);
 
         // Load reading lists
         loadReadingLists();
@@ -338,10 +344,11 @@ public class ReadingListsActivity extends AppCompatActivity {
 
         CreateReadingListRequest request = new CreateReadingListRequest();
         request.setName(listName);
-        // Optionally add current user to the list
-        if (currentUserId != null) {
+        // Optionally add current user to the list (encode user ID as per API requirement)
+        if (currentUserId != null && !currentUserId.isEmpty()) {
             List<String> userIds = new ArrayList<>();
-            userIds.add(currentUserId);
+            String encodedUserId = EncoderUtils.encode(currentUserId);
+            userIds.add(encodedUserId);
             request.setUserIdsList(userIds);
         }
 

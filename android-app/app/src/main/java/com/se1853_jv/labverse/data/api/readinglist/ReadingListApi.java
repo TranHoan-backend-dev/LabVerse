@@ -17,26 +17,30 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ReadingListApi {
+    String READING_LISTS_PREFIX = "reading-lists";
 
-    @POST("reading-lists")
+    @POST(READING_LISTS_PREFIX)
     Call<BaseJsonResponse<ReadingListResponse>> createReadingList(@Body CreateReadingListRequest request);
 
-    @GET("reading-lists/user/{userId}")
+    @GET(READING_LISTS_PREFIX + "/user/{userId}")
     Call<BaseJsonResponse<List<ReadingListResponse>>> getReadingListsByUser(@Path("userId") String userId);
 
-    @PUT("reading-lists/{listId}/papers")
+    @GET(READING_LISTS_PREFIX + "/{listId}")
+    Call<BaseJsonResponse<ReadingListResponse>> getReadingListById(@Path("listId") String listId);
+
+    @PUT(READING_LISTS_PREFIX + "/{listId}/papers")
     Call<BaseJsonResponse<ReadingListResponse>> updatePapers(
             @Path("listId") String listId,
             @Body UpdateReadingListPapersRequest request
     );
 
-    @PUT("reading-lists/{listId}/users")
+    @PUT(READING_LISTS_PREFIX + "/{listId}/users")
     Call<BaseJsonResponse<ReadingListResponse>> updateUsers(
             @Path("listId") String listId,
             @Body UpdateReadingListUsersRequest request
     );
 
-    @DELETE("reading-lists/{listId}")
+    @DELETE(READING_LISTS_PREFIX + "/{listId}")
     Call<BaseJsonResponse<Object>> deleteReadingList(@Path("listId") String listId);
 }
 

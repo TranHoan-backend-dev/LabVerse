@@ -1,0 +1,87 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+      routes:
+        # --- ACCOUNT SERVICE (user, role) ---
+        - id: account-service
+          uri: lb://ACCOUNT-SERVICE
+          predicates:
+            - Path=/account-service/**
+          filters:
+            - RewritePath=/account-service/(?<segment>.*), /v1/api/${segment}
+
+        # --- PAPER SERVICE (paper, annotation, tag, citation) ---
+        - id: paper-service
+          uri: lb://PAPER-SERVICE
+          predicates:
+            - Path=/paper-service/**
+          filters:
+            - RewritePath=/paper-service/(?<segment>.*), /v1/api/${segment}
+
+        # --- NOTIFICATION SERVICE (notification) ---
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - RewritePath=/notification-service/(?<segment>.*), /v1/api/${segment}
+
+        # --- READING WORKFLOW SERVICE (reading service) ---
+        - id: reading-service
+          uri: lb://READING-WORKFLOW-SERVICE
+          predicates:
+            - Path=/reading-service/**
+          filters:
+            - RewritePath=/reading-service/(?<segment>.*), /v1/api/${segment}
+
+        # --- GROUP SERVICE (collection, team) ---
+        - id: group-service
+          uri: lb://GROUP-SERVICE
+          predicates:
+            - Path=/group-service/**
+          filters:
+            - RewritePath=/group-service/(?<segment>.*), /v1/api/${segment}
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:9001/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 5
+    instance-info-replication-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: account-service
+        url: /account-service/v3/api-docs
+      - name: paper-service
+        url: /paper-service/v3/api-docs
+      - name: reading-service
+        url: /reading-service/v3/api-docs
+      - name: notification-service
+        url: /notification-service/v3/api-docs
+      - name: group-service
+        url: /group-service/v3/api-docs
+
+########################################
+# FRONTEND URL CONFIGURATION
+########################################
+frontend:
+  url: http://localhost:3000

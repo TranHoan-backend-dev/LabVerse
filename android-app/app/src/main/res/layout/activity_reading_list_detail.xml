@@ -114,22 +114,49 @@
 
             </LinearLayout>
 
-            <!-- Add Paper Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddPaper"
+            <!-- Action Buttons Row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Add Paper"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:paddingVertical="14dp"
-                app:icon="@drawable/ic_add"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:cornerRadius="8dp"
-                app:backgroundTint="@color/primary" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddPaper"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Add Paper"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingVertical="14dp"
+                    app:icon="@drawable/ic_add"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddMember"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Add Member"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingVertical="14dp"
+                    app:icon="@drawable/ic_people_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/blue_500" />
+
+            </LinearLayout>
 
             <!-- Papers RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView

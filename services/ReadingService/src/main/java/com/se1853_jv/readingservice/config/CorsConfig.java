@@ -1,55 +1,34 @@
 package com.se1853_jv.readingservice.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * CORS Configuration for Reading Service
+ * 
+ * Note: CORS is primarily handled by the API Gateway (GatewayService).
+ * This configuration is kept minimal to avoid duplicate CORS headers.
+ * If accessing the service directly (not through Gateway), you may need to enable CORS here.
+ */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    // Disabled to avoid duplicate CORS headers when requests go through Gateway
+    // Gateway already handles CORS configuration
+    // Uncomment below if you need to access this service directly (bypassing Gateway)
+    
+    /*
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*") // Allow all origins for development
+                .allowedOriginPatterns("http://localhost:3000", "http://127.0.0.1:3000")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("*")
+                .allowCredentials(true)
                 .maxAge(3600);
     }
-
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        
-        // Allow all origins (you can restrict this in production)
-        config.setAllowedOriginPatterns(List.of("*"));
-        
-        // Allow all HTTP methods
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        
-        // Allow all headers
-        config.setAllowedHeaders(List.of("*"));
-        
-        // Expose all headers
-        config.setExposedHeaders(List.of("*"));
-        
-        // Allow credentials (only when not using wildcard origin)
-        config.setAllowCredentials(false);
-        
-        // Cache preflight response for 1 hour
-        config.setMaxAge(3600L);
-        
-        // Apply CORS configuration to all paths
-        source.registerCorsConfiguration("/**", config);
-        
-        return new CorsFilter(source);
-    }
+    */
 }
 

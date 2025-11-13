@@ -3,4 +3,7 @@
     <files-path
         name="papers"
         path="papers/" />
+    <external-files-path
+        name="external_files"
+        path="." />
 </paths>

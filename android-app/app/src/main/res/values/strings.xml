@@ -133,4 +133,15 @@
     <!-- The Web Client ID is different from Android Client ID -->
     <!-- You can find it in: Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs (Web application type) -->
     <string name="default_web_client_id">536556216607-3rtqbemg7v1r48n4pu2diirs0lspuqbt.apps.googleusercontent.com</string>
+    <string name="pdf_reader_add_note">Add Note</string>
+    <string name="pdf_reader_add_highlight">Highlight</string>
+    <string name="pdf_reader_import_annotations">Import</string>
+    <string name="pdf_reader_export_annotations">Export</string>
+    <string name="pdf_reader_note_mode_hint">Tap anywhere on the page to place your note.</string>
+    <string name="pdf_reader_highlight_mode_hint">Tap and drag to highlight the area you want.</string>
+    <string name="pdf_reader_export_success">Annotations exported successfully.</string>
+    <string name="pdf_reader_export_failed">Failed to export annotations.</string>
+    <string name="pdf_reader_import_success">Annotations imported successfully.</string>
+    <string name="pdf_reader_import_failed">Failed to import annotations.</string>
+    <string name="pdf_reader_no_exports">No shared annotations available in this collection yet.</string>
 </resources>

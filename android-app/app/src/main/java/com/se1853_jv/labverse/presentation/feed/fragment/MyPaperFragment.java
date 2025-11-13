@@ -56,7 +56,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MyPaperFragment extends Fragment {
     private static final String TAG = "MyPaperFragment";
-    
+
     MyPaperItem item;
     Button recentlyAdded, recentlyRead, favorites;
     PaperApiHandler paperApiHandler;
@@ -137,7 +137,7 @@ public class MyPaperFragment extends Fragment {
         executorService.execute(() -> {
             try {
                 List<PaperResearch> papers = paperRepository.getAllPapers();
-                
+
                 // If no papers in database, create mock data
                 if (papers == null || papers.isEmpty()) {
                     Log.d(TAG, "No papers found in database, creating mock data");
@@ -147,13 +147,13 @@ public class MyPaperFragment extends Fragment {
                         Log.d(TAG, "Created and saved " + papers.size() + " mock papers to database");
                     }
                 }
-                
+
                 // Always ensure ReadingWorkflow and favorites are set up (even if papers already exist)
                 if (papers != null && !papers.isEmpty()) {
                     // Create mock ReadingWorkflow data for recently_read tab (if not exists)
                     // This must be done on background thread before updating UI
                     ensureMockReadingWorkflows(papers);
-                    
+
                     // Set favorite papers (first 3 papers) if not already set
                     if (favoritePaperIds.isEmpty()) {
                         favoritePaperIds.clear();
@@ -163,12 +163,12 @@ public class MyPaperFragment extends Fragment {
                         Log.d(TAG, "Set favorite papers: " + favoritePaperIds.size() + " papers");
                     }
                 }
-                
+
                 // Create final variable for use in lambda
                 final List<PaperResearch> finalPapers = papers != null ? papers : new ArrayList<>();
-                
+
                 if (getActivity() == null) return;
-                
+
                 getActivity().runOnUiThread(() -> {
                     allPapers = finalPapers;
                     Log.d(TAG, "Loaded " + allPapers.size() + " papers from local database");
@@ -187,7 +187,7 @@ public class MyPaperFragment extends Fragment {
      */
     private List<PaperResearch> createMockPapers() {
         List<PaperResearch> mockPapers = new ArrayList<>();
-        
+
         // Mock Paper 1
         PaperResearch paper1 = PaperResearch.builder()
                 .id("mock-paper-1")
@@ -315,24 +315,24 @@ public class MyPaperFragment extends Fragment {
         }
 
         String collectionId = "PERSONAL_LIBRARY";
-        
+
         try {
             int createdCount = 0;
             int existingCount = 0;
             Log.d(TAG, "Ensuring ReadingWorkflow for " + Math.min(5, papers.size()) + " papers");
-            
+
             // Create ReadingWorkflow for first 5 papers with different progress levels
             for (int i = 0; i < Math.min(5, papers.size()); i++) {
                 PaperResearch paper = papers.get(i);
                 String paperId = paper.getId();
-                
+
                 try {
                     // Ensure foreign key entities exist before creating workflow
                     if (!ensureForeignKeysExist(userId, paperId, collectionId)) {
                         Log.e(TAG, "Failed to ensure foreign keys exist for paper " + paperId + ", skipping workflow creation");
                         continue;
                     }
-                    
+
                     // Check if workflow already exists
                     ReadingWorkflow existing = workflowRepository.getByCompositeKey(userId, paperId, collectionId);
                     if (existing != null) {
@@ -340,11 +340,11 @@ public class MyPaperFragment extends Fragment {
                         Log.d(TAG, "ReadingWorkflow already exists for paper " + paperId + " with progress " + existing.getProgress() + "%");
                         continue; // Skip if already exists
                     }
-                    
+
                     // Create workflow with different progress levels
                     int progress = 0;
                     WorkflowStatus status = WorkflowStatus.UNREAD;
-                    
+
                     switch (i) {
                         case 0: // Paper 1: 25% progress
                             progress = 25;
@@ -367,7 +367,7 @@ public class MyPaperFragment extends Fragment {
                             status = WorkflowStatus.READING;
                             break;
                     }
-                    
+
                     ReadingWorkflow workflow = ReadingWorkflow.builder()
                             .userId(userId)
                             .paperId(paperId)
@@ -376,7 +376,7 @@ public class MyPaperFragment extends Fragment {
                             .progress(progress)
                             .lastPage(progress / 10) // Approximate page based on progress
                             .build();
-                    
+
                     workflowRepository.create(workflow);
                     createdCount++;
                     Log.d(TAG, "Created ReadingWorkflow for paper " + paperId + " with progress " + progress + "%");
@@ -385,7 +385,7 @@ public class MyPaperFragment extends Fragment {
                     e.printStackTrace();
                 }
             }
-            
+
             Log.d(TAG, "ReadingWorkflow summary - Created: " + createdCount + ", Already exists: " + existingCount);
         } catch (Exception e) {
             Log.e(TAG, "Error ensuring mock ReadingWorkflow data", e);
@@ -400,7 +400,7 @@ public class MyPaperFragment extends Fragment {
     private boolean ensureForeignKeysExist(String userId, String paperId, String collectionId) {
         try {
             var db = DatabaseClient.getInstance(requireContext()).getAppDatabase();
-            
+
             // Ensure User exists
             var userRepository = db.userRepository();
             Users user = userRepository.getById(userId);
@@ -411,7 +411,7 @@ public class MyPaperFragment extends Fragment {
                 String username = sessionManager.getUsername();
                 String fullName = sessionManager.getFullName();
                 String role = sessionManager.getRole();
-                
+
                 // Use default roleId if role is not available
                 String roleId = "role_researcher"; // Default role
                 if (role != null) {
@@ -422,7 +422,7 @@ public class MyPaperFragment extends Fragment {
                         roleId = "role_student";
                     }
                 }
-                
+
                 // Ensure role exists in Roles table
                 var roleRepository = db.roleRepository();
                 Roles roleEntity = roleRepository.getById(roleId);
@@ -440,7 +440,7 @@ public class MyPaperFragment extends Fragment {
                         // Continue anyway - might already exist
                     }
                 }
-                
+
                 long currentTime = System.currentTimeMillis();
                 user = Users.builder()
                         .id(userId)
@@ -461,7 +461,7 @@ public class MyPaperFragment extends Fragment {
                     return false;
                 }
             }
-            
+
             // Ensure PaperResearch exists (should already exist since we're creating workflows for existing papers)
             var paperRepository = db.paperRepository();
             PaperResearch paper = paperRepository.getById(paperId);
@@ -469,7 +469,7 @@ public class MyPaperFragment extends Fragment {
                 Log.w(TAG, "Paper not found in database: " + paperId);
                 return false; // Paper must exist
             }
-            
+
             // Ensure Collection exists
             var collectionRepository = db.collectionRepository();
             Collections collection = collectionRepository.getById(collectionId);
@@ -492,7 +492,7 @@ public class MyPaperFragment extends Fragment {
                     return false;
                 }
             }
-            
+
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Error ensuring foreign keys exist", e);
@@ -510,6 +510,7 @@ public class MyPaperFragment extends Fragment {
             return;
         }
 
+        // Get current user ID
         String userId = sessionManager.getUserId();
         if (userId == null || userId.isEmpty()) {
             Log.e(TAG, "User ID is null or empty");
@@ -517,6 +518,11 @@ public class MyPaperFragment extends Fragment {
         }
 
         Log.d(TAG, "Syncing with backend for userId: " + userId);
+        Log.d("MyPaperFragment", "Loading papers for userId: " + userId);
+
+        // userId từ SessionManager đã được encode từ backend khi login
+        // Không cần encode lại, sử dụng trực tiếp
+        Log.d("MyPaperFragment", "Using userId directly (already encoded from backend): " + userId);
 
         // Load papers by user ID from API
         paperApiHandler.getPapersByUserId(userId, new ApiCallback<>() {
@@ -533,10 +539,10 @@ public class MyPaperFragment extends Fragment {
                             paperRepository.insertOrUpdateAll(paperResearchList);
                             Log.d(TAG, "Saved " + paperResearchList.size() + " papers to local database");
                         }
-                        
+
                         // Reload from local database
                         List<PaperResearch> papers = paperRepository.getAllPapers();
-                        
+
                         if (getActivity() == null) return;
                         getActivity().runOnUiThread(() -> {
                             allPapers = papers;
@@ -563,11 +569,11 @@ public class MyPaperFragment extends Fragment {
      */
     private void applyFilter() {
         Log.d(TAG, "Applying filter: " + currentFilter + ", total papers: " + allPapers.size());
-        
+
         String userId = sessionManager.getUserId();
         String collectionId = "PERSONAL_LIBRARY";
         boolean showProgress = "recently_read".equals(currentFilter);
-        
+
         // For recently_read tab, load progress data on background thread
         if (showProgress && userId != null && !userId.isEmpty()) {
             Log.d(TAG, "Loading recently_read papers - userId: " + userId + ", collectionId: " + collectionId + ", total papers: " + allPapers.size());
@@ -575,14 +581,14 @@ public class MyPaperFragment extends Fragment {
                 try {
                     List<PaperResearch> filteredPapers = new ArrayList<>();
                     Map<String, Integer> progressMap = new HashMap<>();
-                    
+
                     Log.d(TAG, "Checking workflows for " + allPapers.size() + " papers");
                     for (PaperResearch paper : allPapers) {
                         try {
                             String paperId = paper.getId();
                             Log.d(TAG, "Checking workflow for paper: " + paperId);
                             ReadingWorkflow workflow = workflowRepository.getByCompositeKey(userId, paperId, collectionId);
-                            
+
                             if (workflow != null) {
                                 Integer progress = workflow.getProgress();
                                 Log.d(TAG, "Found workflow for paper " + paperId + " - progress: " + progress);
@@ -600,9 +606,9 @@ public class MyPaperFragment extends Fragment {
                             Log.e(TAG, "Error loading workflow for paper: " + paper.getId(), e);
                         }
                     }
-                    
+
                     Log.d(TAG, "Found " + filteredPapers.size() + " papers with progress > 0");
-                    
+
                     // Sort by progress descending (most read first)
                     filteredPapers.sort((a, b) -> {
                         Integer progressA = progressMap.get(a.getId());
@@ -611,9 +617,9 @@ public class MyPaperFragment extends Fragment {
                         if (progressB == null) progressB = 0;
                         return progressB.compareTo(progressA);
                     });
-                    
+
                     Log.d(TAG, "Recently read filtered papers count: " + filteredPapers.size() + ", progress map size: " + progressMap.size());
-                    
+
                     if (getActivity() == null) {
                         Log.w(TAG, "Activity is null, cannot update UI");
                         return;
@@ -631,10 +637,10 @@ public class MyPaperFragment extends Fragment {
             });
             return;
         }
-        
+
         // For other tabs, filter on main thread
         List<PaperResearch> filteredPapers = new ArrayList<>();
-        
+
         switch (currentFilter) {
             case "recently_added":
                 // Show all papers, sorted by ID descending (newest first)
@@ -655,12 +661,12 @@ public class MyPaperFragment extends Fragment {
             default:
                 filteredPapers = new ArrayList<>(allPapers);
         }
-        
+
         Log.d(TAG, "Filtered papers count: " + filteredPapers.size());
         adapter.setPapers(filteredPapers);
         adapter.setShowProgressBar(false);
         adapter.setPaperProgressData(new HashMap<>());
-        
+
         // Show empty state if no papers
         if (filteredPapers.isEmpty()) {
             Log.d(TAG, "No papers to display, showing empty state");
@@ -675,6 +681,17 @@ public class MyPaperFragment extends Fragment {
         Summary summary = createSummary(allPapers);
         item = new MyPaperItem(convertToPaperList(allPapers), null, summary);
         buildStatisticCards(getLayoutInflater(), rootView);
+    }
+
+    private Paper convertToPaper(PaperResearch paperResearch) {
+        Paper paper = new Paper();
+        paper.setId(paperResearch.getId());
+        paper.setTitle(paperResearch.getTitle() != null ? paperResearch.getTitle() : "Untitled");
+        paper.setAuthors(paperResearch.getAuthors() != null ? paperResearch.getAuthors() : "Unknown");
+        paper.setJournal(paperResearch.getJournal() != null ? paperResearch.getJournal() : "Unknown");
+        paper.setYear(paperResearch.getPublicationYear() != null ? paperResearch.getPublicationYear() : 0);
+        paper.setStatus("in progress"); // Default status, can be updated later
+        return paper;
     }
 
     private Summary createSummary(List<PaperResearch> papers) {

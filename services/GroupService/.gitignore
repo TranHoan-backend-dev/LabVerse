@@ -32,5 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Application Dev Config Files ###
+application-dev.*
+application-dev-sample.*
+*.env
+.env
+
 ### Application Dev Properties ###
 src/main/resources/application-dev.properties

@@ -14,6 +14,7 @@ import CollectionDetails from "./pages/CollectionDetails";
 import Profile from "./pages/profile/Profile";
 import Discover from "./pages/Discover";
 import ReadingLists from "./pages/ReadingLists";
+import Teams from "./pages/Teams";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,8 @@ const App = () => (
             <Route path="/collections/:id" element={<ProtectedRoute><CollectionDetails /></ProtectedRoute>} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/reading-lists" element={<ProtectedRoute><ReadingLists /></ProtectedRoute>} />
+            <Route path="/teams" element={<ProtectedRoute><Teams /></ProtectedRoute>} />
+            <Route path="/teams/:id" element={<ProtectedRoute><div>Team Details (Coming Soon)</div></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
