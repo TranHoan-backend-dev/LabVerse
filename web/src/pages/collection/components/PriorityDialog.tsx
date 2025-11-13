@@ -39,11 +39,11 @@ const PriorityDialog: React.FC<Props> = ({ open, onOpenChange, selectedPaper, se
                             </Select>
                         </div>
                         <Button
-                            onClick={() => updatePriorityMutation.mutate(selectedPriority)}
+                            onClick={() => updatePriorityMutation.mutate()}
+                            disabled={updatePriorityMutation.isPending}
                             className="w-full"
-                            disabled={updatePriorityMutation?.status === 'pending'}
                         >
-                            {updatePriorityMutation?.status === 'pending' ? 'Updating...' : 'Update Priority'}
+                            {updatePriorityMutation.isPending ? 'Updating...' : 'Update Priority'}
                         </Button>
                     </div>
                 )}

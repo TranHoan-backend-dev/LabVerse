@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus, BookOpen } from "lucide-react";
@@ -12,6 +12,7 @@ import Header from "@/pages/Header.tsx";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
 import { CreatePaperRequest } from "@/types/paper.type";
+import { getWorkflowsByUser } from "@/services/progress.service";
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -49,6 +50,43 @@ const Dashboard = () => {
     const papers = data?.data?.papers ?? [];
     const total = data?.data?.totalElements ?? 0;
     const totalPages = data?.data?.totalPages ?? Math.max(1, Math.ceil(total / pageSize));
+
+    // Get workflows for current user to show progress
+    const { data: workflows } = useQuery({
+        queryKey: ['workflows', user?.id],
+        queryFn: async () => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await getWorkflowsByUser(user.id);
+        },
+        enabled: !!user,
+    });
+
+    // Create a map of paperId -> workflow for quick lookup
+    const workflowMap = useMemo(() => {
+        if (!workflows) return new Map();
+        const map = new Map();
+        workflows.forEach(workflow => {
+            map.set(workflow.paperId, workflow);
+        });
+        return map;
+    }, [workflows]);
+
+    // Enhance papers with workflow data
+    const papersWithProgress = useMemo(() => {
+        return papers.map(paper => {
+            const workflow = workflowMap.get(paper.id);
+            // Calculate total_pages from progress if available
+            let total_pages = null;
+            if (workflow && workflow.progress > 0 && workflow.lastPage > 0) {
+                total_pages = Math.ceil((workflow.lastPage / (workflow.progress / 100)));
+            }
+            return {
+                ...paper,
+                last_read_page: workflow?.lastPage ?? null,
+                total_pages: total_pages,
+            };
+        });
+    }, [papers, workflowMap]);
 
     const importMutation = useMutation({
         mutationFn: async () => {
@@ -142,7 +180,7 @@ const Dashboard = () => {
                             </div>
                         ) : papers && papers.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {papers.map((paper) => (
+                                {papersWithProgress.map((paper) => (
                                     <Link key={paper.id} to={`/paper/${paper.id}`}>
                                         <PaperCard {...paper} />
                                     </Link>
