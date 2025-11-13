@@ -115,6 +115,10 @@
             android:exported="false"
             android:parentActivityName=".presentation.readinglist.ReadingListDetailActivity" />
         <activity
+            android:name=".presentation.readinglist.SelectUserForReadingListActivity"
+            android:exported="false"
+            android:parentActivityName=".presentation.readinglist.ReadingListDetailActivity" />
+        <activity
             android:name=".presentation.notification.NotificationListActivity"
             android:exported="true" />
         <activity

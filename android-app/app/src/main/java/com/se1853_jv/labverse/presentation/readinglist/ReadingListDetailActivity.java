@@ -2,13 +2,15 @@ package com.se1853_jv.labverse.presentation.readinglist;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -17,12 +19,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.data.api.readinglist.ReadingListApiHandler;
+import com.se1853_jv.labverse.data.api.user.UserApiHandler;
 import com.se1853_jv.labverse.data.dto.request.UpdateReadingListPapersRequest;
+import com.se1853_jv.labverse.data.dto.request.UpdateReadingListUsersRequest;
 import com.se1853_jv.labverse.data.dto.response.ReadingListResponse;
+import com.se1853_jv.labverse.data.dto.response.UserResponse;
 import com.se1853_jv.labverse.data.utils.Connectivity;
 import com.se1853_jv.labverse.data.utils.EncoderUtils;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
@@ -41,11 +47,13 @@ public class ReadingListDetailActivity extends AppCompatActivity {
     private TextView tvPaperCount;
     private TextView tvMemberCount;
     private MaterialButton btnAddPaper;
+    private MaterialButton btnAddMember;
     private RecyclerView recyclerViewPapers;
     private LinearLayout emptyState;
 
     private ReadingListApiHandler readingListApiHandler;
     private PaperApiHandler paperApiHandler;
+    private UserApiHandler userApiHandler;
     private ReadingListPaperAdapter adapter;
     private ReadingListResponse currentList;
     private List<PaperResearch> papers = new ArrayList<>();
@@ -72,6 +80,7 @@ public class ReadingListDetailActivity extends AppCompatActivity {
         // Initialize
         readingListApiHandler = new ReadingListApiHandler(this);
         paperApiHandler = new PaperApiHandler(this);
+        userApiHandler = new UserApiHandler(this);
 
         bindViews();
         setupRecyclerView();
@@ -91,6 +100,7 @@ public class ReadingListDetailActivity extends AppCompatActivity {
         tvPaperCount = findViewById(R.id.tvPaperCount);
         tvMemberCount = findViewById(R.id.tvMemberCount);
         btnAddPaper = findViewById(R.id.btnAddPaper);
+        btnAddMember = findViewById(R.id.btnAddMember);
         recyclerViewPapers = findViewById(R.id.recyclerViewPapers);
         emptyState = findViewById(R.id.emptyState);
     }
@@ -123,6 +133,12 @@ public class ReadingListDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent(ReadingListDetailActivity.this, SelectPaperForReadingListActivity.class);
                 intent.putExtra("readingListId", currentList.getId());
                 startActivityForResult(intent, REQUEST_CODE_SELECT_PAPER);
+            });
+        }
+
+        if (btnAddMember != null) {
+            btnAddMember.setOnClickListener(v -> {
+                showAddMemberDialog();
             });
         }
     }
@@ -288,29 +304,13 @@ public class ReadingListDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // Get user ID from session
-        com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
-                new com.se1853_jv.labverse.data.utils.SessionManager(this);
-        String userId = sessionManager.getUserId();
-        if (userId == null || userId.isEmpty()) {
-            loadPapers(); // Fallback to just reload papers
-            return;
-        }
-
-        // Get updated reading list
-        readingListApiHandler.getReadingListsByUser(userId, new ApiCallback<List<ReadingListResponse>>() {
+        // Use the new getReadingListById endpoint for better efficiency
+        readingListApiHandler.getReadingListById(currentList.getId(), new ApiCallback<ReadingListResponse>() {
             @Override
-            public void onSuccess(List<ReadingListResponse> lists) {
+            public void onSuccess(ReadingListResponse list) {
                 runOnUiThread(() -> {
-                    // Find the current list in the updated list
-                    if (lists != null) {
-                        for (ReadingListResponse list : lists) {
-                            if (list.getId().equals(currentList.getId())) {
-                                currentList = list;
-                                break;
-                            }
-                        }
-                    }
+                    currentList = list;
+                    displayListInfo();
                     // Reload papers with updated list
                     loadPapers();
                 });
@@ -322,6 +322,160 @@ public class ReadingListDetailActivity extends AppCompatActivity {
                     Log.e(TAG, "Error reloading reading list: " + error);
                     // Fallback to just reload papers
                     loadPapers();
+                });
+            }
+        });
+    }
+
+    private void showAddMemberDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_reading_list_member, null);
+        
+        TextInputEditText etUserEmail = dialogView.findViewById(R.id.etUserEmail);
+        Button btnCancel = dialogView.findViewById(R.id.btnCancel);
+        Button btnAdd = dialogView.findViewById(R.id.btnAdd);
+        
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .create();
+        
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        
+        btnAdd.setOnClickListener(v -> {
+            String emailOrId = etUserEmail.getText() != null ? 
+                    etUserEmail.getText().toString().trim() : "";
+            
+            if (TextUtils.isEmpty(emailOrId)) {
+                etUserEmail.setError("Please enter email, username or user ID");
+                etUserEmail.requestFocus();
+                return;
+            }
+            
+            // Search user first, then add to reading list
+            searchAndAddMember(emailOrId, dialog);
+        });
+        
+        dialog.show();
+    }
+    
+    private void searchAndAddMember(String emailOrId, androidx.appcompat.app.AlertDialog dialog) {
+        if (!Connectivity.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show loading
+        dialog.findViewById(R.id.btnAdd).setEnabled(false);
+        ((Button) dialog.findViewById(R.id.btnAdd)).setText("Adding...");
+        
+        // Try to get user by email first
+        userApiHandler.getUserByEmail(emailOrId, new ApiCallback<UserResponse>() {
+            @Override
+            public void onSuccess(UserResponse userResponse) {
+                runOnUiThread(() -> {
+                    if (userResponse != null && userResponse.getId() != null) {
+                        // User found, add to reading list
+                        addMemberToReadingList(userResponse.getId(), dialog);
+                    } else {
+                        // Try by username
+                        trySearchByUsername(emailOrId, dialog);
+                    }
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                // If email search fails, try by username
+                trySearchByUsername(emailOrId, dialog);
+            }
+        });
+    }
+    
+    private void trySearchByUsername(String emailOrId, androidx.appcompat.app.AlertDialog dialog) {
+        userApiHandler.getUserByUsername(emailOrId, new ApiCallback<UserResponse>() {
+            @Override
+            public void onSuccess(UserResponse userResponse) {
+                runOnUiThread(() -> {
+                    if (userResponse != null && userResponse.getId() != null) {
+                        // User found, add to reading list
+                        addMemberToReadingList(userResponse.getId(), dialog);
+                    } else {
+                        // Try by ID
+                        trySearchById(emailOrId, dialog);
+                    }
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                // If username search fails, try by ID
+                trySearchById(emailOrId, dialog);
+            }
+        });
+    }
+    
+    private void trySearchById(String emailOrId, androidx.appcompat.app.AlertDialog dialog) {
+        userApiHandler.getUserById(emailOrId, new ApiCallback<UserResponse>() {
+            @Override
+            public void onSuccess(UserResponse userResponse) {
+                runOnUiThread(() -> {
+                    if (userResponse != null && userResponse.getId() != null) {
+                        // User found, add to reading list
+                        addMemberToReadingList(userResponse.getId(), dialog);
+                    } else {
+                        dialog.findViewById(R.id.btnAdd).setEnabled(true);
+                        ((Button) dialog.findViewById(R.id.btnAdd)).setText("Add Member");
+                        Toast.makeText(ReadingListDetailActivity.this, 
+                                "User not found", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    dialog.findViewById(R.id.btnAdd).setEnabled(true);
+                    ((Button) dialog.findViewById(R.id.btnAdd)).setText("Add Member");
+                    Toast.makeText(ReadingListDetailActivity.this, 
+                            "User not found: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+    
+    private void addMemberToReadingList(String userId, androidx.appcompat.app.AlertDialog dialog) {
+        if (currentList == null || currentList.getId() == null) {
+            dialog.findViewById(R.id.btnAdd).setEnabled(true);
+            ((Button) dialog.findViewById(R.id.btnAdd)).setText("Add Member");
+            Toast.makeText(this, "Reading list not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // userId from API response is already encoded, use directly
+        UpdateReadingListUsersRequest request = new UpdateReadingListUsersRequest();
+        request.setAction("add");
+        request.setUserIds(java.util.Arrays.asList(userId));
+
+        readingListApiHandler.updateUsers(currentList.getId(), request, new ApiCallback<ReadingListResponse>() {
+            @Override
+            public void onSuccess(ReadingListResponse response) {
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    Log.d(TAG, "Member added successfully");
+                    // Reload reading list to get updated member list
+                    reloadReadingList();
+                    Toast.makeText(ReadingListDetailActivity.this,
+                            "Member added successfully", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    dialog.findViewById(R.id.btnAdd).setEnabled(true);
+                    ((Button) dialog.findViewById(R.id.btnAdd)).setText("Add Member");
+                    Log.e(TAG, "Error adding member: " + error);
+                    Toast.makeText(ReadingListDetailActivity.this,
+                            "Failed to add member: " + error, Toast.LENGTH_LONG).show();
                 });
             }
         });

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, BookMarked, Compass } from "lucide-react";
+import { BookOpen, Users, BookMarked, Compass, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AppNavigation = () => {
@@ -9,6 +9,7 @@ const AppNavigation = () => {
         { path: "/dashboard", label: "Library", icon: BookOpen },
         { path: "/collections", label: "Collections", icon: Users },
         { path: "/reading-lists", label: "Reading Lists", icon: BookMarked },
+        { path: "/teams", label: "Teams", icon: UserPlus },
         { path: "/discover", label: "Discover", icon: Compass },
     ];
 

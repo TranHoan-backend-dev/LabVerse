@@ -12,19 +12,22 @@ import retrofit2.http.PATCH;
 
 public interface UserApi {
     
-    @GET("me")
+    @GET("users/me")
     Call<BaseJsonResponse<UserResponse>> getCurrentUser();
     
-    @GET("email/{email}")
+    @GET("users/email/{email}")
     Call<BaseJsonResponse<UserResponse>> getUserByEmail(@retrofit2.http.Path("email") String email);
     
-    @GET("{id}")
+    @GET("users/username/{username}")
+    Call<BaseJsonResponse<UserResponse>> getUserByUsername(@retrofit2.http.Path("username") String username);
+    
+    @GET("users/{id}")
     Call<BaseJsonResponse<UserResponse>> getUserById(@retrofit2.http.Path("id") String id);
     
-    @PATCH("me")
+    @PATCH("users/me")
     Call<BaseJsonResponse<UserResponse>> updateProfile(@Body UpdateProfileRequest request);
     
-    @PATCH("me/password")
+    @PATCH("users/me/password")
     Call<BaseJsonResponse<String>> changePassword(@Body ChangePasswordRequest request);
 }
 
