@@ -50,7 +50,7 @@ import com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections
                 Note.class,
                 SyncQueue.class
         },
-        version = 3
+        version = 5
 )
 @TypeConverters({Converter.class})
 public abstract class AppDatabase extends RoomDatabase {

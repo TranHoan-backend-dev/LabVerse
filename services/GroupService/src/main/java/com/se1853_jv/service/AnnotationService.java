@@ -2,6 +2,7 @@ package com.se1853_jv.service;
 
 import com.se1853_jv.dto.request.CreateHighlightRequest;
 import com.se1853_jv.dto.request.CreateNoteRequest;
+import com.se1853_jv.dto.response.AnnotationExportSummaryResponse;
 import com.se1853_jv.dto.response.ExportAnnotationsResponse;
 import com.se1853_jv.dto.response.HighlightResponse;
 import com.se1853_jv.dto.response.NoteResponse;
@@ -44,5 +45,15 @@ public interface AnnotationService {
      * Used for sharing annotations between users
      */
     ExportAnnotationsResponse exportAnnotations(String paperId, String collectionId, String userId);
+
+    /**
+     * Lấy danh sách các bản export trong cùng collection (có thể lọc theo paper).
+     */
+    List<AnnotationExportSummaryResponse> listExports(String collectionId, String paperId);
+
+    /**
+     * Lấy thông tin chi tiết của một bản export.
+     */
+    ExportAnnotationsResponse getExportDetail(String exportId);
 }
 

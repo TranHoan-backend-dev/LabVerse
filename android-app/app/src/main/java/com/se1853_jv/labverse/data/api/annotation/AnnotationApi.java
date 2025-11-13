@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import com.se1853_jv.labverse.data.dto.response.BaseJsonResponse;
 
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -136,6 +135,25 @@ public interface AnnotationApi {
     );
 
     /**
+     * Danh sách bản export annotations
+     */
+    @GET("exports")
+    Call<BaseJsonResponse<List<AnnotationExportSummaryResponse>>> listExports(
+            @Header("Authorization") String authToken,
+            @Query("paperId") String paperId,
+            @Query("collectionId") String collectionId
+    );
+
+    /**
+     * Lấy chi tiết một bản export
+     */
+    @GET("exports/{exportId}")
+    Call<BaseJsonResponse<ExportAnnotationsResponse>> getExportDetail(
+            @Header("Authorization") String authToken,
+            @Path("exportId") String exportId
+    );
+
+    /**
      * Import annotations from exported data
      * POST /v1/api/annotations/import?paperId=...&collectionId=...
      */
@@ -166,6 +184,23 @@ public interface AnnotationApi {
         
         @SerializedName("highlights")
         public List<HighlightResponse> highlights;
+    }
+
+    class AnnotationExportSummaryResponse {
+        @SerializedName("exportId")
+        public String exportId;
+        @SerializedName("paperId")
+        public String paperId;
+        @SerializedName("collectionId")
+        public String collectionId;
+        @SerializedName("exportedBy")
+        public String exportedBy;
+        @SerializedName("exportedAt")
+        public String exportedAt;
+        @SerializedName("totalNotes")
+        public Integer totalNotes;
+        @SerializedName("totalHighlights")
+        public Integer totalHighlights;
     }
 }
 
