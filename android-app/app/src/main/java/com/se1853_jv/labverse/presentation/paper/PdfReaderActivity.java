@@ -25,11 +25,14 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.annotation.AnnotationApiHandler;
+import com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler;
 import com.se1853_jv.labverse.data.service.storage.RemotePdfService;
 import com.se1853_jv.labverse.data.sync.OfflineSyncHelper;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Highlight;
 import com.se1853_jv.labverse.domain.infrastructure.annotation.model.Note;
 import com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow;
+import com.se1853_jv.labverse.domain.infrastructure.workflow.repo.ReadingWorkflowRepository;
 import com.se1853_jv.labverse.presentation.paper.view.AnnotationOverlayView;
 
 import java.io.File;
@@ -39,7 +42,7 @@ import java.util.UUID;
 
 /**
  * PDF Reader Activity - Phần 5: Integrated PDF Reader
- * 
+ * <p>
  * Features:
  * - Render PDF với AndroidPdfViewer
  * - User tap để add note
@@ -49,28 +52,21 @@ import java.util.UUID;
  */
 public class PdfReaderActivity extends AppCompatActivity {
     private static final String TAG = "PdfReaderActivity";
-    
+
     private PDFView pdfView;
     private Toolbar toolbar;
     private ProgressBar progressBar;
     private AnnotationOverlayView annotationOverlayView;
-    private MaterialButton btnAddNote;
-    private MaterialButton btnAddHighlight;
-    private MaterialButton btnImportAnnotations;
-    private MaterialButton btnExportAnnotations;
+    private MaterialButton btnAddNote, btnAddHighlight, btnImportAnnotations, btnExportAnnotations;
     private OfflineSyncHelper syncHelper;
     private AnnotationApiHandler apiHandler;
     private RemotePdfService remotePdfService;
-    private com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler workflowApiHandler;
-    private com.se1853_jv.labverse.domain.infrastructure.workflow.repo.ReadingWorkflowRepository workflowRepository;
-    
-    private String paperId;
-    private String collectionId;
-    private String userId;
-    private String jwtToken;
-    private String pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
+    private ReadingWorkflowApiHandler workflowApiHandler;
+    private ReadingWorkflowRepository workflowRepository;
+
+    private String paperId, collectionId, userId, jwtToken, pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
     private int totalPages = 0; // Total pages in PDF
-    
+
     private List<Note> loadedNotes = new ArrayList<>();
     private List<Highlight> loadedHighlights = new ArrayList<>();
 
@@ -81,24 +77,23 @@ public class PdfReaderActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_reader);
-        
+
         // Get data from intent
         paperId = getIntent().getStringExtra("paperId");
         collectionId = getIntent().getStringExtra("collectionId");
         pdfUrl = getIntent().getStringExtra("pdfUrl");
-        
+
         // Get user info from SessionManager
-        com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
-            new com.se1853_jv.labverse.data.utils.SessionManager(this);
+        SessionManager sessionManager = new SessionManager(this);
         userId = sessionManager.getUserId();
         jwtToken = sessionManager.getToken();
-        
+
         if (paperId == null || pdfUrl == null) {
             Toast.makeText(this, "Missing paper ID or PDF URL", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        
+
         initializeComponents();
         setupToolbar();
         setupPDFViewer();
@@ -169,14 +164,14 @@ public class PdfReaderActivity extends AppCompatActivity {
         apiHandler = new AnnotationApiHandler();
         remotePdfService = new RemotePdfService();
         workflowApiHandler = new com.se1853_jv.labverse.data.api.workflow.ReadingWorkflowApiHandler(this);
-        
+
         // Get workflow repository from database
         var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
         workflowRepository = db.readingWorkflowRepository();
-        
+
         // Log collectionId for debugging
         Log.d(TAG, "PdfReaderActivity onCreate - paperId: " + paperId + ", collectionId: " + collectionId);
-        
+
         // Set default collectionId if null or empty (personal library)
         if (collectionId == null || collectionId.isEmpty()) {
             collectionId = "PERSONAL_LIBRARY"; // Special collection ID for personal library
@@ -201,39 +196,39 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        
+
         // Download PDF from Firebase Storage and cache locally
         remotePdfService.downloadPdfFromUrl(
-            pdfUrl,
-            paperId,
-            this,
-            new RemotePdfService.DownloadCallback() {
-                @Override
-                public void onSuccess(File localFile) {
-                    // Hide progress bar
-                    runOnUiThread(() -> {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
-                    
-                    // Load PDF from local file
-                    loadPdfFromFile(localFile);
-                }
+                pdfUrl,
+                paperId,
+                this,
+                new RemotePdfService.DownloadCallback() {
+                    @Override
+                    public void onSuccess(File localFile) {
+                        // Hide progress bar
+                        runOnUiThread(() -> {
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
 
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e(TAG, "Error downloading PDF", e);
-                    runOnUiThread(() -> {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(View.GONE);
-                        }
-                        Toast.makeText(PdfReaderActivity.this,
-                            "Error loading PDF: " + e.getMessage(), 
-                            Toast.LENGTH_LONG).show();
-                    });
+                        // Load PDF from local file
+                        loadPdfFromFile(localFile);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Error downloading PDF", e);
+                        runOnUiThread(() -> {
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            Toast.makeText(PdfReaderActivity.this,
+                                    "Error loading PDF: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        });
+                    }
                 }
-            }
         );
     }
 
@@ -243,36 +238,36 @@ public class PdfReaderActivity extends AppCompatActivity {
     private void loadPdfFromFile(File pdfFile) {
         // Load last read page from database
         int lastReadPage = loadLastReadPage();
-        
+
         pdfView.fromFile(pdfFile)
-            .defaultPage(lastReadPage) // Start from last read page
-            .enableSwipe(true)
-            .swipeHorizontal(false) // Vertical scrolling (recommended for research papers)
-            .enableDoubletap(true)
-            .autoSpacing(true) // Add spacing between pages
-            .pageFling(false) // Disable page fling for smooth scrolling
-            .onPageChange(new OnPageChangeListener() {
-                @Override
-                public void onPageChanged(int page, int pageCount) {
-                    // Update reading progress
-                    totalPages = pageCount;
-                    if (annotationOverlayView != null) {
-                        annotationOverlayView.setCurrentPage(page);
+                .defaultPage(lastReadPage) // Start from last read page
+                .enableSwipe(true)
+                .swipeHorizontal(false) // Vertical scrolling (recommended for research papers)
+                .enableDoubletap(true)
+                .autoSpacing(true) // Add spacing between pages
+                .pageFling(false) // Disable page fling for smooth scrolling
+                .onPageChange(new OnPageChangeListener() {
+                    @Override
+                    public void onPageChanged(int page, int pageCount) {
+                        // Update reading progress
+                        totalPages = pageCount;
+                        if (annotationOverlayView != null) {
+                            annotationOverlayView.setCurrentPage(page);
+                        }
+                        updateReadingProgress(page, pageCount);
                     }
-                    updateReadingProgress(page, pageCount);
-                }
-            })
-            .onLoad(nbPages -> {
-                totalPages = nbPages;
-                Log.d(TAG, "PDF loaded: " + nbPages + " pages");
-            })
-            .onError(t -> {
-                Log.e(TAG, "Error loading PDF", t);
-                Toast.makeText(PdfReaderActivity.this,
-                    "Error loading PDF: " + t.getMessage(), 
-                    Toast.LENGTH_LONG).show();
-            })
-            .load();
+                })
+                .onLoad(nbPages -> {
+                    totalPages = nbPages;
+                    Log.d(TAG, "PDF loaded: " + nbPages + " pages");
+                })
+                .onError(t -> {
+                    Log.e(TAG, "Error loading PDF", t);
+                    Toast.makeText(PdfReaderActivity.this,
+                            "Error loading PDF: " + t.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                })
+                .load();
 
         annotationOverlayView.setCurrentPage(lastReadPage);
 
@@ -318,10 +313,10 @@ public class PdfReaderActivity extends AppCompatActivity {
      */
     private void showNoteContentDialog(Note note) {
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Note")
-            .setMessage(note.getContent() != null ? note.getContent() : "No content")
-            .setPositiveButton("Close", null)
-            .show();
+                .setTitle("Note")
+                .setMessage(note.getContent() != null ? note.getContent() : "No content")
+                .setPositiveButton("Close", null)
+                .show();
     }
 
     private boolean handlePlacementTouch(MotionEvent event) {
@@ -380,18 +375,18 @@ public class PdfReaderActivity extends AppCompatActivity {
     private void showAddNoteDialog(int normalizedX, int normalizedY, int page) {
         EditText input = new EditText(this);
         input.setHint("Enter your note...");
-        
+
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Add Note")
-            .setView(input)
-            .setPositiveButton("Save", (dialog, which) -> {
-                String noteContent = input.getText().toString().trim();
-                if (!noteContent.isEmpty()) {
-                    createNote(noteContent, normalizedX, normalizedY, page);
-                }
-            })
-            .setNegativeButton("Cancel", null)
-            .show();
+                .setTitle("Add Note")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String noteContent = input.getText().toString().trim();
+                    if (!noteContent.isEmpty()) {
+                        createNote(noteContent, normalizedX, normalizedY, page);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     /**
@@ -400,13 +395,13 @@ public class PdfReaderActivity extends AppCompatActivity {
     private void showHighlightColorPicker(int normalizedX, int normalizedY, int page) {
         String[] colors = {"#FFFF00", "#00FF00", "#00FFFF", "#FF00FF", "#FF0000"};
         String[] colorNames = {"Yellow", "Green", "Cyan", "Magenta", "Red"};
-        
+
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Select Highlight Color")
-            .setItems(colorNames, (dialog, which) -> {
-                createHighlight(colors[which], page, normalizedX, normalizedY);
-            })
-            .show();
+                .setTitle("Select Highlight Color")
+                .setItems(colorNames, (dialog, which) -> {
+                    createHighlight(colors[which], page, normalizedX, normalizedY);
+                })
+                .show();
     }
 
     /**
@@ -414,28 +409,28 @@ public class PdfReaderActivity extends AppCompatActivity {
      */
     private void createNote(String content, int normalizedX, int normalizedY, int page) {
         Note note = Note.builder()
-            .id(UUID.randomUUID().toString())
-            .content(content)
-            .coordinationX((long) normalizedX)
-            .coordinationY((long) normalizedY)
-            .pageNumber(page)
-            .paperId(paperId)
-            .collectionId(collectionId != null ? collectionId : "")
-            .userId(userId)
-            .build();
-        
+                .id(UUID.randomUUID().toString())
+                .content(content)
+                .coordinationX((long) normalizedX)
+                .coordinationY((long) normalizedY)
+                .pageNumber(page)
+                .paperId(paperId)
+                .collectionId(collectionId != null ? collectionId : "")
+                .userId(userId)
+                .build();
+
         // Try to create via API if online, otherwise save for offline sync
         if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
             // Create API request
-            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request = 
-                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest request =
+                    new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateNoteRequest();
             request.paperId = paperId;
             request.collectionId = collectionId != null ? collectionId : "";
             request.content = content;
             request.coordinationX = normalizedX;
             request.coordinationY = normalizedY;
             request.pageNumber = page;
-            
+
             // Call API
             apiHandler.createNote(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>() {
                 @Override
@@ -475,28 +470,28 @@ public class PdfReaderActivity extends AppCompatActivity {
      */
     private void createHighlight(String color, int page, int normalizedX, int normalizedY) {
         Highlight highlight = Highlight.builder()
-            .id(UUID.randomUUID().toString())
-            .colorCode(color)
-            .coordinationX((long) normalizedX)
-            .coordinationY((long) normalizedY)
-            .pageNumber(page)
-            .paperId(paperId)
-            .collectionId(collectionId != null ? collectionId : "")
-            .userId(userId)
-            .build();
-        
+                .id(UUID.randomUUID().toString())
+                .colorCode(color)
+                .coordinationX((long) normalizedX)
+                .coordinationY((long) normalizedY)
+                .pageNumber(page)
+                .paperId(paperId)
+                .collectionId(collectionId != null ? collectionId : "")
+                .userId(userId)
+                .build();
+
         // Try to create via API if online, otherwise save for offline sync
         if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && jwtToken != null) {
             // Create API request
-            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request = 
-                new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
+            com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest request =
+                    new com.se1853_jv.labverse.data.api.annotation.AnnotationApi.CreateHighlightRequest();
             request.paperId = paperId;
             request.collectionId = collectionId != null ? collectionId : "";
             request.color = color;
             request.coordinationX = normalizedX;
             request.coordinationY = normalizedY;
             request.pageNumber = page;
-            
+
             // Call API
             apiHandler.createHighlight(jwtToken, request, new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>() {
                 @Override
@@ -593,10 +588,10 @@ public class PdfReaderActivity extends AppCompatActivity {
             loadAnnotationsFromLocal();
             return;
         }
-        
+
         // collectionId can be null for personal collections
         String collectionIdParam = collectionId != null ? collectionId : "";
-        
+
         // Load notes
         apiHandler.getNotes(jwtToken, paperId, collectionIdParam, userId, new com.se1853_jv.labverse.data.api.ApiCallback<List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.NoteResponse>>() {
             @Override
@@ -617,7 +612,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                 loadAnnotationsFromLocal();
             }
         });
-        
+
         // Load highlights
         apiHandler.getHighlights(jwtToken, paperId, collectionIdParam, userId, new com.se1853_jv.labverse.data.api.ApiCallback<List<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.HighlightResponse>>() {
             @Override
@@ -648,7 +643,7 @@ public class PdfReaderActivity extends AppCompatActivity {
             ensurePersonalLibraryCollectionExistsSync();
         }).start();
     }
-    
+
     /**
      * Ensure personal library collection exists in database (synchronous, must be called on background thread)
      */
@@ -656,11 +651,11 @@ public class PdfReaderActivity extends AppCompatActivity {
         try {
             var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
             var collectionRepository = db.collectionRepository();
-            
+
             // Check if personal library collection exists
-            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections personalCollection = 
-                collectionRepository.getById("PERSONAL_LIBRARY");
-            
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections personalCollection =
+                    collectionRepository.getById("PERSONAL_LIBRARY");
+
             if (personalCollection == null) {
                 // Create personal library collection
                 personalCollection = com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections.builder()
@@ -674,7 +669,7 @@ public class PdfReaderActivity extends AppCompatActivity {
             Log.e(TAG, "Error ensuring personal library collection exists", e);
         }
     }
-    
+
     /**
      * Ensure all foreign key entities exist before creating ReadingWorkflow
      * Returns true if all entities exist or were created successfully
@@ -682,20 +677,20 @@ public class PdfReaderActivity extends AppCompatActivity {
     private boolean ensureForeignKeysExist(String userId, String paperId, String collectionId) {
         try {
             var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
-            
+
             // Ensure User exists
             var userRepository = db.userRepository();
             com.se1853_jv.labverse.domain.infrastructure.user.model.Users user = userRepository.getById(userId);
             if (user == null) {
                 Log.w(TAG, "User not found in database: " + userId + ". Creating minimal user record.");
                 // Create minimal user record from SessionManager
-                com.se1853_jv.labverse.data.utils.SessionManager sessionManager = 
-                    new com.se1853_jv.labverse.data.utils.SessionManager(this);
+                com.se1853_jv.labverse.data.utils.SessionManager sessionManager =
+                        new com.se1853_jv.labverse.data.utils.SessionManager(this);
                 String email = sessionManager.getEmail();
                 String username = sessionManager.getUsername();
                 String fullName = sessionManager.getFullName();
                 String role = sessionManager.getRole();
-                
+
                 // Use default roleId if role is not available
                 String roleId = "role_researcher"; // Default role
                 if (role != null) {
@@ -706,7 +701,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         roleId = "role_student";
                     }
                 }
-                
+
                 // Ensure role exists in Roles table
                 var roleRepository = db.roleRepository();
                 com.se1853_jv.labverse.domain.infrastructure.role.model.Roles roleEntity = roleRepository.getById(roleId);
@@ -724,7 +719,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         // Continue anyway - might already exist
                     }
                 }
-                
+
                 long currentTime = System.currentTimeMillis();
                 user = com.se1853_jv.labverse.domain.infrastructure.user.model.Users.builder()
                         .id(userId)
@@ -745,7 +740,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                     return false;
                 }
             }
-            
+
             // Ensure PaperResearch exists
             var paperRepository = db.paperRepository();
             com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch paper = paperRepository.getById(paperId);
@@ -770,11 +765,11 @@ public class PdfReaderActivity extends AppCompatActivity {
                     return false;
                 }
             }
-            
+
             // Ensure Collection exists
             var collectionRepository = db.collectionRepository();
-            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections collection = 
-                collectionRepository.getById(collectionId);
+            com.se1853_jv.labverse.domain.infrastructure.collection.model.Collections collection =
+                    collectionRepository.getById(collectionId);
             if (collection == null) {
                 // Create collection if it doesn't exist
                 if ("PERSONAL_LIBRARY".equals(collectionId)) {
@@ -800,7 +795,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                     }
                 }
             }
-            
+
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Error ensuring foreign keys exist", e);
@@ -815,7 +810,7 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (userId == null || paperId == null) {
             return 0;
         }
-        
+
         try {
             String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
             // Note: We don't need to ensure collection exists here since we're only reading
@@ -828,7 +823,7 @@ public class PdfReaderActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error loading last read page", e);
         }
-        
+
         return 0;
     }
 
@@ -839,25 +834,25 @@ public class PdfReaderActivity extends AppCompatActivity {
         if (userId == null || paperId == null || totalPages == 0) {
             return;
         }
-        
+
         // Make variables final for lambda
         final String finalUserId = userId;
         final String finalPaperId = paperId;
         final String finalCollectionId = collectionId != null ? collectionId : "PERSONAL_LIBRARY";
         final String finalJwtToken = jwtToken;
-        
+
         // Calculate progress percentage (0-100)
         // Note: currentPage is 0-indexed, so we add 1 to get the actual page number
         // For a 2-page PDF: page 0 = 50%, page 1 = 100%
         int calculatedProgress = (int) Math.round(((currentPage + 1) * 100.0) / totalPages);
         if (calculatedProgress > 100) calculatedProgress = 100;
         if (calculatedProgress < 0) calculatedProgress = 0;
-        
+
         final int progress = calculatedProgress;
         final int finalCurrentPage = currentPage;
-        
+
         Log.d(TAG, "Reading progress: " + progress + "% (page " + currentPage + "/" + totalPages + ")");
-        
+
         // Run on background thread
         new Thread(() -> {
             try {
@@ -866,10 +861,10 @@ public class PdfReaderActivity extends AppCompatActivity {
                     Log.e(TAG, "Failed to ensure foreign keys exist, skipping workflow creation");
                     return;
                 }
-                
+
                 // Get or create ReadingWorkflow
                 ReadingWorkflow workflow = workflowRepository.getByCompositeKey(finalUserId, finalPaperId, finalCollectionId);
-                
+
                 com.se1853_jv.labverse.domain.enumerate.WorkflowStatus newStatus;
                 if (progress == 0) {
                     newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.UNREAD;
@@ -878,7 +873,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                 } else {
                     newStatus = com.se1853_jv.labverse.domain.enumerate.WorkflowStatus.READING;
                 }
-                
+
                 if (workflow == null) {
                     // Create new workflow
                     workflow = ReadingWorkflow.builder()
@@ -905,21 +900,21 @@ public class PdfReaderActivity extends AppCompatActivity {
                     workflow = updatedWorkflow;
                     Log.d(TAG, "Updated ReadingWorkflow");
                 }
-                
+
                 // Sync to backend via OfflineSyncHelper (handles online/offline)
                 final ReadingWorkflow finalWorkflow = workflow;
                 syncHelper.updateReadingProgress(finalWorkflow);
-                
+
                 // Also try direct API call if online
                 if (com.se1853_jv.labverse.data.utils.Connectivity.isInternetAvailable(this) && finalJwtToken != null) {
-                    com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request = 
-                        new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
+                    com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest request =
+                            new com.se1853_jv.labverse.data.dto.request.ReadingWorkflowProgressRequest();
                     request.setCollectionId(finalCollectionId);
                     request.setPaperId(finalPaperId);
                     request.setUsersid(finalUserId);
                     request.setLastPage(finalCurrentPage);
                     request.setProgress(progress);
-                    
+
                     workflowApiHandler.updateProgress(request, new com.se1853_jv.labverse.data.api.ApiCallback<String>() {
                         @Override
                         public void onSuccess(String result) {
@@ -929,23 +924,23 @@ public class PdfReaderActivity extends AppCompatActivity {
                             if (finalCollectionId != null && !finalCollectionId.equals("PERSONAL_LIBRARY")) {
                                 try {
                                     com.se1853_jv.labverse.data.api.collection.CollectionApiHandler collectionApiHandler =
-                                        new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
+                                            new com.se1853_jv.labverse.data.api.collection.CollectionApiHandler();
                                     // finalCollectionId and finalPaperId from intent are already encoded
                                     // recalculatePaperStatus expects encoded IDs, so we use them directly
                                     Log.d(TAG, "Recalculating status with collectionId=" + finalCollectionId + ", paperId=" + finalPaperId);
                                     collectionApiHandler.recalculatePaperStatus(finalCollectionId, finalPaperId,
-                                        new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
-                                            @Override
-                                            public void onSuccess(Object result) {
-                                                Log.d(TAG, "Collection paper status recalculated successfully");
-                                            }
+                                            new com.se1853_jv.labverse.data.api.ApiCallback<Object>() {
+                                                @Override
+                                                public void onSuccess(Object result) {
+                                                    Log.d(TAG, "Collection paper status recalculated successfully");
+                                                }
 
-                                            @Override
-                                            public void onError(String error) {
-                                                Log.w(TAG, "Failed to recalculate collection paper status: " + error);
-                                                // Non-critical, status will be recalculated on next collection view
-                                            }
-                                        });
+                                                @Override
+                                                public void onError(String error) {
+                                                    Log.w(TAG, "Failed to recalculate collection paper status: " + error);
+                                                    // Non-critical, status will be recalculated on next collection view
+                                                }
+                                            });
                                 } catch (Exception e) {
                                     Log.w(TAG, "Error triggering status recalculation: " + e.getMessage());
                                     // Non-critical
@@ -960,7 +955,7 @@ public class PdfReaderActivity extends AppCompatActivity {
                         }
                     });
                 }
-                
+
             } catch (Exception e) {
                 Log.e(TAG, "Error updating reading progress", e);
             }
@@ -974,12 +969,12 @@ public class PdfReaderActivity extends AppCompatActivity {
         List<Note> notes = new ArrayList<>();
         for (var response : responses) {
             Note note = Note.builder()
-                .id(response.id)
-                .content(response.content)
-                .coordinationX((long) response.coordinationX)
-                .coordinationY((long) response.coordinationY)
-                .pageNumber(response.pageNumber)
-                .build();
+                    .id(response.id)
+                    .content(response.content)
+                    .coordinationX((long) response.coordinationX)
+                    .coordinationY((long) response.coordinationY)
+                    .pageNumber(response.pageNumber)
+                    .build();
             notes.add(note);
         }
         return notes;
@@ -992,12 +987,12 @@ public class PdfReaderActivity extends AppCompatActivity {
         List<Highlight> highlights = new ArrayList<>();
         for (var response : responses) {
             Highlight highlight = Highlight.builder()
-                .id(response.id)
-                .colorCode(response.color)
-                .coordinationX((long) response.coordinationX)
-                .coordinationY((long) response.coordinationY)
-                .pageNumber(response.pageNumber)
-                .build();
+                    .id(response.id)
+                    .colorCode(response.color)
+                    .coordinationX((long) response.coordinationX)
+                    .coordinationY((long) response.coordinationY)
+                    .pageNumber(response.pageNumber)
+                    .build();
             highlights.add(highlight);
         }
         return highlights;
@@ -1042,25 +1037,25 @@ public class PdfReaderActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        apiHandler.exportAnnotations(jwtToken, paperId, collectionId, 
-            new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
-                @Override
-                public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
-                    runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        saveExportToFile(exportData);
-                    });
-                }
+        apiHandler.exportAnnotations(jwtToken, paperId, collectionId,
+                new com.se1853_jv.labverse.data.api.ApiCallback<com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse>() {
+                    @Override
+                    public void onSuccess(com.se1853_jv.labverse.data.api.annotation.AnnotationApi.ExportAnnotationsResponse exportData) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            saveExportToFile(exportData);
+                        });
+                    }
 
-                @Override
-                public void onError(String error) {
-                    runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        showStatusDialog(false, getString(R.string.pdf_reader_export_failed) + "\n" + error);
-                        Log.e(TAG, "Error exporting annotations: " + error);
-                    });
-                }
-            });
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            showStatusDialog(false, getString(R.string.pdf_reader_export_failed) + "\n" + error);
+                            Log.e(TAG, "Error exporting annotations: " + error);
+                        });
+                    }
+                });
     }
 
     /**
@@ -1087,25 +1082,25 @@ public class PdfReaderActivity extends AppCompatActivity {
             // Share file via Android ShareSheet
             android.content.Intent shareIntent = new android.content.Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/json");
-            
+
             // Use FileProvider to share file
             android.net.Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
-                this,
-                getPackageName() + ".provider",
-                exportFile
+                    this,
+                    getPackageName() + ".provider",
+                    exportFile
             );
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             // Show success dialog with share option
             new MaterialAlertDialogBuilder(this)
-                .setTitle("Export Successful")
-                .setMessage(getString(R.string.pdf_reader_export_success))
-                .setPositiveButton("Share", (dialog, which) -> {
-                    startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
-                })
-                .setNegativeButton("OK", null)
-                .show();
+                    .setTitle("Export Successful")
+                    .setMessage(getString(R.string.pdf_reader_export_success))
+                    .setPositiveButton("Share", (dialog, which) -> {
+                        startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
+                    })
+                    .setNegativeButton("OK", null)
+                    .show();
 
             Log.d(TAG, "Annotations exported to: " + exportFile.getAbsolutePath());
         } catch (Exception e) {
