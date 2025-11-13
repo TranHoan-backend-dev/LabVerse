@@ -8,7 +8,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {ArrowLeft, Plus, Trash2, Users, FileText, Edit, Search, Loader2} from "lucide-react";
+import {ArrowLeft, Plus, Trash2, Users, FileText, Search, Loader2} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
@@ -22,14 +22,11 @@ import {
     getCollectionMembers,
     addMemberToCollectionByEmail,
     removeMemberFromCollection,
-    type CollectionResponse,
     type CollectionPaperDetailResponse,
     type CollectionUserResponse
 } from "@/services/collection.service";
-import {BASE_API_URL} from "@/type/constant.ts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
-import {getAuthHeaders} from "@/utils/token";
 import ProgressDashboard from "@/pages/collection/components/ProgressDashboard";
 import {BarChart3} from "lucide-react";
 
@@ -99,7 +96,6 @@ const CollectionDetails = () => {
     // Default to AUTHOR if user created the collection (role owner) or has AUTHOR access level
     // If user is in members but accessLevel is not set, assume they have at least CONTRIBUTOR access
     const isOwner = currentUserMember?.role === 'owner' || userAccessLevel === 'AUTHOR';
-    const hasAccess = !!currentUserMember || userAccessLevel; // User has access if they're in members list
     
     // If user is in members list but no access level set, default to CONTRIBUTOR (can add papers)
     const effectiveAccessLevel = userAccessLevel || (currentUserMember ? 'CONTRIBUTOR' : null);
@@ -148,7 +144,7 @@ const CollectionDetails = () => {
     const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
         const existingPaperIds = papers?.map(p => p.paperId) || [];
-        return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
+        return paperSearchData.data.content.filter((paper) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
 
     // Client-side pagination for dialog (10 papers per page)
@@ -448,7 +444,7 @@ const CollectionDetails = () => {
                                                         </div>
                                                     ) : allAvailablePapers && allAvailablePapers.length > 0 ? (
                                                         <>
-                                                            {paginatedAvailablePapers.map((paper: any) => (
+                                                            {paginatedAvailablePapers.map((paper) => (
                                                                 <Card key={paper.id} className="hover:shadow-md transition-shadow">
                                                                     <CardHeader>
                                                                         <CardTitle className="text-base line-clamp-2">{paper.title}</CardTitle>
