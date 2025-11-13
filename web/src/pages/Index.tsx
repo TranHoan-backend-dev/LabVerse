@@ -85,16 +85,16 @@ const Index = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link to="/auth">
+                            {/* <Link to="/auth">
                                 <Button size="lg" className="text-lg px-8 w-full sm:w-auto">
                                     Get Started Free
                                 </Button>
-                            </Link>
-                            <Link to="/dashboard">
+                            </Link> */}
+                            {/* <Link to="/dashboard">
                                 <Button size="lg" variant="outline" className="text-lg px-8 w-full sm:w-auto">
                                     View Demo
                                 </Button>
-                            </Link>
+                            </Link> */}
                         </div>
 
                         <div className="pt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">

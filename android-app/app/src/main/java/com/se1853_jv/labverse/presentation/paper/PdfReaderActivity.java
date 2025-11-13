@@ -66,6 +66,11 @@ public class PdfReaderActivity extends AppCompatActivity {
 
     private String paperId, collectionId, userId, jwtToken, pdfUrl; // Firebase Storage URL from PaperResearch.dataUrl
     private int totalPages = 0; // Total pages in PDF
+    
+    // Track scroll position to calculate actual page height
+    private int lastScrollY = 0;
+    private int lastPage = 0;
+    private float calculatedPageHeight = 0f;
 
     private List<Note> loadedNotes = new ArrayList<>();
     private List<Highlight> loadedHighlights = new ArrayList<>();
@@ -99,6 +104,8 @@ public class PdfReaderActivity extends AppCompatActivity {
         setupPDFViewer();
         setupOverlayTouchHandler();
         setupActionButtons();
+        // Initialize overlay state (not clickable by default)
+        updatePlacementButtonStates();
         loadAnnotations();
     }
 
@@ -142,6 +149,14 @@ public class PdfReaderActivity extends AppCompatActivity {
         }
         if (btnAddHighlight != null) {
             btnAddHighlight.setAlpha(highlightPlacementMode ? 1f : 0.85f);
+        }
+        
+        // Enable/disable touch events on overlay based on placement mode
+        if (annotationOverlayView != null) {
+            boolean shouldReceiveTouch = notePlacementMode || highlightPlacementMode;
+            annotationOverlayView.setClickable(shouldReceiveTouch);
+            annotationOverlayView.setFocusable(shouldReceiveTouch);
+            Log.d(TAG, "Overlay touch enabled: " + shouldReceiveTouch);
         }
     }
 
@@ -251,8 +266,23 @@ public class PdfReaderActivity extends AppCompatActivity {
                     public void onPageChanged(int page, int pageCount) {
                         // Update reading progress
                         totalPages = pageCount;
+                        
+                        // Calculate page height based on scroll position change
+                        if (lastPage != page && lastPage >= 0) {
+                            int scrollDiff = Math.abs(pdfView.getScrollY() - lastScrollY);
+                            if (scrollDiff > 0) {
+                                // Approximate page height based on scroll difference
+                                // This is more accurate than using viewHeight
+                                calculatedPageHeight = scrollDiff / (float) Math.abs(page - lastPage);
+                                Log.d(TAG, "Calculated page height: " + calculatedPageHeight + " (from scroll diff: " + scrollDiff + ")");
+                            }
+                        }
+                        lastPage = page;
+                        lastScrollY = pdfView.getScrollY();
+                        
                         if (annotationOverlayView != null) {
                             annotationOverlayView.setCurrentPage(page);
+                            updatePdfPageInfo();
                         }
                         updateReadingProgress(page, pageCount);
                     }
@@ -270,7 +300,75 @@ public class PdfReaderActivity extends AppCompatActivity {
                 .load();
 
         annotationOverlayView.setCurrentPage(lastReadPage);
+        
+        // Set up scroll listener to update PDF page info
+        pdfView.post(() -> {
+            updatePdfPageInfo();
+            // Add scroll listener using ViewTreeObserver
+            pdfView.getViewTreeObserver().addOnScrollChangedListener(() -> updatePdfPageInfo());
+            pdfView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updatePdfPageInfo());
+        });
 
+    }
+    
+    /**
+     * Update PDF page position and size info for coordinate conversion
+     * Calculates where the current page is positioned on screen
+     */
+    private void updatePdfPageInfo() {
+        if (pdfView == null || annotationOverlayView == null || totalPages == 0) {
+            return;
+        }
+        
+        // Get PDF view dimensions
+        int viewWidth = pdfView.getWidth();
+        int viewHeight = pdfView.getHeight();
+        
+        if (viewWidth == 0 || viewHeight == 0) {
+            return;
+        }
+        
+        // Get scroll position
+        int scrollY = pdfView.getScrollY();
+        int scrollX = pdfView.getScrollX();
+        
+        // Get current page
+        int currentPage = pdfView.getCurrentPage();
+        
+        // Update last scroll position for page height calculation
+        int currentScrollY = pdfView.getScrollY();
+        if (lastPage != currentPage && lastPage >= 0) {
+            int scrollDiff = Math.abs(currentScrollY - lastScrollY);
+            if (scrollDiff > 0 && Math.abs(currentPage - lastPage) > 0) {
+                calculatedPageHeight = scrollDiff / (float) Math.abs(currentPage - lastPage);
+                Log.d(TAG, "Recalculated page height: " + calculatedPageHeight);
+            }
+        }
+        lastPage = currentPage;
+        lastScrollY = currentScrollY;
+        
+        // Use calculated page height if available, otherwise fallback to viewHeight
+        float pageHeight = calculatedPageHeight > 0 ? calculatedPageHeight : viewHeight;
+        
+        // Calculate where current page starts in document coordinates
+        // Pages are stacked vertically, so page N starts at N * pageHeight
+        float pageStartYInDoc = currentPage * pageHeight;
+        
+        // Calculate page position on screen
+        // pageOffsetY = where page starts in doc - scroll position
+        float pageOffsetY = pageStartYInDoc - scrollY;
+        float pageOffsetX = -scrollX; // Assuming centered or full width
+        
+        // Page dimensions on screen
+        float pageWidth = viewWidth;
+        // pageHeight already calculated above
+        
+        // Update overlay with PDF page info
+        annotationOverlayView.updatePdfPageInfo(pageWidth, pageHeight, pageOffsetX, pageOffsetY);
+        
+        Log.d(TAG, "Updated PDF page info: page=" + currentPage + ", width=" + pageWidth + 
+                ", height=" + pageHeight + ", offsetX=" + pageOffsetX + ", offsetY=" + pageOffsetY + 
+                ", scrollY=" + scrollY + ", pageStartY=" + pageStartYInDoc);
     }
 
     private void setupOverlayTouchHandler() {
@@ -327,23 +425,50 @@ public class PdfReaderActivity extends AppCompatActivity {
             return false;
         }
 
+        // In placement mode, consume all events to prevent PDF scrolling
+        // But only process the actual placement when ACTION_UP occurs
         if (event.getAction() != MotionEvent.ACTION_UP) {
-            return false; // Only handle ACTION_UP
+            // Consume ACTION_DOWN and ACTION_MOVE to prevent scrolling
+            return true;
         }
 
         int page = pdfView.getCurrentPage();
-        int width = annotationOverlayView != null ? annotationOverlayView.getWidth() : pdfView.getWidth();
-        int height = annotationOverlayView != null ? annotationOverlayView.getHeight() : pdfView.getHeight();
-
-        if (width == 0 || height == 0) {
-            Log.w(TAG, "View dimensions are zero: width=" + width + ", height=" + height);
-            return false;
-        }
-
+        
+        // Get touch coordinates relative to PDFView
         float x = event.getX();
         float y = event.getY();
-        int normalizedX = normalizeCoordinate(x, width);
-        int normalizedY = normalizeCoordinate(y, height);
+        
+        // Get scroll position
+        int scrollX = pdfView.getScrollX();
+        int scrollY = pdfView.getScrollY();
+        
+        // Convert screen coordinates to PDF document coordinates
+        // PDF pages are rendered in a continuous vertical layout
+        // Touch position + scroll = position in the full PDF document
+        float docX = x + scrollX;
+        float docY = y + scrollY;
+        
+        // Get view dimensions
+        int viewWidth = pdfView.getWidth();
+        int viewHeight = pdfView.getHeight();
+        
+        if (viewWidth == 0 || viewHeight == 0) {
+            Log.w(TAG, "View dimensions are zero: width=" + viewWidth + ", height=" + viewHeight);
+            return false;
+        }
+        
+        // Calculate page bounds in document coordinates
+        // Use calculated page height if available
+        float pageHeight = calculatedPageHeight > 0 ? calculatedPageHeight : viewHeight;
+        float pageStartY = page * pageHeight; // Page start position in document
+        
+        // Calculate position relative to current page
+        float pageRelativeY = docY - pageStartY;
+        float pageRelativeX = docX; // Assuming pages are centered or full width
+        
+        // Normalize to 0-10000 based on page dimensions
+        int normalizedX = normalizeCoordinate(pageRelativeX, viewWidth);
+        int normalizedY = normalizeCoordinate(pageRelativeY, pageHeight);
 
         Log.d(TAG, "Touch coordinates: x=" + x + ", y=" + y + ", normalized: (" + normalizedX + ", " + normalizedY + "), page=" + page);
 
@@ -1079,27 +1204,11 @@ public class PdfReaderActivity extends AppCompatActivity {
             writer.write(json);
             writer.close();
 
-            // Share file via Android ShareSheet
-            android.content.Intent shareIntent = new android.content.Intent(Intent.ACTION_SEND);
-            shareIntent.setType("application/json");
-
-            // Use FileProvider to share file
-            android.net.Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".provider",
-                    exportFile
-            );
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-            // Show success dialog with share option
+            // Show success dialog with OK button only
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Export Successful")
                     .setMessage(getString(R.string.pdf_reader_export_success))
-                    .setPositiveButton("Share", (dialog, which) -> {
-                        startActivity(Intent.createChooser(shareIntent, "Share annotations file"));
-                    })
-                    .setNegativeButton("OK", null)
+                    .setPositiveButton("OK", null)
                     .show();
 
             Log.d(TAG, "Annotations exported to: " + exportFile.getAbsolutePath());

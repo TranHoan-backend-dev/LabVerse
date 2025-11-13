@@ -32,9 +32,7 @@
         <com.se1853_jv.labverse.presentation.paper.view.AnnotationOverlayView
             android:id="@+id/annotationOverlay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:focusable="true" />
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 
