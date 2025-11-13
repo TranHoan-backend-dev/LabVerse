@@ -173,6 +173,7 @@ public class SearchActivity extends BaseActivity implements FilterDialogFragment
 
     @Override
     public void onFiltersApplied(FilterDialogFragment.FilterData filterData) {
+        // If filterData is null, it means filters were reset
         currentFilterData = filterData;
         resetPagination();
         performSearch();

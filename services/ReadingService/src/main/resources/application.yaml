@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: reading-workflow-service
+#    Goi trong application-dev
+#  datasource:
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#    url: jdbc:sqlserver://localhost:1433;databaseName=LabVerse_Reading_Service;encrypt=false;
+#    username: sa
+#    password: 123
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+server:
+  port: 0
+  servlet:
+    context-path: /v1/api
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-expiration-duration-in-seconds: 30
+    lease-renewal-interval-in-seconds: 10
+    instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+    status-page-url: /actuator/info
+    health-check-url-path: /actuator/health
+  client:
+    service-url:
+      defaultZone: http://localhost:9001/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    healthcheck:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+logging:
+  level:
+    com.se1853_jv: DEBUG
+

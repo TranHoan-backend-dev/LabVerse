@@ -129,7 +129,7 @@ class PaperServiceImpl(
         // Format: 10.0000/{unique-id}
         // Using 10.0000 as prefix for auto-generated DOIs
         val doi = "10.0000/labverse.$uniqueId.$timestamp"
-
+        
         // Ensure DOI doesn't already exist (very unlikely but check anyway)
         var attempts = 0
         var finalDoi = doi
@@ -138,12 +138,12 @@ class PaperServiceImpl(
             finalDoi = "10.0000/labverse.$newUniqueId.${System.currentTimeMillis()}"
             attempts++
         }
-
+        
         if (attempts >= 5) {
             logger.warn { "Failed to generate unique DOI after 5 attempts, using timestamp-based DOI" }
             finalDoi = "10.0000/labverse.${System.currentTimeMillis()}"
         }
-
+        
         return finalDoi
     }
 

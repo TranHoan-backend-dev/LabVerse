@@ -11,6 +11,8 @@ public interface ReadingListService {
 
     ReadingListResponse createReadingList(ReadingListCreateRequest request);
 
+    ReadingListResponse getReadingListById(String listId);
+
     List<ReadingListResponse> getReadingListsByUser(String userId);
 
     ReadingListResponse updatePapers(String listId, ReadingListUpdatePapersRequest request);
