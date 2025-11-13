@@ -172,14 +172,21 @@ public class PaperApiHandler {
                         Log.d("PAPER_DATA", "  message: " + body.getMessage());
                         
                         PapersPageResponse pageResponse = body.getData();
-                        if (pageResponse != null && pageResponse.getContent() != null) {
-                            List<PaperResearch> result = pageResponse.getContent();
-                            Log.d("PAPER_DATA", "Papers fetched: " + result.size());
-                            Log.d("PAPER_DATA", "Total elements: " + pageResponse.getTotalElements());
-                            Log.d("PAPER_DATA", "Total pages: " + pageResponse.getTotalPages());
-                            callback.onSuccess(new ArrayList<>(result));
+                        Log.d("PAPER_DATA", "pageResponse is null: " + (pageResponse == null));
+                        if (pageResponse != null) {
+                            Log.d("PAPER_DATA", "pageResponse.getContent() is null: " + (pageResponse.getContent() == null));
+                            if (pageResponse.getContent() != null) {
+                                List<PaperResearch> result = pageResponse.getContent();
+                                Log.d("PAPER_DATA", "Papers fetched: " + result.size());
+                                Log.d("PAPER_DATA", "Total elements: " + pageResponse.getTotalElements());
+                                Log.d("PAPER_DATA", "Total pages: " + pageResponse.getTotalPages());
+                                callback.onSuccess(new ArrayList<>(result));
+                            } else {
+                                Log.w("PAPER_DATA", "Response content is null");
+                                callback.onSuccess(new ArrayList<>());
+                            }
                         } else {
-                            Log.w("PAPER_DATA", "Response data or content is null");
+                            Log.w("PAPER_DATA", "Response data (pageResponse) is null");
                             callback.onSuccess(new ArrayList<>());
                         }
                     } else {
