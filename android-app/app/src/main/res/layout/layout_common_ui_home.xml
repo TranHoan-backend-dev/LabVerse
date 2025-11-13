@@ -103,8 +103,13 @@
         android:layout_marginBottom="80dp"
         android:contentDescription="Import Paper - Drag to move"
         android:src="@drawable/ic_add"
+        android:elevation="16dp"
+        android:visibility="visible"
+        android:clickable="true"
+        android:focusable="true"
         app:backgroundTint="@color/primary"
         app:tint="@color/white"
+        app:elevation="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

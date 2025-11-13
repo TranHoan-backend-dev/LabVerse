@@ -73,91 +73,24 @@
                 app:cornerRadius="8dp" />
         </LinearLayout>
 
-        <!-- Recent Activity Header -->
-        <LinearLayout
+        <!-- Papers List Header -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="12dp"
-            android:orientation="horizontal">
+            android:text="Your Papers"
+            android:textColor="#212121"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/recent_activity"
-                android:textColor="#212121"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:contentDescription="@string/go_back"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="#757575" />
-        </LinearLayout>
-
-        <!-- Liked Paper Item -->
-        <androidx.cardview.widget.CardView
+        <!-- RecyclerView for papers list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_papers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_card"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_circle_first_green"
-                    android:gravity="center"
-                    android:text="@string/heart"
-                    android:textSize="16sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New paper liked"
-                        android:textColor="#212121"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="2 hours ago"
-                        android:textColor="#9E9E9E"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text='"Machine Learning Applications in Biomedical Research"'
-                        android:textColor="#424242"
-                        android:textSize="13sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/main_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp" />
+            android:layout_marginTop="8dp"
+            android:minHeight="200dp"
+            android:nestedScrollingEnabled="false" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

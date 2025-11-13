@@ -59,8 +59,8 @@ public class FeedActivity extends BaseActivity {
         });
 
         setupBottomNavbar(findViewById(R.id.ui_home), R.id.bottomNav);
+        setupImportPaperButton(); // Initialize FAB first
         setupTabs();
-        setupImportPaperButton();
         setupFabDragAndDrop();
         getMockData();
         handleFilterPapers();
@@ -69,18 +69,39 @@ public class FeedActivity extends BaseActivity {
         HeaderHelper.setupNotificationClickListener(this);
         // Load and update notification badge
         HeaderHelper.loadNotificationBadge(this);
+        
+        // Force FAB to be visible after layout is drawn
+        rootLayout.post(() -> {
+            if (fabImportPaper != null && !isDestroyed && !isFinishing()) {
+                fabImportPaper.setVisibility(View.VISIBLE);
+                fabImportPaper.show();
+                fabImportPaper.bringToFront();
+                rootLayout.requestLayout();
+                rootLayout.invalidate();
+                Log.d("FeedActivity", "FAB forced visible after layout");
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (isDestroyed || isFinishing()) return;
         // Refresh notification badge when returning to this activity
         HeaderHelper.loadNotificationBadge(this);
+        // Ensure FAB is visible when returning to activity
+        if (fabImportPaper != null && !isDestroyed && !isFinishing()) {
+            fabImportPaper.setVisibility(View.VISIBLE);
+            fabImportPaper.show();
+            fabImportPaper.bringToFront();
+            fabImportPaper.invalidate();
+        }
     }
 
     private TabLayoutMediator mediator;
     private ViewPager2 pager;
     private TabLayout tabLayout;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
 
     private void setupTabs() {
         pager = findViewById(R.id.viewPager);
@@ -114,11 +135,15 @@ public class FeedActivity extends BaseActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                if (isDestroyed || isFinishing()) return;
                 int position = tab.getPosition();
-                // Hide FAB when on Teams tab (position 2)
+                // Show FAB on all tabs (Discovery, My Papers, Teams)
                 FloatingActionButton fab = findViewById(R.id.fabImportPaper);
-                if (fab != null) {
-                    fab.setVisibility(position == 2 ? View.GONE : View.VISIBLE);
+                if (fab != null && !isDestroyed && !isFinishing()) {
+                    fab.setVisibility(View.VISIBLE);
+                    fab.show();
+                    fab.bringToFront();
+                    fab.invalidate();
                 }
             }
 
@@ -134,19 +159,29 @@ public class FeedActivity extends BaseActivity {
         });
 
         // Handle page changes
-        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                // Hide FAB when on Teams tab (position 2)
+                if (isDestroyed || isFinishing()) return;
+                // Show FAB on all tabs (Discovery, My Papers, Teams)
                 FloatingActionButton fab = findViewById(R.id.fabImportPaper);
-                if (fab != null) {
-                    fab.setVisibility(position == 2 ? View.GONE : View.VISIBLE);
+                if (fab != null && !isDestroyed && !isFinishing()) {
+                    fab.setVisibility(View.VISIBLE);
+                    fab.show();
+                    fab.bringToFront();
+                    fab.invalidate();
                 }
             }
-        });
+        };
+        pager.registerOnPageChangeCallback(pageChangeCallback);
 
-        // Set initial FAB visibility
-        updateFabVisibility(pager.getCurrentItem());
+        // Set initial FAB visibility - ensure it's visible on all tabs
+        if (fabImportPaper != null) {
+            fabImportPaper.setVisibility(View.VISIBLE);
+            fabImportPaper.show();
+            fabImportPaper.bringToFront();
+            fabImportPaper.invalidate();
+        }
     }
 
     private void getMockData() {
@@ -174,10 +209,30 @@ public class FeedActivity extends BaseActivity {
     private FloatingActionButton fabImportPaper;
     private boolean isDragging = false;
     private float initialTouchX, initialTouchY;
+    private boolean isDestroyed = false;
+    private Runnable pendingFabSetupRunnable = null;
 
     private void setupImportPaperButton() {
         fabImportPaper = findViewById(R.id.fabImportPaper);
         if (fabImportPaper != null) {
+            Log.d("FeedActivity", "FAB found, setting up...");
+            // Ensure FAB is visible from the start - DON'T remove constraints yet
+            fabImportPaper.setVisibility(View.VISIBLE);
+            fabImportPaper.show();
+            // Bring FAB to front to ensure it's not hidden by other views
+            fabImportPaper.bringToFront();
+            fabImportPaper.invalidate();
+            
+            // Log FAB info
+            fabImportPaper.post(() -> {
+                if (fabImportPaper != null && !isDestroyed) {
+                    Log.d("FeedActivity", "FAB visibility: " + fabImportPaper.getVisibility());
+                    Log.d("FeedActivity", "FAB X: " + fabImportPaper.getX() + ", Y: " + fabImportPaper.getY());
+                    Log.d("FeedActivity", "FAB width: " + fabImportPaper.getWidth() + ", height: " + fabImportPaper.getHeight());
+                    Log.d("FeedActivity", "FAB parent: " + (fabImportPaper.getParent() != null ? fabImportPaper.getParent().getClass().getSimpleName() : "null"));
+                }
+            });
+            
             fabImportPaper.setOnClickListener(v -> {
                 android.util.Log.d("FeedActivity", "FAB clicked, isDragging: " + isDragging);
                 // Only trigger click if not dragging
@@ -200,14 +255,16 @@ public class FeedActivity extends BaseActivity {
     }
 
     private void setupFabDragAndDrop() {
-        if (fabImportPaper == null || rootLayout == null) return;
+        if (fabImportPaper == null || rootLayout == null || isDestroyed) return;
 
-        // Ensure FAB is visible first
+        // Ensure FAB is visible first - keep constraints for now
         fabImportPaper.setVisibility(View.VISIBLE);
+        fabImportPaper.show();
+        fabImportPaper.bringToFront();
 
-        // Wait for layout to be measured before removing constraints
-        fabImportPaper.post(() -> {
-            if (fabImportPaper == null || rootLayout == null) return;
+        // Wait for layout to be measured before setting up drag
+        pendingFabSetupRunnable = () -> {
+            if (fabImportPaper == null || rootLayout == null || isDestroyed || isFinishing()) return;
 
             // Get screen dimensions
             int screenWidth = rootLayout.getWidth();
@@ -217,35 +274,72 @@ public class FeedActivity extends BaseActivity {
             int fabWidth = fabImportPaper.getWidth();
             int fabHeight = fabImportPaper.getHeight();
 
+            Log.d("FeedActivity", "setupFabDragAndDrop - screen: " + screenWidth + "x" + screenHeight + 
+                  ", fab: " + fabWidth + "x" + fabHeight + ", bottomNav: " + bottomNavHeight);
+
             if (screenWidth == 0 || screenHeight == 0 || fabWidth == 0 || fabHeight == 0) {
                 // Layout not ready, try again later
-                fabImportPaper.postDelayed(() -> setupFabDragAndDrop(), 100);
+                Log.d("FeedActivity", "Layout not ready, retrying...");
+                if (!isDestroyed && !isFinishing()) {
+                    fabImportPaper.postDelayed(() -> {
+                        if (!isDestroyed && !isFinishing()) {
+                            setupFabDragAndDrop();
+                        }
+                    }, 100);
+                }
                 return;
             }
 
-            // Calculate default position (bottom right) - same as XML constraints
-            float defaultX = screenWidth - fabWidth - dpToPx(24); // 24dp margin
-            float defaultY = screenHeight - fabHeight - bottomNavHeight - dpToPx(80); // 80dp margin
+            // Check if we have a saved position
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            float savedX = prefs.getFloat(KEY_FAB_X, -1);
+            float savedY = prefs.getFloat(KEY_FAB_Y, -1);
 
-            // Remove constraints to allow free movement
-            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) fabImportPaper.getLayoutParams();
-            params.leftToLeft = ConstraintLayout.LayoutParams.UNSET;
-            params.rightToRight = ConstraintLayout.LayoutParams.UNSET;
-            params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
-            params.topToTop = ConstraintLayout.LayoutParams.UNSET;
-            fabImportPaper.setLayoutParams(params);
+            if (savedX >= 0 && savedY >= 0) {
+                // We have a saved position, remove constraints and use saved position
+                Log.d("FeedActivity", "Using saved position: x=" + savedX + ", y=" + savedY);
+                
+                // Remove constraints to allow free movement
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) fabImportPaper.getLayoutParams();
+                params.leftToLeft = ConstraintLayout.LayoutParams.UNSET;
+                params.rightToRight = ConstraintLayout.LayoutParams.UNSET;
+                params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+                params.topToTop = ConstraintLayout.LayoutParams.UNSET;
+                fabImportPaper.setLayoutParams(params);
 
-            // Set default position first
-            fabImportPaper.setX(defaultX);
-            fabImportPaper.setY(defaultY);
+                // Ensure saved position is within bounds
+                Rect displayRect = new Rect();
+                rootLayout.getWindowVisibleDisplayFrame(displayRect);
+                float x = Math.max(0, Math.min(savedX, screenWidth - fabWidth));
+                float y = Math.max(displayRect.top, Math.min(savedY, screenHeight - fabHeight - bottomNavHeight));
 
-            // Load saved position (will override default if exists)
-            loadFabPosition();
-        });
+                fabImportPaper.setX(x);
+                fabImportPaper.setY(y);
+            } else {
+                // No saved position, keep constraints (FAB will stay in default position from XML)
+                Log.d("FeedActivity", "No saved position, keeping XML constraints");
+            }
+            
+            // Ensure FAB is visible and on top
+            fabImportPaper.setVisibility(View.VISIBLE);
+            fabImportPaper.show();
+            fabImportPaper.bringToFront();
+            fabImportPaper.invalidate();
+            
+            Log.d("FeedActivity", "FAB final position: x=" + fabImportPaper.getX() + ", y=" + fabImportPaper.getY());
+        };
+        
+        if (!isDestroyed && !isFinishing() && fabImportPaper != null) {
+            fabImportPaper.post(pendingFabSetupRunnable);
+        }
 
         fabImportPaper.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
+                // Don't handle touch if activity is destroyed
+                if (isDestroyed || isFinishing()) {
+                    return false;
+                }
                 // Only handle touch events that are actually on the FAB
                 if (!isTouchInsideView(view, event)) {
                     return false;
@@ -270,6 +364,19 @@ public class FeedActivity extends BaseActivity {
 
                         // Only start dragging if moved beyond threshold
                         if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+                            if (!isDragging) {
+                                // First time dragging - remove constraints if still have them
+                                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) view.getLayoutParams();
+                                if (params.leftToLeft != ConstraintLayout.LayoutParams.UNSET) {
+                                    params.leftToLeft = ConstraintLayout.LayoutParams.UNSET;
+                                    params.rightToRight = ConstraintLayout.LayoutParams.UNSET;
+                                    params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+                                    params.topToTop = ConstraintLayout.LayoutParams.UNSET;
+                                    view.setLayoutParams(params);
+                                    Log.d("FeedActivity", "Removed constraints on first drag");
+                                }
+                            }
+                            
                             isDragging = true;
                             lastAction = MotionEvent.ACTION_MOVE;
 
@@ -346,7 +453,7 @@ public class FeedActivity extends BaseActivity {
     }
 
     private void loadFabPosition() {
-        if (fabImportPaper == null || rootLayout == null) return;
+        if (fabImportPaper == null || rootLayout == null || isDestroyed || isFinishing()) return;
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         float savedX = prefs.getFloat(KEY_FAB_X, -1);
@@ -355,7 +462,7 @@ public class FeedActivity extends BaseActivity {
         if (savedX >= 0 && savedY >= 0) {
             // Wait for layout to be measured
             fabImportPaper.post(() -> {
-                if (fabImportPaper == null || rootLayout == null) return;
+                if (fabImportPaper == null || rootLayout == null || isDestroyed || isFinishing()) return;
 
                 // Get screen bounds
                 Rect displayRect = new Rect();
@@ -383,28 +490,31 @@ public class FeedActivity extends BaseActivity {
                 fabImportPaper.setX(x);
                 fabImportPaper.setY(y);
 
-                // Make sure FAB is visible
+                // Make sure FAB is visible and on top
                 fabImportPaper.setVisibility(View.VISIBLE);
+                fabImportPaper.bringToFront();
+                fabImportPaper.invalidate();
+                Log.d("FeedActivity", "FAB loaded position: x=" + x + ", y=" + y);
             });
         } else {
             // No saved position, ensure FAB is visible at default position
-            fabImportPaper.post(() -> {
-                if (fabImportPaper != null) {
-                    fabImportPaper.setVisibility(View.VISIBLE);
-                }
-            });
+            if (!isDestroyed && !isFinishing() && fabImportPaper != null) {
+                fabImportPaper.post(() -> {
+                    if (fabImportPaper != null && !isDestroyed && !isFinishing()) {
+                        fabImportPaper.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
         }
     }
 
     private void updateFabVisibility(int position) {
         if (fabImportPaper != null) {
-            // Only show FAB on My Papers tab (position 1)
-            if (position == 1) {
-                fabImportPaper.show();
-                fabImportPaper.setVisibility(View.VISIBLE); // Ensure visible
-            } else {
-                fabImportPaper.hide();
-            }
+            // Show FAB on all tabs (Discovery, My Papers, Teams)
+            fabImportPaper.show();
+            fabImportPaper.setVisibility(View.VISIBLE); // Ensure visible
+            fabImportPaper.bringToFront();
+            fabImportPaper.invalidate();
         }
     }
 
@@ -433,10 +543,34 @@ public class FeedActivity extends BaseActivity {
             // Paper was uploaded successfully, reload My Papers tab
             Log.d("FeedActivity", "Paper uploaded, reloading My Papers tab");
             // Switch to My Papers tab and trigger reload
-            if (pager != null) {
+            if (pager != null && !isDestroyed && !isFinishing()) {
                 pager.setCurrentItem(1, false); // Switch to My Papers tab (index 1)
                 // Fragment's onResume will be called automatically
             }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        isDestroyed = true;
+        
+        // Clean up callbacks
+        if (fabImportPaper != null && pendingFabSetupRunnable != null) {
+            fabImportPaper.removeCallbacks(pendingFabSetupRunnable);
+        }
+        
+        // Clean up listeners
+        if (tabLayout != null) {
+            tabLayout.clearOnTabSelectedListeners();
+        }
+        
+        if (pager != null && pageChangeCallback != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
+        }
+        
+        if (mediator != null) {
+            mediator.detach();
         }
     }
 }
