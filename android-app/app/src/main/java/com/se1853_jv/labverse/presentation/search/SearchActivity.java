@@ -18,12 +18,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.se1853_jv.labverse.R;
 import com.se1853_jv.labverse.data.api.ApiCallback;
 import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
+import com.se1853_jv.labverse.data.utils.SessionManager;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
 import com.se1853_jv.labverse.presentation.common.BaseActivity;
 import com.se1853_jv.labverse.presentation.common.HeaderHelper;
 import com.se1853_jv.labverse.presentation.search.adapter.SearchResultAdapter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SearchActivity extends BaseActivity implements FilterDialogFragment.FilterDialogListener {
     private static final String TAG = "SearchActivity";
@@ -236,6 +239,9 @@ public class SearchActivity extends BaseActivity implements FilterDialogFragment
                         hideEmptyState();
                         adapter.setPapers(papers);
                         
+                        // Load reading progress for papers
+                        loadReadingProgress(papers);
+                        
                         // Calculate total pages based on results
                         // Note: Backend should return total count, but for now we estimate
                         if (papers.size() < PAGE_SIZE) {
@@ -323,6 +329,66 @@ public class SearchActivity extends BaseActivity implements FilterDialogFragment
         emptyState.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         paginationControls.setVisibility(View.VISIBLE);
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload reading progress for currently displayed papers
+        // This updates progress when user returns from reading a paper
+        if (adapter != null && adapter.getItemCount() > 0) {
+            List<PaperResearch> currentPapers = adapter.getPapers();
+            if (currentPapers != null && !currentPapers.isEmpty()) {
+                loadReadingProgress(currentPapers);
+            }
+        }
+    }
+    
+    /**
+     * Load reading progress for papers from ReadingWorkflow
+     */
+    private void loadReadingProgress(List<PaperResearch> papers) {
+        // Get user ID
+        SessionManager sessionManager = new SessionManager(this);
+        String userId = sessionManager.getUserId();
+        
+        if (userId == null) {
+            return;
+        }
+        
+        // Get workflow repository
+        var db = com.se1853_jv.labverse.domain.db.DatabaseClient.getInstance(this).getAppDatabase();
+        var workflowRepository = db.readingWorkflowRepository();
+        
+        // Load reading progress for each paper on background thread
+        new Thread(() -> {
+            try {
+                // Use PERSONAL_LIBRARY as collectionId for search papers (not in a collection)
+                String collectionId = "PERSONAL_LIBRARY";
+                Map<String, Integer> progressMap = new HashMap<>();
+                
+                for (PaperResearch paper : papers) {
+                    try {
+                        com.se1853_jv.labverse.domain.infrastructure.workflow.model.ReadingWorkflow workflow = 
+                            workflowRepository.getByCompositeKey(userId, paper.getId(), collectionId);
+                        
+                        if (workflow != null && workflow.getProgress() != null) {
+                            progressMap.put(paper.getId(), workflow.getProgress());
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error loading progress for paper: " + paper.getId(), e);
+                    }
+                }
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    adapter.setPaperProgressData(progressMap);
+                });
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading reading progress", e);
+            }
+        }).start();
     }
 }
 

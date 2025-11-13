@@ -29,6 +29,25 @@ public class AnnotationApiHandler {
     private static final String BASE_URL = Constants.GROUP_ENDPOINT_URL + "annotations/";
     private final AnnotationApi apiService;
 
+    /**
+     * Normalize token: ensure it doesn't have duplicate "Bearer " prefix
+     */
+    private String normalizeToken(String token) {
+        if (token == null) {
+            return null;
+        }
+        // Remove "Bearer " prefix if present (case-insensitive)
+        String normalized = token.trim();
+        while (normalized.startsWith("Bearer ") || normalized.startsWith("bearer ")) {
+            normalized = normalized.substring(7).trim();
+        }
+        // Add "Bearer " prefix
+        String result = "Bearer " + normalized;
+        Log.d(TAG, "Token normalized: original length=" + (token != null ? token.length() : 0) + 
+              ", normalized length=" + result.length());
+        return result;
+    }
+
     public AnnotationApiHandler() {
         var gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
@@ -184,9 +203,13 @@ public class AnnotationApiHandler {
     public void exportAnnotations(String token, String paperId, String collectionId, 
                                   ApiCallback<AnnotationApi.ExportAnnotationsResponse> callback) {
         Log.d(TAG, "Exporting annotations for paper: " + paperId);
+        Log.d(TAG, "Original token (first 50 chars): " + (token != null && token.length() > 50 ? token.substring(0, 50) + "..." : token));
+        
+        String authToken = normalizeToken(token);
+        Log.d(TAG, "Normalized token (first 50 chars): " + (authToken != null && authToken.length() > 50 ? authToken.substring(0, 50) + "..." : authToken));
         
         Call<BaseJsonResponse<AnnotationApi.ExportAnnotationsResponse>> call = 
-            apiService.exportAnnotations("Bearer " + token, paperId, collectionId);
+            apiService.exportAnnotations(authToken, paperId, collectionId);
         
         call.enqueue(new Callback<>() {
             @Override
@@ -197,8 +220,28 @@ public class AnnotationApiHandler {
                     callback.onSuccess(result);
                     Log.d(TAG, "Annotations exported successfully");
                 } else {
-                    Log.e(TAG, "Error exporting annotations: " + response.message());
-                    callback.onError(response.message());
+                    String errorMessage = "Error exporting annotations: " + response.message();
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error response body: " + errorBody);
+                            // Try to parse error response
+                            try {
+                                var gson = new com.google.gson.Gson();
+                                var errorResponse = gson.fromJson(errorBody, BaseJsonResponse.class);
+                                if (errorResponse != null && errorResponse.getMessage() != null) {
+                                    errorMessage = errorResponse.getMessage();
+                                }
+                            } catch (Exception e) {
+                                // If parsing fails, use the raw error body
+                                errorMessage = errorBody;
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error reading error body", e);
+                        }
+                    }
+                    Log.e(TAG, errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
 

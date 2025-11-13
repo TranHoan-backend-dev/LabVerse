@@ -1,5 +1,6 @@
 package com.se1853_jv.labverse.presentation.feed.adapter;
 
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.se1853_jv.labverse.R;
@@ -76,6 +78,7 @@ public class PersonalLibraryAdapter extends RecyclerView.Adapter<PersonalLibrary
         private TextView textTitle;
         private TextView textAuthors;
         private TextView textJournal;
+        private TextView textStatusChip;
         private ProgressBar progressBar;
 
         public PaperViewHolder(@NonNull View itemView) {
@@ -83,6 +86,7 @@ public class PersonalLibraryAdapter extends RecyclerView.Adapter<PersonalLibrary
             textTitle = itemView.findViewById(R.id.text_paper_title);
             textAuthors = itemView.findViewById(R.id.text_paper_authors);
             textJournal = itemView.findViewById(R.id.text_paper_journal);
+            textStatusChip = itemView.findViewById(R.id.text_status_chip);
             progressBar = itemView.findViewById(R.id.progress_bar);
         }
 
@@ -113,6 +117,43 @@ public class PersonalLibraryAdapter extends RecyclerView.Adapter<PersonalLibrary
                     progressBar.setProgress(progress);
                 } else {
                     progressBar.setVisibility(View.GONE);
+                }
+            }
+
+            // Handle status chip visibility and status calculation (only for recently_read tab)
+            if (textStatusChip != null) {
+                if (showProgress) {
+                    textStatusChip.setVisibility(View.VISIBLE);
+                    String statusText;
+                    int backgroundColorRes;
+                    int textColorRes;
+                    
+                    // Handle null progress as 0 (Unread)
+                    int progressValue = (progress != null) ? progress : 0;
+                    
+                    if (progressValue >= 100) {
+                        statusText = "Finished";
+                        backgroundColorRes = R.color.third_green;
+                        textColorRes = R.color.white;
+                    } else if (progressValue == 0) {
+                        statusText = "Unread";
+                        backgroundColorRes = R.color.gray_200;
+                        textColorRes = R.color.text_secondary;
+                    } else {
+                        statusText = "Reading";
+                        backgroundColorRes = R.color.blue;
+                        textColorRes = R.color.white;
+                    }
+                    
+                    textStatusChip.setText(statusText);
+                    // Set background color
+                    GradientDrawable drawable = (GradientDrawable) textStatusChip.getBackground();
+                    if (drawable != null) {
+                        drawable.setColor(ContextCompat.getColor(itemView.getContext(), backgroundColorRes));
+                    }
+                    textStatusChip.setTextColor(ContextCompat.getColor(itemView.getContext(), textColorRes));
+                } else {
+                    textStatusChip.setVisibility(View.GONE);
                 }
             }
 
