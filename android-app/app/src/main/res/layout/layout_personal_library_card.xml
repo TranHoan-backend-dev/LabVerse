@@ -56,6 +56,20 @@
             android:textSize="12sp"
             tools:text="Nature • 2024" />
 
+        <!-- Status Chip (only visible for recently_read tab) -->
+        <TextView
+            android:id="@+id/text_status_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:background="@drawable/status_chip_background"
+            tools:text="Reading" />
+
         <!-- Progress Bar (only visible for recently_read tab) -->
         <ProgressBar
             android:id="@+id/progress_bar"

@@ -28,6 +28,27 @@ public class ReadingWorkflowController {
 
     private final ReadingWorkflowService readingWorkflowService;
 
+    /**
+     * Safely decode an ID, handling both encoded and already-decoded UUIDs.
+     * If ID is already a UUID format, returns as-is. Otherwise, tries to decode it.
+     */
+    private String safeDecodeId(String id) {
+        if (id == null || id.isEmpty()) {
+            return id;
+        }
+        // Check if it's a UUID format (already decoded) - UUIDs have format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        if (id.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")) {
+            return id; // Already decoded
+        }
+        // Try to decode - if it fails, assume it's already decoded or invalid
+        try {
+            return IdEncoder.decodeString(id);
+        } catch (Exception e) {
+            // If decode fails, assume it's already decoded or invalid, return as-is
+            return id;
+        }
+    }
+
     @PostMapping
     @Operation(summary = "Create a new reading workflow", 
                description = "Start reading a paper. Checks if workflow exists, creates new with status='unread', lastPage=0, progress=0. IDs should be encoded in request body.")
@@ -37,15 +58,15 @@ public class ReadingWorkflowController {
     })
     public ResponseEntity<WrapperApiResponse<ReadingWorkflowResponse>> createWorkflow(
             @Valid @RequestBody ReadingWorkflowCreateRequest request) {
-        // Decode IDs from request if provided
+        // Decode IDs from request if provided (service will handle both encoded and decoded IDs safely)
         if (request.getCollectionId() != null) {
-            request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
+            request.setCollectionId(safeDecodeId(request.getCollectionId()));
         }
         if (request.getPaperId() != null) {
-            request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
+            request.setPaperId(safeDecodeId(request.getPaperId()));
         }
         if (request.getUsersid() != null) {
-            request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
+            request.setUsersid(safeDecodeId(request.getUsersid()));
         }
         ReadingWorkflowResponse response = readingWorkflowService.createWorkflow(request);
         return ResponseEntity.ok(WrapperApiResponse.success(response));
@@ -93,10 +114,11 @@ public class ReadingWorkflowController {
     })
     public ResponseEntity<WrapperApiResponse<String>> updateProgress(
             @Valid @RequestBody ReadingWorkflowProgressRequest request) {
-        // Decode IDs from request
-        request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
-        request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
+        // Decode IDs from request (service will handle both encoded and decoded IDs safely)
+        // Use safe decode that handles both encoded and already-decoded UUIDs
+        request.setCollectionId(safeDecodeId(request.getCollectionId()));
+        request.setPaperId(safeDecodeId(request.getPaperId()));
+        request.setUsersid(safeDecodeId(request.getUsersid()));
         readingWorkflowService.updateProgress(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Progress updated successfully"));
     }
@@ -111,10 +133,10 @@ public class ReadingWorkflowController {
     })
     public ResponseEntity<WrapperApiResponse<String>> updateStatus(
             @Valid @RequestBody ReadingWorkflowStatusRequest request) {
-        // Decode IDs from request
-        request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
-        request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
+        // Decode IDs from request (service will handle both encoded and decoded IDs safely)
+        request.setCollectionId(safeDecodeId(request.getCollectionId()));
+        request.setPaperId(safeDecodeId(request.getPaperId()));
+        request.setUsersid(safeDecodeId(request.getUsersid()));
         readingWorkflowService.updateStatus(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Status updated successfully"));
     }
@@ -129,10 +151,10 @@ public class ReadingWorkflowController {
     })
     public ResponseEntity<WrapperApiResponse<String>> deleteWorkflow(
             @Valid @RequestBody ReadingWorkflowDeleteRequest request) {
-        // Decode IDs from request
-        request.setCollectionId(IdEncoder.decodeString(request.getCollectionId()));
-        request.setPaperId(IdEncoder.decodeString(request.getPaperId()));
-        request.setUsersid(IdEncoder.decodeString(request.getUsersid()));
+        // Decode IDs from request (service will handle both encoded and decoded IDs safely)
+        request.setCollectionId(safeDecodeId(request.getCollectionId()));
+        request.setPaperId(safeDecodeId(request.getPaperId()));
+        request.setUsersid(safeDecodeId(request.getUsersid()));
         readingWorkflowService.deleteWorkflow(request);
         return ResponseEntity.ok(WrapperApiResponse.success("Workflow deleted successfully"));
     }

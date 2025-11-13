@@ -1,27 +1,38 @@
 package com.se1853_jv.labverse.presentation.search.adapter;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
 import com.se1853_jv.labverse.R;
+import com.se1853_jv.labverse.data.api.ApiCallback;
+import com.se1853_jv.labverse.data.api.paper.PaperApiHandler;
 import com.se1853_jv.labverse.domain.infrastructure.paper.model.PaperResearch;
-import com.se1853_jv.labverse.presentation.paper.PaperDetailsActivity;
+import com.se1853_jv.labverse.presentation.paper.PdfReaderActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.SearchResultViewHolder> {
+    private static final String TAG = "SearchResultAdapter";
     private List<PaperResearch> papers = new ArrayList<>();
+    private Map<String, Integer> progressMap = new HashMap<>(); // paperId -> progress (0-100)
     private final int[] tagColors = {
             R.color.tag_color_1, R.color.tag_color_2, R.color.tag_color_3,
             R.color.tag_color_4, R.color.tag_color_5, R.color.tag_color_6
@@ -39,7 +50,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @Override
     public void onBindViewHolder(@NonNull SearchResultViewHolder holder, int position) {
         PaperResearch paper = papers.get(position);
-        holder.bind(paper);
+        holder.bind(paper, progressMap);
     }
 
     @Override
@@ -50,6 +61,13 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     public void setPapers(List<PaperResearch> papers) {
         this.papers = papers != null ? papers : new ArrayList<>();
         notifyDataSetChanged();
+    }
+    
+    /**
+     * Get current papers list
+     */
+    public List<PaperResearch> getPapers() {
+        return new ArrayList<>(papers); // Return a copy to prevent external modification
     }
 
     public void addPapers(List<PaperResearch> papers) {
@@ -62,6 +80,15 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     public void clear() {
         this.papers.clear();
+        this.progressMap.clear();
+        notifyDataSetChanged();
+    }
+    
+    /**
+     * Set progress data for papers (called after loading from ReadingWorkflow)
+     */
+    public void setPaperProgressData(Map<String, Integer> progressMap) {
+        this.progressMap = progressMap != null ? progressMap : new HashMap<>();
         notifyDataSetChanged();
     }
 
@@ -74,6 +101,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         private final TextView textCitations;
         private final TextView textReadMore;
         private final ImageButton bookmarkIcon;
+        private final ProgressBar progressBar;
 
         public SearchResultViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -85,12 +113,13 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             textCitations = itemView.findViewById(R.id.text_citations);
             textReadMore = itemView.findViewById(R.id.text_read_more);
             bookmarkIcon = itemView.findViewById(R.id.bookmark_icon);
+            progressBar = itemView.findViewById(R.id.progress_bar);
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     PaperResearch paper = papers.get(position);
-                    openPaperDetails(v, paper);
+                    openPDFReader(v, paper);
                 }
             });
 
@@ -98,7 +127,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     PaperResearch paper = papers.get(position);
-                    openPaperDetails(v, paper);
+                    openPDFReader(v, paper);
                 }
             });
 
@@ -111,7 +140,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             });
         }
 
-        public void bind(PaperResearch paper) {
+        public void bind(PaperResearch paper, Map<String, Integer> progressMap) {
             // Set title
             textPaperTitle.setText(paper.getTitle() != null ? paper.getTitle() : "No Title");
 
@@ -155,12 +184,80 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             int citations = random.nextInt(500) + 50;
             textViews.setText(formatViews(views));
             textCitations.setText(String.valueOf(citations));
+            
+            // Handle reading progress from ReadingWorkflow
+            if (progressBar != null) {
+                Integer progress = progressMap != null ? progressMap.get(paper.getId()) : null;
+                if (progress != null && progress > 0) {
+                    // Show progress bar for papers that are being read (progress > 0, including 100%)
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.setProgress(progress);
+                } else {
+                    // Hide progress bar for unread papers (progress = 0 or null)
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
         }
 
-        private void openPaperDetails(View v, PaperResearch paper) {
-            Intent intent = new Intent(v.getContext(), PaperDetailsActivity.class);
-            intent.putExtra("paper_id", paper.getId());
-            v.getContext().startActivity(intent);
+        private void openPDFReader(View v, PaperResearch paper) {
+            String paperId = paper.getId();
+            if (paperId == null || paperId.isEmpty()) {
+                Toast.makeText(v.getContext(), "Paper ID not available", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Check if PDF URL is already available in the paper object
+            String pdfUrl = paper.getDataUrl();
+            if (pdfUrl != null && !pdfUrl.isEmpty()) {
+                // PDF URL is available, open PDF Reader directly
+                Intent intent = new Intent(v.getContext(), PdfReaderActivity.class);
+                intent.putExtra("paperId", paperId);
+                // Use PERSONAL_LIBRARY as collectionId for search papers (not in a collection)
+                intent.putExtra("collectionId", "PERSONAL_LIBRARY");
+                intent.putExtra("pdfUrl", pdfUrl);
+                Log.d(TAG, "Opening PDF Reader with paperId=" + paperId + ", collectionId=PERSONAL_LIBRARY");
+                v.getContext().startActivity(intent);
+            } else {
+                // PDF URL is not available, fetch paper details first
+                Toast.makeText(v.getContext(), "Loading paper...", Toast.LENGTH_SHORT).show();
+                
+                PaperApiHandler paperApiHandler = new PaperApiHandler();
+                paperApiHandler.getPaperDetails(paperId, new ApiCallback<PaperResearch>() {
+                    @Override
+                    public void onSuccess(PaperResearch paperResearch) {
+                        // Post to UI thread to update UI
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            String fetchedPdfUrl = paperResearch.getDataUrl();
+                            if (fetchedPdfUrl == null || fetchedPdfUrl.isEmpty()) {
+                                Toast.makeText(v.getContext(),
+                                        "PDF URL not available for this paper",
+                                        Toast.LENGTH_LONG).show();
+                                return;
+                            }
+
+                            // Open PDF Reader Activity
+                            Intent intent = new Intent(v.getContext(), PdfReaderActivity.class);
+                            intent.putExtra("paperId", paperId);
+                            // Use PERSONAL_LIBRARY as collectionId for search papers (not in a collection)
+                            intent.putExtra("collectionId", "PERSONAL_LIBRARY");
+                            intent.putExtra("pdfUrl", fetchedPdfUrl);
+                            Log.d(TAG, "Opening PDF Reader with paperId=" + paperId + ", collectionId=PERSONAL_LIBRARY");
+                            v.getContext().startActivity(intent);
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        // Post to UI thread to update UI
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            Log.e(TAG, "Error loading paper details: " + error);
+                            Toast.makeText(v.getContext(),
+                                    "Failed to load paper: " + error,
+                                    Toast.LENGTH_LONG).show();
+                        });
+                    }
+                });
+            }
         }
 
         private int getRandomTagColor() {

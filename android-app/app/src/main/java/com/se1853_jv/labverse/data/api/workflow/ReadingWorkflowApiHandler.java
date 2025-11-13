@@ -71,9 +71,8 @@ public class ReadingWorkflowApiHandler {
      * Update reading progress
      */
     public void updateProgress(ReadingWorkflowProgressRequest request, ApiCallback<String> callback) {
-        request.setCollectionId(EncoderUtils.decode(request.getCollectionId()));
-        request.setPaperId(EncoderUtils.decode(request.getPaperId()));
-        request.setUsersid(EncoderUtils.decode(request.getUsersid()));
+        // IDs should be sent as-is (encoded). Backend will handle decoding.
+        // Do not decode here to avoid double-decoding issues.
 
         Log.d(TAG, "Updating reading progress: paperId=" + request.getPaperId() + 
                 ", progress=" + request.getProgress() + "%, lastPage=" + request.getLastPage());
@@ -114,9 +113,8 @@ public class ReadingWorkflowApiHandler {
      * Update reading status
      */
     public void updateStatus(ReadingWorkflowStatusRequest request, ApiCallback<String> callback) {
-        request.setCollectionId(EncoderUtils.decode(request.getCollectionId()));
-        request.setPaperId(EncoderUtils.decode(request.getPaperId()));
-        request.setUsersid(EncoderUtils.decode(request.getUsersid()));
+        // IDs should be sent as-is (encoded). Backend will handle decoding.
+        // Do not decode here to avoid double-decoding issues.
 
         Log.d(TAG, "Updating reading status: paperId=" + request.getPaperId() + 
                 ", status=" + request.getStatus());
