@@ -53,3 +53,12 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface GoogleLoginRequest {
+  idToken: string;
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  otpCode: string;
+}
+

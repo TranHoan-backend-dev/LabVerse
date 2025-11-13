@@ -5,14 +5,22 @@ import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Separator} from "@/components/ui/separator";
 import {BookOpen} from "lucide-react";
 import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
+import {GoogleSignInButton} from "@/components/GoogleSignInButton";
+import {ForgotPasswordDialog} from "@/components/ForgotPasswordDialog";
+import {OtpVerificationDialog} from "@/components/OtpVerificationDialog";
 
 const Auth = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [roleName, setRoleName] = useState<'PI' | 'RESEARCHER' | 'STUDENT' | ''>('');
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+    const [showOtpDialog, setShowOtpDialog] = useState(false);
+    const [pendingEmail, setPendingEmail] = useState<string>("");
     const {signIn, signUp, user} = useAuth();
     const navigate = useNavigate();
 
@@ -57,7 +65,10 @@ const Auth = () => {
         }
 
         try {
-            await signUp(email, password, fullName, username, roleName as 'PI' | 'RESEARCHER' | 'STUDENT');
+            const registeredEmail = await signUp(email, password, fullName, username, roleName as 'PI' | 'RESEARCHER' | 'STUDENT');
+            // Show OTP dialog after successful registration
+            setPendingEmail(registeredEmail);
+            setShowOtpDialog(true);
         } catch (error) {
             // Error handled in context
         } finally {
@@ -106,6 +117,17 @@ const Auth = () => {
                                 </TabsList>
 
                                 <TabsContent value="signin" className="space-y-4">
+                                    <GoogleSignInButton isLoading={isLoading} disabled={isLoading} />
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <Separator />
+                                        </div>
+                                        <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-background px-2 text-muted-foreground">
+                                                Or continue with email
+                                            </span>
+                                        </div>
+                                    </div>
                                     <form onSubmit={handleSignIn} className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="signin-email">Email</Label>
@@ -118,7 +140,23 @@ const Auth = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="signin-password">Password</Label>
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="signin-password">Password</Label>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const emailInput = document.getElementById('signin-email') as HTMLInputElement;
+                                                        if (emailInput && emailInput.value) {
+                                                            setForgotPasswordEmail(emailInput.value);
+                                                        }
+                                                        setShowForgotPassword(true);
+                                                    }}
+                                                    className="text-sm text-primary hover:underline"
+                                                >
+                                                    Forgot password?
+                                                </button>
+                                            </div>
                                             <Input
                                                 id="signin-password"
                                                 name="password"
@@ -134,6 +172,17 @@ const Auth = () => {
                                 </TabsContent>
 
                                 <TabsContent value="signup" className="space-y-4">
+                                    <GoogleSignInButton isLoading={isLoading} disabled={isLoading} />
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <Separator />
+                                        </div>
+                                        <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-background px-2 text-muted-foreground">
+                                                Or continue with email
+                                            </span>
+                                        </div>
+                                    </div>
                                     <form onSubmit={handleSignUp} className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="signup-name">Full Name</Label>
@@ -201,6 +250,26 @@ const Auth = () => {
                     </Card>
                 </div>
             </div>
+            <ForgotPasswordDialog
+                open={showForgotPassword}
+                initialEmail={forgotPasswordEmail}
+                onClose={() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordEmail("");
+                }}
+            />
+            <OtpVerificationDialog
+                open={showOtpDialog}
+                email={pendingEmail}
+                onVerified={() => {
+                    setShowOtpDialog(false);
+                    setPendingEmail("");
+                }}
+                onClose={() => {
+                    setShowOtpDialog(false);
+                    setPendingEmail("");
+                }}
+            />
         </>
     );
 };

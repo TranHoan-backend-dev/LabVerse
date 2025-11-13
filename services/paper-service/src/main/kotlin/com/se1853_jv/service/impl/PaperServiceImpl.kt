@@ -5,6 +5,7 @@ import com.se1853_jv.dto.request.UploadPdfRequest
 import com.se1853_jv.dto.response.PaginatedPapersListResponse
 import com.se1853_jv.dto.response.PaperResponse
 import com.se1853_jv.model.*
+import com.se1853_jv.repository.FavoriteRepository
 import com.se1853_jv.repository.PaperRepository
 import com.se1853_jv.repository.TagRepository
 import com.se1853_jv.service.EncoderService
@@ -26,13 +27,18 @@ class PaperServiceImpl(
     private val paperRepo: PaperRepository,
     private val encoder: EncoderService,
     private val tagRepo: TagRepository,
+    private val favoriteRepo: FavoriteRepository,
     private val db: Firestore?,
 ) : PaperService {
 
     override fun getPaperDetails(paperId: String): PaperResponse {
-        logger.info { "Fetching details for paperId=$paperId" }
+        return getPaperDetails(paperId, null)
+    }
+
+    override fun getPaperDetails(paperId: String, userId: String?): PaperResponse {
+        logger.info { "Fetching details for paperId=$paperId, userId=$userId" }
         val paper = paperRepo.findById(paperId).orElseThrow { IllegalArgumentException("Paper not found") }
-        val response = convert(paper)
+        val response = convert(paper, userId)
 
         if (db != null) {
             try {
@@ -53,9 +59,17 @@ class PaperServiceImpl(
         author: String?, journal: String?, publicationYearFrom: Int?,
         publicationYearTo: Int?
     ): PaginatedPapersListResponse {
+        return getAllPapers(searchQuery, pageIndex, pageSize, author, journal, publicationYearFrom, publicationYearTo, null)
+    }
+
+    override fun getAllPapers(
+        searchQuery: String?, pageIndex: Int, pageSize: Int?,
+        author: String?, journal: String?, publicationYearFrom: Int?,
+        publicationYearTo: Int?, userId: String?
+    ): PaginatedPapersListResponse {
         logger.info {
             "Getting all papers with search query: $searchQuery, pageIndex: $pageIndex, pageSize: $pageSize," +
-                    " author: $author, journal: $journal, publicationYearFrom: $publicationYearFrom"
+                    " author: $author, journal: $journal, publicationYearFrom: $publicationYearFrom, userId: $userId"
         }
         val data = paperRepo.searchPapers(
             searchQuery,
@@ -67,7 +81,7 @@ class PaperServiceImpl(
             pageSize ?: PAGE_SIZE
         )
 
-        val response = data.map { convert(it) }
+        val response = data.map { convert(it, userId) }
         return PaginatedPapersListResponse(
             response.content,
             data.totalPages,
@@ -154,7 +168,7 @@ class PaperServiceImpl(
         papers.forEach { paper ->
             logger.debug { "Paper: id=${paper.id}, title=${paper.metadata?.title}, createdBy=${paper.createdBy}" }
         }
-        return papers.map { convert(it) }
+        return papers.map { convert(it, userId) }
     }
 
     private fun storeData(item: PaperResponse): MutableMap<String, Any> {
@@ -170,7 +184,8 @@ class PaperServiceImpl(
         return response
     }
 
-    private fun convert(paper: Paper): PaperResponse {
+    private fun convert(paper: Paper, userId: String? = null): PaperResponse {
+        val isFavorite = userId?.let { favoriteRepo.existsByPaperIdAndUserId(paper.id!!, it) } ?: false
         return PaperResponse(
             id = encoder.encode(paper.id!!),
             dataUrl = paper.dataUrl ?: "",
@@ -181,6 +196,7 @@ class PaperServiceImpl(
             publicationYear = paper.metadata?.publicationYear ?: 0,
             doi = paper.metadata?.doi ?: "",
             description = paper.description,
+            isFavorite = isFavorite,
         )
     }
 
@@ -200,4 +216,47 @@ class PaperServiceImpl(
         tagIds = tagIds ?: emptyList(),
         createdBy = createdBy,
     )
+
+    // Favorite methods
+    override fun addFavorite(paperId: String, userId: String) {
+        logger.info { "Adding favorite: paperId=$paperId, userId=$userId" }
+        
+        // Check if paper exists
+        paperRepo.findById(paperId).orElseThrow { IllegalArgumentException("Paper not found") }
+        
+        // Check if already favorite
+        if (favoriteRepo.existsByPaperIdAndUserId(paperId, userId)) {
+            logger.warn { "Paper $paperId is already favorite for user $userId" }
+            return
+        }
+        
+        val favorite = Favorite(
+            id = UUID.randomUUID().toString(),
+            paperId = paperId,
+            userId = userId
+        )
+        favoriteRepo.save(favorite)
+        logger.info { "Favorite added successfully" }
+    }
+
+    override fun removeFavorite(paperId: String, userId: String) {
+        logger.info { "Removing favorite: paperId=$paperId, userId=$userId" }
+        favoriteRepo.deleteByPaperIdAndUserId(paperId, userId)
+        logger.info { "Favorite removed successfully" }
+    }
+
+    override fun getFavoritePapersByUserId(userId: String): List<PaperResponse> {
+        logger.info { "Getting favorite papers for userId: $userId" }
+        val favorites = favoriteRepo.findByUserId(userId)
+        logger.info { "Found ${favorites.size} favorites for user $userId" }
+        
+        val paperIds = favorites.map { it.paperId }
+        val papers = paperRepo.findAllById(paperIds)
+        
+        return papers.map { convert(it, userId) }
+    }
+
+    override fun isFavorite(paperId: String, userId: String): Boolean {
+        return favoriteRepo.existsByPaperIdAndUserId(paperId, userId)
+    }
 }
