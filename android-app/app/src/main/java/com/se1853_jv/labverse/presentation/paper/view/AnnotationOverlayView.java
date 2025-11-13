@@ -39,6 +39,12 @@ public class AnnotationOverlayView extends View {
     private final List<Highlight> highlights = new ArrayList<>();
 
     private int currentPage = 0;
+    
+    // PDF page dimensions and position for coordinate conversion
+    private float pdfPageWidth = 0f;
+    private float pdfPageHeight = 0f;
+    private float pdfPageOffsetX = 0f;
+    private float pdfPageOffsetY = 0f;
 
     private float density;
     
@@ -99,6 +105,18 @@ public class AnnotationOverlayView extends View {
         this.currentPage = currentPage;
         invalidate();
     }
+    
+    /**
+     * Update PDF page position and size for coordinate conversion
+     * This should be called when PDF scrolls or page changes
+     */
+    public void updatePdfPageInfo(float pageWidth, float pageHeight, float offsetX, float offsetY) {
+        this.pdfPageWidth = pageWidth;
+        this.pdfPageHeight = pageHeight;
+        this.pdfPageOffsetX = offsetX;
+        this.pdfPageOffsetY = offsetY;
+        invalidate();
+    }
 
     public void setNotes(List<Note> newNotes) {
         notes.clear();
@@ -135,8 +153,8 @@ public class AnnotationOverlayView extends View {
 
         for (Highlight highlight : highlights) {
             if (highlight.getPageNumber() != currentPage) continue;
-            float x = toAbsolute(highlight.getCoordinationX(), getWidth());
-            float y = toAbsolute(highlight.getCoordinationY(), getHeight());
+            float x = toAbsoluteOnScreen(highlight.getCoordinationX(), pdfPageWidth, pdfPageOffsetX);
+            float y = toAbsoluteOnScreen(highlight.getCoordinationY(), pdfPageHeight, pdfPageOffsetY);
             try {
                 highlightPaint.setColor(Color.parseColor(highlight.getColorCode()));
             } catch (IllegalArgumentException ignored) {
@@ -149,8 +167,8 @@ public class AnnotationOverlayView extends View {
 
         for (Note note : notes) {
             if (note.getPageNumber() != currentPage) continue;
-            float x = toAbsolute(note.getCoordinationX(), getWidth());
-            float y = toAbsolute(note.getCoordinationY(), getHeight());
+            float x = toAbsoluteOnScreen(note.getCoordinationX(), pdfPageWidth, pdfPageOffsetX);
+            float y = toAbsoluteOnScreen(note.getCoordinationY(), pdfPageHeight, pdfPageOffsetY);
             
             String noteContent = note.getContent();
             if (noteContent == null || noteContent.isEmpty()) {
@@ -170,6 +188,18 @@ public class AnnotationOverlayView extends View {
     
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        // If view is clickable (placement mode), let the touch listener in Activity handle it
+        // by returning false to pass through to setOnTouchListener
+        // Note: setOnTouchListener is called before onTouchEvent, but if onTouchEvent returns
+        // false, the event will still pass through to underlying views
+        if (isClickable()) {
+            // In placement mode, pass through to Activity's touch listener
+            // The listener will handle placement touch and return true/false accordingly
+            return false;
+        }
+        
+        // Only handle touch events if we have a listener and it's a tap on a note
+        // When not in placement mode, check if tap is on a note
         if (event.getAction() == MotionEvent.ACTION_UP && onNoteClickListener != null) {
             float x = event.getX();
             float y = event.getY();
@@ -177,8 +207,8 @@ public class AnnotationOverlayView extends View {
             // Check if tap is on any note (now text with background rectangle)
             for (Note note : notes) {
                 if (note.getPageNumber() != currentPage) continue;
-                float noteX = toAbsolute(note.getCoordinationX(), getWidth());
-                float noteY = toAbsolute(note.getCoordinationY(), getHeight());
+                float noteX = toAbsoluteOnScreen(note.getCoordinationX(), pdfPageWidth, pdfPageOffsetX);
+                float noteY = toAbsoluteOnScreen(note.getCoordinationY(), pdfPageHeight, pdfPageOffsetY);
                 
                 String noteContent = note.getContent();
                 if (noteContent == null || noteContent.isEmpty()) {
@@ -201,16 +231,42 @@ public class AnnotationOverlayView extends View {
                 if (x >= textLeft - padding && x <= textRight + padding && 
                     y >= textTop - padding && y <= textBottom + padding) {
                     onNoteClickListener.onNoteClick(note);
-                    return true;
+                    return true; // Consume event only when tapping on a note
                 }
             }
         }
-        return super.onTouchEvent(event);
+        // Return false to allow touch events to pass through to PDFView for scrolling
+        return false;
     }
 
-    private float toAbsolute(Long normalized, int max) {
-        if (normalized == null) return 0f;
-        return (normalized / 10000f) * max;
+    /**
+     * Convert normalized coordinate (0-10000) to absolute screen coordinate
+     * Based on PDF page position and size
+     * normalized: coordinate relative to PDF page (0-10000)
+     * pageDimension: size of PDF page in screen coordinates
+     * pageOffset: offset of PDF page in screen coordinates
+     */
+    private float toAbsoluteOnScreen(Long normalized, float pageDimension, float pageOffset) {
+        if (normalized == null || pageDimension == 0f) {
+            // Fallback: if page info not available, use simple conversion
+            return (normalized != null ? (normalized / 10000f) * getWidth() : 0f);
+        }
+        // Convert normalized (0-10000) to PDF page coordinate (0-pageDimension)
+        float pageCoord = (normalized / 10000f) * pageDimension;
+        // Add page offset to get screen coordinate
+        return pageCoord + pageOffset;
+    }
+    
+    /**
+     * Convert screen coordinate to normalized coordinate (0-10000) based on PDF page
+     */
+    public float toNormalizedFromScreen(float screenCoord, float pageDimension, float pageOffset) {
+        if (pageDimension == 0f) return 0f;
+        // Subtract page offset to get PDF page coordinate
+        float pageCoord = screenCoord - pageOffset;
+        // Convert to normalized (0-10000)
+        return (pageCoord / pageDimension) * 10000f;
     }
 }
+
 

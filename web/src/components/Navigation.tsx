@@ -26,9 +26,9 @@ const Navigation = () => {
             <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-smooth">
               Sign In
             </Link>
-            <Link to="/auth">
+            {/* <Link to="/auth">
               <Button className="transition-smooth">Get Started</Button>
-            </Link>
+            </Link> */}
           </div>
 
           {/* Mobile Menu Button */}
