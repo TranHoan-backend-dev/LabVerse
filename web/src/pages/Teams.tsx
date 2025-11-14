@@ -17,7 +17,6 @@ import {
     getTeams,
     createTeam,
     deleteTeam,
-    type TeamResponse
 } from "@/services/team.service";
 import {
     DropdownMenu,
@@ -25,6 +24,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TeamResponse } from "@/types/team.types";
 
 const Teams = () => {
     const {user} = useAuth();
@@ -231,9 +231,9 @@ const Teams = () => {
                                 />
                             </div>
                             <Select
-                                value={privacyFilter}
-                                onValueChange={(value: 'PUBLIC' | 'PRIVATE' | '') => {
-                                    setPrivacyFilter(value);
+                                value={privacyFilter === '' ? 'ALL' : privacyFilter}
+                                onValueChange={(value: string) => {
+                                    setPrivacyFilter(value === 'ALL' ? '' : (value as 'PUBLIC' | 'PRIVATE'));
                                     setPage(0);
                                 }}
                             >
@@ -241,7 +241,7 @@ const Teams = () => {
                                     <SelectValue placeholder="All teams"/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">All teams</SelectItem>
+                                    <SelectItem value="ALL">All teams</SelectItem>
                                     <SelectItem value="PUBLIC">Public</SelectItem>
                                     <SelectItem value="PRIVATE">Private</SelectItem>
                                 </SelectContent>
