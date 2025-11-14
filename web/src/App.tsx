@@ -15,7 +15,7 @@ import Profile from "./pages/profile/Profile";
 import Discover from "./pages/Discover";
 import ReadingLists from "./pages/ReadingLists";
 import Teams from "./pages/Teams";
-import NotFound from "./pages/NotFound";
+import NotFound from "./components/NotFound";
 
 const queryClient = new QueryClient();
 
