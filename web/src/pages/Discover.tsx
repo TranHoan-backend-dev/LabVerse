@@ -3,7 +3,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {BookOpen, Sparkles, TrendingUp, Lightbulb} from "lucide-react";
 import {Helmet} from "react-helmet-async";
 import {useState} from "react";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 
 const pageSize = 2; // số phần tử mỗi trang cho từng section
 

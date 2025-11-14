@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from "react-helmet-async";
 import { getPaperDetails, addFavorite, removeFavorite } from "@/services/paper.service.ts";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import PaperDetailsHeader from "./components/PaperDetailsHeader";
 import PaperDetailsMainContent from "./components/PaperDetailsMainContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

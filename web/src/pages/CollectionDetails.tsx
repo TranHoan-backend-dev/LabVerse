@@ -7,7 +7,7 @@ import {FileText, Users, BarChart3, Plus} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import {
     getCollectionById,
     getPapersInCollection,
@@ -188,7 +188,7 @@ const CollectionDetails = () => {
     const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
         const existingPaperIds = papers?.map(p => p.paperId) || [];
-        return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
+        return paperSearchData.data.content.filter((paper) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
 
     // Client-side pagination for dialog (10 papers per page)
