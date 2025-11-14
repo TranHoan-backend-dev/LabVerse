@@ -54,6 +54,47 @@ public class CollectionServiceImpl implements CollectionService {
                 throw new IllegalArgumentException("User ID is required to create collection");
             }
 
+            // Verify user has PI role to create collection
+            String userId = IdEncoder.decode(request.getUserId());
+            try {
+                String encodedUserId = IdEncoder.encode(userId);
+                var userResponse = userServiceClient.getUserById(encodedUserId);
+                
+                if (userResponse == null || userResponse.getData() == null) {
+                    throw new BadRequestException("User not found");
+                }
+                
+                Object data = userResponse.getData();
+                String userRole = null;
+                
+                // Handle different response types
+                if (data instanceof Map) {
+                    Map<String, Object> userMap = (Map<String, Object>) data;
+                    userRole = (String) userMap.get("role");
+                } else {
+                    // Try to use reflection or handle as UserResponse object
+                    try {
+                        java.lang.reflect.Method getRoleMethod = data.getClass().getMethod("getRole");
+                        Object roleObj = getRoleMethod.invoke(data);
+                        userRole = roleObj != null ? roleObj.toString() : null;
+                    } catch (Exception e) {
+                        log.warn("Cannot extract role from user response: {}", e.getMessage());
+                    }
+                }
+                
+                if (userRole == null || !"PI".equalsIgnoreCase(userRole.trim())) {
+                    throw new BadRequestException("Only users with PI role can create collections");
+                }
+            } catch (BadRequestException e) {
+                throw e; // Re-throw BadRequestException as is
+            } catch (FeignException.NotFound e) {
+                log.error("User not found when creating collection: {}", userId);
+                throw new BadRequestException("User not found");
+            } catch (Exception e) {
+                log.error("Error verifying user role when creating collection: {}", e.getMessage(), e);
+                throw new BadRequestException("Unable to verify user permissions");
+            }
+
             // Kiểm tra trùng tên, nếu trùng thì thêm (1), (2)
             String baseName = request.getName().trim();
             String newName = baseName;
@@ -72,7 +113,7 @@ public class CollectionServiceImpl implements CollectionService {
             Collection saved = collectionRepository.save(entity);
 
             // Automatically add creator as author (isAuthor = true)
-            String userId = IdEncoder.decode(request.getUserId());
+            // Note: userId was already decoded above for role verification
             CollectionUserId compositeId = new CollectionUserId();
             compositeId.setCollectionId(saved.getId());
             compositeId.setMemberId(userId);
@@ -461,35 +502,43 @@ public class CollectionServiceImpl implements CollectionService {
                         if (data instanceof Map) {
                             Map<String, Object> userMap = (Map<String, Object>) data;
                             String fullName = (String) userMap.get("fullName");
+                            String email = (String) userMap.get("email");
                             String avatarUrl = (String) userMap.get("avatarUrl");
                             response.setCreatorName(fullName != null ? fullName : null);
+                            response.setCreatorEmail(email != null ? email : null);
                             response.setCreatorAvatarUrl(avatarUrl != null ? avatarUrl : null);
                         } else {
                             // Try to use reflection or handle as UserResponse object
                             log.warn("Unexpected user data type for creator ID {}: {}", creatorId, data.getClass().getName());
                             response.setCreatorName(null);
+                            response.setCreatorEmail(null);
                             response.setCreatorAvatarUrl(null);
                         }
                     } else {
                         response.setCreatorName(null);
+                        response.setCreatorEmail(null);
                         response.setCreatorAvatarUrl(null);
                     }
                 } catch (FeignException.NotFound e) {
                     log.warn("User not found for creator ID {}: {}", creatorId, e.getMessage());
                     response.setCreatorName(null);
+                    response.setCreatorEmail(null);
                     response.setCreatorAvatarUrl(null);
                 } catch (Exception e) {
                     log.warn("Error fetching user info for creator ID {}: {}", creatorId, e.getMessage());
                     response.setCreatorName(null);
+                    response.setCreatorEmail(null);
                     response.setCreatorAvatarUrl(null);
                 }
             } else {
                 response.setCreatorName(null);
+                response.setCreatorEmail(null);
                 response.setCreatorAvatarUrl(null);
             }
         } catch (Exception e) {
             log.warn("Error setting creator info for collection {}: {}", collectionId, e.getMessage());
             response.setCreatorName(null);
+            response.setCreatorEmail(null);
             response.setCreatorAvatarUrl(null);
         }
     }
@@ -825,6 +874,11 @@ public class CollectionServiceImpl implements CollectionService {
                     encodedCollectionId, encodedPaperId, e.getMessage(), e);
             // Don't throw exception - this is a background operation
         }
+    }
+
+    @Override
+    public long getTotalCollectionsCount() {
+        return collectionRepository.count();
     }
 
     private void storeToFirestore(CollectionResponse response) {

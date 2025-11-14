@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Separator} from "@/components/ui/separator";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {GoogleSignInButton} from "@/components/GoogleSignInButton";
+import {Eye, EyeOff} from "lucide-react";
 
 type Props = {
     isLoading: boolean;
@@ -14,6 +15,8 @@ type Props = {
 };
 
 const SignUpForm: React.FC<Props> = ({isLoading, roleName, onRoleChange, onSubmit}) => {
+    const [showPassword, setShowPassword] = useState(false);
+    
     return (
         <div className="space-y-4">
             <GoogleSignInButton isLoading={isLoading} disabled={isLoading} />
@@ -79,14 +82,23 @@ const SignUpForm: React.FC<Props> = ({isLoading, roleName, onRoleChange, onSubmi
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                        id="signup-password"
-                        name="password"
-                        type="password"
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                    />
+                    <div className="relative">
+                        <Input
+                            id="signup-password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            required
+                            minLength={6}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                        >
+                            {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                        </button>
+                    </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}

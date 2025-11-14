@@ -77,13 +77,9 @@ const RecentlyReadCard = ({
           <Progress value={progressPercentage} className="h-3" />
           {last_read_page !== null && last_read_page !== undefined && last_read_page > 0 && (
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              {total_pages ? (
-                <span>Trang {last_read_page} / {total_pages}</span>
-              ) : (
-                <span>Trang {last_read_page}</span>
-              )}
+              <span>Page {last_read_page}{total_pages ? ` / ${total_pages}` : ''}</span>
               {progressPercentage > 0 && (
-                <span>{Math.round(progressPercentage)}% hoàn thành</span>
+                <span>{Math.round(progressPercentage)}% completed</span>
               )}
             </div>
           )}

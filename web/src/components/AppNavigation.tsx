@@ -10,8 +10,8 @@ const AppNavigation = () => {
     const navItems = [
         { path: "/dashboard", label: "Library", icon: BookOpen },
         { path: "/collections", label: "Collections", icon: Users },
-        { path: "/reading-lists", label: "Reading Lists", icon: BookMarked },
-        { path: "/teams", label: "Teams", icon: UserPlus },
+        // { path: "/reading-lists", label: "Reading Lists", icon: BookMarked },
+        // { path: "/teams", label: "Teams", icon: UserPlus },
         { path: "/discover", label: "Discover", icon: Compass },
     ];
 

@@ -6,7 +6,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Separator} from "@/components/ui/separator";
-import {BookOpen} from "lucide-react";
+import {BookOpen, Eye, EyeOff} from "lucide-react";
 import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
@@ -21,6 +21,8 @@ const Auth = () => {
     const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
     const [showOtpDialog, setShowOtpDialog] = useState(false);
     const [pendingEmail, setPendingEmail] = useState<string>("");
+    const [showSignInPassword, setShowSignInPassword] = useState(false);
+    const [showSignUpPassword, setShowSignUpPassword] = useState(false);
     const {signIn, signUp, user} = useAuth();
     const navigate = useNavigate();
 
@@ -157,13 +159,22 @@ const Auth = () => {
                                                     Forgot password?
                                                 </button>
                                             </div>
-                                            <Input
-                                                id="signin-password"
-                                                name="password"
-                                                type="password"
-                                                placeholder="••••••••"
-                                                required
-                                            />
+                                            <div className="relative">
+                                                <Input
+                                                    id="signin-password"
+                                                    name="password"
+                                                    type={showSignInPassword ? "text" : "password"}
+                                                    placeholder="••••••••"
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowSignInPassword(!showSignInPassword)}
+                                                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                                                >
+                                                    {showSignInPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                                                </button>
+                                            </div>
                                         </div>
                                         <Button type="submit" className="w-full" disabled={isLoading}>
                                             {isLoading ? "Signing in..." : "Sign In"}
@@ -231,14 +242,23 @@ const Auth = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="signup-password">Password</Label>
-                                            <Input
-                                                id="signup-password"
-                                                name="password"
-                                                type="password"
-                                                placeholder="••••••••"
-                                                required
-                                                minLength={6}
-                                            />
+                                            <div className="relative">
+                                                <Input
+                                                    id="signup-password"
+                                                    name="password"
+                                                    type={showSignUpPassword ? "text" : "password"}
+                                                    placeholder="••••••••"
+                                                    required
+                                                    minLength={6}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                                                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                                                >
+                                                    {showSignUpPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                                                </button>
+                                            </div>
                                         </div>
                                         <Button type="submit" className="w-full" disabled={isLoading}>
                                             {isLoading ? "Creating account..." : "Create Account"}

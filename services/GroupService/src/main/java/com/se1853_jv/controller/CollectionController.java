@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/collections")
 @RequiredArgsConstructor
@@ -96,5 +98,11 @@ public class CollectionController {
             @RequestParam("paperId") String encodedPaperId) {
         collectionService.recalculatePaperStatus(encodedCollectionId, encodedPaperId);
         return ResponseEntity.ok(WrapperApiResponse.success("Paper status recalculated successfully"));
+    }
+    
+    @GetMapping("/internal/statistics")
+    public ResponseEntity<WrapperApiResponse> getStatistics() {
+        long totalCollections = collectionService.getTotalCollectionsCount();
+        return ResponseEntity.ok(WrapperApiResponse.success(Map.of("totalCollections", totalCollections)));
     }
 }

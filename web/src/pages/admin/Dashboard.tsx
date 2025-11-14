@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, FileText, FolderOpen, BarChart3, Shield, TrendingUp, Activity } from "lucide-react";
-import Header from "@/pages/Header";
 import AdminRoute from "@/components/AdminRoute";
 import UserManagement from "./components/UserManagement";
 import CollectionManagement from "./components/CollectionManagement";
 import StatisticsDashboard from "./components/StatisticsDashboard";
 import { getAdminStatistics } from "@/services/admin.service";
 import { Helmet } from "react-helmet-async";
+import Header from "@/components/Header";
 
 const AdminDashboard = () => {
     const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({

@@ -12,6 +12,7 @@ public class CollectionResponse {
     private Long paperCount;
     private Long memberCount;
     private String creatorName;
+    private String creatorEmail;
     private String creatorAvatarUrl;
     private AccessLevel currentUserAccessLevel; // Access level of the current user in this collection
 

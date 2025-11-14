@@ -6,18 +6,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/dashboard/Dashboard";
 import PaperDetail from "./pages/paper/PaperDetail";
-import Collections from "./pages/Collections";
-import CollectionDetails from "./pages/CollectionDetails";
 import Profile from "./pages/profile/Profile";
 import Discover from "./pages/Discover";
-import ReadingLists from "./pages/ReadingLists";
-import Teams from "./pages/Teams";
-import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./components/NotFound";
-
+import Teams from "./pages/team/Teams";
+import ReadingLists from "./pages/reading-list/ReadingLists";
+import Collections from "./pages/collection/Collections";
+import Auth from "./pages/auth/Auth";
+import CollectionDetails from "./pages/collection/CollectionDetails";
+import AdminDashBoard from "./pages/collection/CollectionDetails";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 

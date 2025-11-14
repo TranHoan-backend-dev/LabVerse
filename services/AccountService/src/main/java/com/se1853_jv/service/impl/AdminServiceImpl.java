@@ -14,7 +14,12 @@ import com.se1853_jv.repository.TeamMemberRepository;
 import com.se1853_jv.repository.TeamRepository;
 import com.se1853_jv.repository.UserRepository;
 import com.se1853_jv.service.AdminService;
+import com.se1853_jv.service.GroupServiceClient;
+import com.se1853_jv.service.PaperServiceClient;
 import com.se1853_jv.util.IdEncoder;
+import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,23 +27,33 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 public class AdminServiceImpl implements AdminService {
+    
+    private static final Logger log = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final PaperServiceClient paperServiceClient;
+    private final GroupServiceClient groupServiceClient;
 
     @Autowired
     public AdminServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            TeamRepository teamRepository,
-                           TeamMemberRepository teamMemberRepository) {
+                           TeamMemberRepository teamMemberRepository,
+                           PaperServiceClient paperServiceClient,
+                           GroupServiceClient groupServiceClient) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.teamRepository = teamRepository;
         this.teamMemberRepository = teamMemberRepository;
+        this.paperServiceClient = paperServiceClient;
+        this.groupServiceClient = groupServiceClient;
     }
 
     @Override
@@ -168,10 +183,49 @@ public class AdminServiceImpl implements AdminService {
         Long publicTeams = teamRepository.countPublicTeams() != null ? teamRepository.countPublicTeams() : 0L;
         Long privateTeams = teamRepository.countPrivateTeams() != null ? teamRepository.countPrivateTeams() : 0L;
         
-        // Papers and collections would need to call other services
-        Long totalPapers = 0L; // TODO: Call PaperService
-        Long papersThisMonth = 0L; // TODO: Call PaperService
-        Long totalCollections = 0L; // TODO: Call GroupService
+        // Get papers statistics from PaperService
+        Long totalPapers = 0L;
+        Long papersThisMonth = 0L;
+        try {
+            var paperStatsResponse = paperServiceClient.getPaperStatistics();
+            if (paperStatsResponse != null && paperStatsResponse.getData() != null) {
+                Object data = paperStatsResponse.getData();
+                if (data instanceof Map) {
+                    Map<String, Object> statsMap = (Map<String, Object>) data;
+                    if (statsMap.get("totalPapers") instanceof Number) {
+                        totalPapers = ((Number) statsMap.get("totalPapers")).longValue();
+                    }
+                    if (statsMap.get("papersThisMonth") instanceof Number) {
+                        papersThisMonth = ((Number) statsMap.get("papersThisMonth")).longValue();
+                    }
+                }
+            }
+        } catch (FeignException e) {
+            log.error("Error calling PaperService for statistics: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error getting paper statistics: {}", e.getMessage(), e);
+        }
+        
+        // Get collections statistics from GroupService
+        Long totalCollections = 0L;
+        try {
+            var collectionStatsResponse = groupServiceClient.getCollectionStatistics();
+            if (collectionStatsResponse != null && collectionStatsResponse.getData() != null) {
+                Object data = collectionStatsResponse.getData();
+                if (data instanceof Map) {
+                    Map<String, Object> statsMap = (Map<String, Object>) data;
+                    if (statsMap.get("totalCollections") instanceof Number) {
+                        totalCollections = ((Number) statsMap.get("totalCollections")).longValue();
+                    }
+                }
+            }
+        } catch (FeignException e) {
+            log.error("Error calling GroupService for statistics: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error getting collection statistics: {}", e.getMessage(), e);
+        }
+        
+        // Reading lists would need to call ReadingService
         Long totalReadingLists = 0L; // TODO: Call ReadingService
 
         return new OverviewStatisticsResponse(
