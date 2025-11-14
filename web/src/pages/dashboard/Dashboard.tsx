@@ -11,8 +11,10 @@ import { getPaginatedPapers, importPaper, getFavoritePapers } from "@/services/p
 import Header from "@/components/Header";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
-import { CreatePaperRequest } from "@/types/paper.type";
+import { CreatePaperRequest } from "@/types/paper.types";
 import { getWorkflowsByUser } from "@/services/progress.service";
+import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -53,7 +55,7 @@ const Dashboard = () => {
                 // Apply search filter if provided
                 if (searchQuery) {
                     const searchLower = searchQuery.toLowerCase();
-                    favorites = favorites.filter((paper: any) =>
+                    favorites = favorites.filter((paper) =>
                         paper.title?.toLowerCase().includes(searchLower) ||
                         paper.authors?.toLowerCase().includes(searchLower) ||
                         paper.journal?.toLowerCase().includes(searchLower)
@@ -62,22 +64,22 @@ const Dashboard = () => {
 
                 // Apply filters
                 if (filters.author) {
-                    favorites = favorites.filter((paper: any) =>
+                    favorites = favorites.filter((paper) =>
                         paper.authors?.toLowerCase().includes(filters.author.toLowerCase())
                     );
                 }
                 if (filters.journal) {
-                    favorites = favorites.filter((paper: any) =>
+                    favorites = favorites.filter((paper) =>
                         paper.journal?.toLowerCase().includes(filters.journal.toLowerCase())
                     );
                 }
                 if (filters.yearFrom) {
-                    favorites = favorites.filter((paper: any) =>
+                    favorites = favorites.filter((paper) =>
                         paper.publicationYear >= parseInt(filters.yearFrom)
                     );
                 }
                 if (filters.yearTo) {
-                    favorites = favorites.filter((paper: any) =>
+                    favorites = favorites.filter((paper) =>
                         paper.publicationYear <= parseInt(filters.yearTo)
                     );
                 }

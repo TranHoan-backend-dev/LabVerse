@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { TeamResponse } from '@/services/team.service';
+import { TeamResponse } from '@/types/team.types';
 
 type Props = {
     team: TeamResponse;

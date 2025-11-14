@@ -97,7 +97,7 @@ class PaperController(
         @RequestParam authors: String,
         @RequestParam journal: String,
         @RequestParam publicationYear: Int,
-        @RequestParam doi: String,
+        @RequestParam(required = false) doi: String,
         @RequestParam(required = false) description: String?,
         @RequestParam(required = false) keywords: String?,
         @RequestParam(required = false) tags: String?,
