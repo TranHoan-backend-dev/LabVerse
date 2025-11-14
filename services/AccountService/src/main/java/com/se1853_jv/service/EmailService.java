@@ -48,6 +48,17 @@ public class EmailService {
     }
 
     /**
+     * Send OTP verification email
+     */
+    public void sendOtpEmail(String toEmail, String fullName, String otpCode) throws MessagingException {
+        String content = "Thank you for registering with LabVerse!<br><br>"
+                + "Your verification code is: <strong style='font-size: 24px; color: #2563eb; letter-spacing: 2px;'>" + otpCode + "</strong><br><br>"
+                + "This code will expire in 10 minutes.<br><br>"
+                + "If you didn't request this code, please ignore this email.";
+        sendEmail(toEmail, fullName, "LabVerse - Email Verification Code", content);
+    }
+
+    /**
      * Common email template
      */
     private String buildEmailTemplate(String fullName, String content) {

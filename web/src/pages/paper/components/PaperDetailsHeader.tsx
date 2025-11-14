@@ -5,10 +5,10 @@ interface PaperDetailsHeaderProps {
     paper: {
         id: string;
         title: string;
-        is_favorite: boolean;
+        isFavorite: boolean;
     };
     toggleFavoriteMutation: {
-        mutate: (is_favorite: boolean) => void;
+        mutate: (isFavorite: boolean) => void;
     };
     deleteMutation: {
         mutate: () => void;
@@ -29,10 +29,10 @@ const PaperDetailsHeader = ({
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => toggleFavoriteMutation.mutate(paper.is_favorite)}
+                    onClick={() => toggleFavoriteMutation.mutate(paper.isFavorite)}
                 >
                     <Star
-                        className={`h-5 w-5 ${paper.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                        className={`h-5 w-5 ${paper.isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
                     />
                 </Button>
                 <Button

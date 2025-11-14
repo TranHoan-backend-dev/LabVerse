@@ -4,6 +4,7 @@ import com.se1853_jv.dto.request.ForgotPasswordRequest;
 import com.se1853_jv.dto.request.GoogleLoginRequest;
 import com.se1853_jv.dto.request.LoginRequest;
 import com.se1853_jv.dto.request.RegisterRequest;
+import com.se1853_jv.dto.request.VerifyOtpRequest;
 import com.se1853_jv.dto.response.WrapperApiResponse;
 import com.se1853_jv.service.AuthService;
 import jakarta.validation.Valid;
@@ -27,7 +28,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<WrapperApiResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        return ResponseEntity.ok(WrapperApiResponse.success(authService.register(registerRequest)));
+        authService.register(registerRequest);
+        return ResponseEntity.ok(WrapperApiResponse.success("Verification code has been sent to your email", null));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<WrapperApiResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest verifyOtpRequest) {
+        return ResponseEntity.ok(WrapperApiResponse.success(authService.verifyOtp(verifyOtpRequest)));
     }
 
     @PostMapping("/login")
