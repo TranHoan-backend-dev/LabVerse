@@ -99,55 +99,77 @@ const PaperDetail = () => {
     const createPersonalLibraryMutation = useMutation({
         mutationFn: async () => {
             if (!user?.id) throw new Error('User not logged in');
-            return await createCollection('Personal Library', user.id);
+            const result = await createCollection('Personal Library', user.id);
+            // Invalidate collections query to refresh
+            queryClient.invalidateQueries({ queryKey: ['collections', 'my', user.id] });
+            return result;
+        },
+        onSuccess: () => {
+            console.log('Personal Library created successfully');
         },
     });
 
     // Get collectionId - use personal library or first collection
     const collectionId = useMemo(() => {
         if (personalLibraryCollection) return personalLibraryCollection.id;
-        // If no collections, create personal library
-        if (myCollections?.content && myCollections.content.length === 0 && user?.id) {
+        // If no collections, create personal library immediately
+        if (myCollections?.content && myCollections.content.length === 0 && user?.id && !createPersonalLibraryMutation.isPending) {
             createPersonalLibraryMutation.mutate();
         }
         return null;
-    }, [personalLibraryCollection, myCollections, user?.id]);
+    }, [personalLibraryCollection, myCollections, user?.id, createPersonalLibraryMutation]);
 
     const updateProgressMutation = useMutation({
-        mutationFn: async ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => {
-            if (!user?.id || !paper?.id || !collectionId) {
-                throw new Error('Missing required fields');
+        mutationFn: async ({ 
+            pageNumber, 
+            totalPages, 
+            collectionId: providedCollectionId 
+        }: { 
+            pageNumber: number; 
+            totalPages: number;
+            collectionId?: string;
+        }) => {
+            const currentCollectionId = providedCollectionId || collectionId;
+            
+            if (!user?.id || !paper?.id || !currentCollectionId) {
+                throw new Error('Missing required fields: user, paper, or collectionId');
             }
 
             // Calculate progress percentage
             const progress = totalPages > 0 ? Math.round((pageNumber / totalPages) * 100) : 0;
 
+            console.log(`Updating progress: page ${pageNumber}/${totalPages} (${progress}%) for paper ${paper.id} in collection ${currentCollectionId}`);
+
             // Try to update existing workflow, if fails create new one
             try {
                 await updateReadingProgress({
-                    collectionId,
+                    collectionId: currentCollectionId,
                     paperId: paper.id,
                     usersid: user.id,
                     lastPage: pageNumber,
                     progress: Math.min(100, Math.max(0, progress))
                 });
+                console.log('Progress updated successfully');
             } catch (error: any) {
                 // If workflow doesn't exist, create it first
                 if (error.message?.includes('not found') || error.message?.includes('404')) {
+                    console.log('Workflow not found, creating new one...');
                     await createReadingWorkflow({
-                        collectionId,
+                        collectionId: currentCollectionId,
                         paperId: paper.id,
                         usersid: user.id
                     });
                     // Then update progress
                     await updateReadingProgress({
-                        collectionId,
+                        collectionId: currentCollectionId,
                         paperId: paper.id,
                         usersid: user.id,
                         lastPage: pageNumber,
                         progress: Math.min(100, Math.max(0, progress))
                     });
+                    console.log('Workflow created and progress updated');
                 } else {
+                    console.error('Error updating progress:', error);
                     throw error;
                 }
             }
@@ -160,9 +182,53 @@ const PaperDetail = () => {
         },
     });
 
-    const handleProgressUpdate = (pageNumber: number, totalPages: number) => {
-        if (collectionId) {
-            updateProgressMutation.mutate({ pageNumber, totalPages });
+    const handleProgressUpdate = async (pageNumber: number, totalPages: number) => {
+        // If no collectionId, try to get or create one first
+        let currentCollectionId = collectionId;
+        
+        if (!currentCollectionId) {
+            // Wait for collections to load
+            if (!myCollections?.content) {
+                console.warn('Collections not loaded yet, cannot save progress');
+                return;
+            }
+            
+            // Try to find Personal Library or use first collection
+            let collection = myCollections.content.find(c => c.name === 'Personal Library');
+            if (!collection && myCollections.content.length > 0) {
+                collection = myCollections.content[0];
+            }
+            
+            // If still no collection, create Personal Library
+            if (!collection) {
+                try {
+                    if (!user?.id) {
+                        console.error('User not logged in');
+                        return;
+                    }
+                    const newCollection = await createCollection('Personal Library', user.id);
+                    currentCollectionId = newCollection.id;
+                    // Refresh collections query
+                    queryClient.invalidateQueries({ queryKey: ['collections', 'my', user.id] });
+                    console.log('Created Personal Library for progress tracking');
+                } catch (error) {
+                    console.error('Failed to create Personal Library:', error);
+                    return;
+                }
+            } else {
+                currentCollectionId = collection.id;
+            }
+        }
+        
+        if (currentCollectionId) {
+            // Update mutation to use current collectionId
+            updateProgressMutation.mutate({ 
+                pageNumber, 
+                totalPages,
+                collectionId: currentCollectionId 
+            });
+        } else {
+            console.error('Cannot save progress: no collectionId available');
         }
     };
 
