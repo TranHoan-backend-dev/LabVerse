@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useLocation} from "react-router-dom";
-import {BookOpen, Users, BookMarked, Compass} from "lucide-react";
+import {BookOpen, Users, BookMarked, Compass, Shield} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {useAuth} from "@/contexts/AuthContext.tsx";
 import AppNavigation from "@/components/AppNavigation.tsx";
@@ -41,6 +41,7 @@ const Header = () => {
 
 const MobileNavigation = () => {
     const location = useLocation();
+    const { user } = useAuth();
 
     const navItems = [
         { path: "/dashboard", label: "Library", icon: BookOpen },
@@ -48,6 +49,11 @@ const MobileNavigation = () => {
         { path: "/reading-lists", label: "Reading Lists", icon: BookMarked },
         { path: "/discover", label: "Discover", icon: Compass },
     ];
+
+    // Add Admin link if user is admin
+    if (user?.role === "ADMIN") {
+        navItems.push({ path: "/admin", label: "Admin", icon: Shield });
+    }
 
     const isActive = (path: string) => {
         if (path === "/dashboard") {
