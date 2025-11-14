@@ -264,7 +264,7 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                     <CardDescription>Individual reading progress for each team member</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {progressData.teamMemberProgress.length === 0 ? (
+                    {!progressData.teamMemberProgress || progressData.teamMemberProgress.length === 0 ? (
                         <p className="text-center text-muted-foreground py-8">
                             No team member progress data available
                         </p>

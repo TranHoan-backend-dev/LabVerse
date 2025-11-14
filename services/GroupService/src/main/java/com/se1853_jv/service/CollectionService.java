@@ -37,5 +37,11 @@ public interface CollectionService {
      * This is called after ReadingWorkflow is updated to keep collection status in sync
      */
     void recalculatePaperStatus(String encodedCollectionId, String encodedPaperId);
+    
+    /**
+     * Get total count of collections
+     * Used by admin service for statistics
+     */
+    long getTotalCollectionsCount();
 }
 

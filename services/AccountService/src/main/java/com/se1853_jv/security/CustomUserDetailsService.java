@@ -25,6 +25,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
+        // Check if user account is active
+        if (user.getIsActive() == null || !user.getIsActive()) {
+            throw new UsernameNotFoundException("User account is inactive");
+        }
+
         return UserPrincipal.create(user);
     }
 
@@ -32,6 +37,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserById(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+
+        // Check if user account is active
+        if (user.getIsActive() == null || !user.getIsActive()) {
+            throw new UsernameNotFoundException("User account is inactive");
+        }
 
         return UserPrincipal.create(user);
     }

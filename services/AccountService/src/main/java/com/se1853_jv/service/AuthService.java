@@ -151,6 +151,11 @@ public class AuthService {
         User user = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        // Check if user account is active
+        if (user.getIsActive() == null || !user.getIsActive()) {
+            throw new BadRequestException("Your account has been deactivated. Please contact administrator.");
+        }
+
         // Check if email is verified
         if (user.getEmailVerified() == null || !user.getEmailVerified()) {
             throw new BadRequestException("Please verify your email before logging in. Check your inbox for the verification code.");
@@ -205,6 +210,11 @@ public class AuthService {
 
                 user = userRepository.save(user);
             } else {
+                // Check if user account is active
+                if (user.getIsActive() == null || !user.getIsActive()) {
+                    throw new BadRequestException("Your account has been deactivated. Please contact administrator.");
+                }
+
                 // Update existing user if needed
                 if (user.getGoogleId() == null) {
                     user.setGoogleId(googleId);

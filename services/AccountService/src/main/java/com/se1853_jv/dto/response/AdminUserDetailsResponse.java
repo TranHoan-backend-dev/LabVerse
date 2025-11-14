@@ -2,8 +2,7 @@ package com.se1853_jv.dto.response;
 
 import java.time.LocalDate;
 
-public class UserResponse {
-
+public class AdminUserDetailsResponse {
     private String id;
     private String email;
     private String username;
@@ -13,24 +12,17 @@ public class UserResponse {
     private Boolean isActive;
     private LocalDate createdDate;
     private LocalDate updatedDate;
+    private Long paperCount;
+    private Long teamCount;
+    private Long collectionCount;
 
-    public UserResponse() {
+    public AdminUserDetailsResponse() {
     }
 
-    public UserResponse(String id, String email, String username, String fullName, 
-                       String avatarUrl, String role, LocalDate createdDate, LocalDate updatedDate) {
-        this.id = id;
-        this.email = email;
-        this.username = username;
-        this.fullName = fullName;
-        this.avatarUrl = avatarUrl;
-        this.role = role;
-        this.createdDate = createdDate;
-        this.updatedDate = updatedDate;
-    }
-
-    public UserResponse(String id, String email, String username, String fullName, 
-                       String avatarUrl, String role, Boolean isActive, LocalDate createdDate, LocalDate updatedDate) {
+    public AdminUserDetailsResponse(String id, String email, String username, String fullName,
+                                   String avatarUrl, String role, Boolean isActive,
+                                   LocalDate createdDate, LocalDate updatedDate,
+                                   Long paperCount, Long teamCount, Long collectionCount) {
         this.id = id;
         this.email = email;
         this.username = username;
@@ -40,8 +32,12 @@ public class UserResponse {
         this.isActive = isActive;
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
+        this.paperCount = paperCount;
+        this.teamCount = teamCount;
+        this.collectionCount = collectionCount;
     }
 
+    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -90,6 +86,14 @@ public class UserResponse {
         this.role = role;
     }
 
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     public LocalDate getCreatedDate() {
         return createdDate;
     }
@@ -106,15 +110,28 @@ public class UserResponse {
         this.updatedDate = updatedDate;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public Long getPaperCount() {
+        return paperCount;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setPaperCount(Long paperCount) {
+        this.paperCount = paperCount;
+    }
+
+    public Long getTeamCount() {
+        return teamCount;
+    }
+
+    public void setTeamCount(Long teamCount) {
+        this.teamCount = teamCount;
+    }
+
+    public Long getCollectionCount() {
+        return collectionCount;
+    }
+
+    public void setCollectionCount(Long collectionCount) {
+        this.collectionCount = collectionCount;
     }
 }
-
-
-
 

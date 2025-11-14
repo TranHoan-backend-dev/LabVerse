@@ -39,5 +39,21 @@ public interface TeamRepository extends JpaRepository<Team, String> {
             Pageable pageable);
 
     Optional<Team> findByIdAndCreatedById(String teamId, String userId);
+    
+    // Admin queries - get all teams without access restrictions
+    @Query("SELECT t FROM Team t WHERE " +
+           "(:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:privacy IS NULL OR t.privacy = :privacy)")
+    Page<Team> findAllForAdmin(@Param("search") String search,
+                               @Param("privacy") Team.PrivacyType privacy,
+                               Pageable pageable);
+    
+    // Statistics queries
+    @Query("SELECT COUNT(t) FROM Team t WHERE t.privacy = 'PUBLIC'")
+    Long countPublicTeams();
+    
+    @Query("SELECT COUNT(t) FROM Team t WHERE t.privacy = 'PRIVATE'")
+    Long countPrivateTeams();
 }
 

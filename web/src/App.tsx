@@ -16,6 +16,8 @@ import ReadingLists from "./pages/reading-list/ReadingLists";
 import Collections from "./pages/collection/Collections";
 import Auth from "./pages/auth/Auth";
 import CollectionDetails from "./pages/collection/CollectionDetails";
+import AdminDashBoard from "./pages/collection/CollectionDetails";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,7 @@ const App = () => (
             <Route path="/teams" element={<ProtectedRoute><Teams /></ProtectedRoute>} />
             <Route path="/teams/:id" element={<ProtectedRoute><div>Team Details (Coming Soon)</div></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

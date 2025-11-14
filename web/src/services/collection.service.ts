@@ -10,6 +10,7 @@ export interface CollectionResponse {
     paperCount?: number;
     memberCount?: number;
     creatorName?: string;
+    creatorEmail?: string;
     creatorAvatarUrl?: string;
     currentUserAccessLevel?: 'READ_ONLY' | 'CONTRIBUTOR' | 'AUTHOR';
 }
