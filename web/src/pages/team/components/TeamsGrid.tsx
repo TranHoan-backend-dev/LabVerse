@@ -3,7 +3,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Plus, Users} from 'lucide-react';
 import TeamCard from './TeamCard';
-import type { TeamResponse } from '@/services/team.service';
+import { TeamResponse } from '@/types/team.types';
 
 type Props = {
     teams: TeamResponse[];
