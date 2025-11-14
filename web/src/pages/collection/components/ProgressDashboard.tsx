@@ -4,7 +4,7 @@ import {Progress} from "@/components/ui/progress";
 import {Badge} from "@/components/ui/badge";
 import {Loader2, Users, FileText, BookOpen, CheckCircle2, Clock} from "lucide-react";
 import {getCollectionProgress, type CollectionProgressStatisticsResponse} from "@/services/progress.service";
-import {getCollectionMembers, type CollectionUserResponse} from "@/services/collection.service";
+import {getCollectionMembers, getPapersInCollection, type CollectionUserResponse, type CollectionPaperDetailResponse} from "@/services/collection.service";
 import {
     Table,
     TableBody,
@@ -20,11 +20,20 @@ interface ProgressDashboardProps {
 }
 
 const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
-    const {data: progressData, isLoading, error} = useQuery({
+    // Fetch actual papers in collection
+    const {data: papers, isLoading: isLoadingPapers} = useQuery({
+        queryKey: ['collection-papers', collectionId],
+        queryFn: () => getPapersInCollection(collectionId),
+    });
+
+    // Fetch progress data from workflows
+    const {data: progressData, isLoading: isLoadingProgress, error} = useQuery({
         queryKey: ['collection-progress', collectionId],
         queryFn: () => getCollectionProgress(collectionId),
         refetchInterval: 30000, // Refetch every 30 seconds
     });
+
+    const isLoading = isLoadingPapers || isLoadingProgress;
 
     if (isLoading) {
         return (
@@ -44,7 +53,7 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
         );
     }
 
-    if (!progressData) {
+    if (!progressData || !papers) {
         return (
             <Card>
                 <CardContent className="text-center py-12">
@@ -53,6 +62,86 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
             </Card>
         );
     }
+
+    // Recalculate statistics based on actual papers in collection
+    const actualTotalPapers = papers.length;
+    
+    // Calculate status distribution based on papers (not workflows)
+    // Status is calculated automatically by backend based on all members' progress
+    const statusCounts = new Map<string, number>();
+    
+    papers.forEach(paper => {
+        const status = paper.status || 'ToRead';
+        // Normalize status to lowercase for consistency
+        const normalizedStatus = status.toLowerCase();
+        statusCounts.set(normalizedStatus, (statusCounts.get(normalizedStatus) || 0) + 1);
+    });
+
+    // Map normalized statuses to display names
+    const unreadCount = (statusCounts.get('toread') || 0) + (statusCounts.get('unread') || 0);
+    const readingCount = (statusCounts.get('reading') || 0);
+    const finishedCount = (statusCounts.get('finished') || 0);
+
+    // Recalculate average progress based on actual papers in collection
+    // Each paper contributes to average based on its status:
+    // - Finished: 100%
+    // - Reading: average progress from workflows for reading papers (or estimate 50% if no data)
+    // - ToRead/Unread: 0%
+    
+    // Calculate average progress for reading papers from team member progress
+    let readingPapersProgressSum = 0;
+    let readingPapersWithProgress = 0;
+    
+    if (progressData.teamMemberProgress && readingCount > 0) {
+        // Get average progress for reading papers from team member data
+        // We'll estimate reading papers at 50% if we can't get exact data
+        // Or we can use the average from team member progress
+        const allMemberProgress = progressData.teamMemberProgress
+            .filter(member => member.readingCount > 0)
+            .map(member => member.averageProgress);
+        
+        if (allMemberProgress.length > 0) {
+            const avgReadingProgress = allMemberProgress.reduce((sum, p) => sum + p, 0) / allMemberProgress.length;
+            readingPapersProgressSum = readingCount * avgReadingProgress;
+            readingPapersWithProgress = readingCount;
+        } else {
+            // Estimate reading papers at 50% if no data available
+            readingPapersProgressSum = readingCount * 50;
+            readingPapersWithProgress = readingCount;
+        }
+    } else if (readingCount > 0) {
+        // Estimate reading papers at 50% if no team member data
+        readingPapersProgressSum = readingCount * 50;
+        readingPapersWithProgress = readingCount;
+    }
+    
+    // Calculate total progress: finished (100%) + reading (avg) + unread (0%)
+    const totalProgress = (finishedCount * 100) + readingPapersProgressSum + (unreadCount * 0);
+    const correctedAverageProgress = actualTotalPapers > 0 
+        ? totalProgress / actualTotalPapers 
+        : 0;
+
+    // Recalculate status distribution percentages based on actual papers
+    const totalPapersForPercentage = actualTotalPapers || 1;
+    
+    // Create status distribution from actual paper counts
+    const correctedStatusDistribution = [
+        {
+            status: 'ToRead',
+            count: unreadCount,
+            percentage: (unreadCount / totalPapersForPercentage) * 100.0
+        },
+        {
+            status: 'Reading',
+            count: readingCount,
+            percentage: (readingCount / totalPapersForPercentage) * 100.0
+        },
+        {
+            status: 'Finished',
+            count: finishedCount,
+            percentage: (finishedCount / totalPapersForPercentage) * 100.0
+        }
+    ].filter(status => status.count > 0); // Only show statuses that exist
 
     // Create a map of userId to member info for easy lookup
     const memberMap = new Map<string, CollectionUserResponse>();
@@ -100,7 +189,7 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                         <FileText className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{progressData.totalPapers}</div>
+                        <div className="text-2xl font-bold">{actualTotalPapers}</div>
                     </CardContent>
                 </Card>
 
@@ -110,7 +199,7 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                         <Users className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{progressData.totalUsers}</div>
+                        <div className="text-2xl font-bold">{members?.length || progressData.totalUsers || 0}</div>
                     </CardContent>
                 </Card>
 
@@ -120,8 +209,8 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                         <BookOpen className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{progressData.averageProgress.toFixed(1)}%</div>
-                        <Progress value={progressData.averageProgress} className="mt-2"/>
+                        <div className="text-2xl font-bold">{correctedAverageProgress.toFixed(1)}%</div>
+                        <Progress value={correctedAverageProgress} className="mt-2"/>
                     </CardContent>
                 </Card>
 
@@ -131,9 +220,9 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                         <CheckCircle2 className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{progressData.finishedCount}</div>
+                        <div className="text-2xl font-bold">{finishedCount}</div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            of {progressData.totalPapers} papers
+                            of {actualTotalPapers} papers
                         </p>
                     </CardContent>
                 </Card>
@@ -147,7 +236,7 @@ const ProgressDashboard = ({collectionId, members}: ProgressDashboardProps) => {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {progressData.statusDistribution.map((status) => (
+                        {correctedStatusDistribution.map((status) => (
                             <div key={status.status} className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">

@@ -2,13 +2,8 @@ import {useParams, useNavigate} from "react-router-dom";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import {useState, useMemo, useEffect} from "react";
 import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {ArrowLeft, Plus, Trash2, Users, FileText, Search, Loader2} from "lucide-react";
+import {Card, CardContent} from "@/components/ui/card";
+import {FileText, Users, BarChart3, Plus} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
@@ -28,7 +23,13 @@ import {
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {getPaginatedPapers} from "@/services/paper.service.ts";
 import ProgressDashboard from "@/pages/collection/components/ProgressDashboard";
-import {BarChart3} from "lucide-react";
+import {getWorkflowsByUser} from "@/services/progress.service";
+import CollectionHeader from "@/pages/collection/components/CollectionHeader";
+import AddPaperDialog from "@/pages/collection/components/AddPaperDialog";
+import AddMemberDialog from "@/pages/collection/components/AddMemberDialog";
+import PapersTab from "@/pages/collection/components/PapersTab";
+import MembersTab from "@/pages/collection/components/MembersTab";
+import PriorityDialog from "@/pages/collection/components/PriorityDialog";
 
 const CollectionDetails = () => {
     const {id} = useParams<{id: string}>();
@@ -83,6 +84,48 @@ const CollectionDetails = () => {
         enabled: !!id && !!user,
     });
 
+    // Get workflows for current user to show reading progress
+    const {data: workflows} = useQuery({
+        queryKey: ['workflows', user?.id, id],
+        queryFn: async () => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await getWorkflowsByUser(user.id);
+        },
+        enabled: !!user && !!id,
+    });
+
+    // Create a map of paperId -> workflow for quick lookup (filtered by collectionId)
+    const workflowMap = useMemo(() => {
+        if (!workflows || !id) return new Map();
+        const map = new Map();
+        workflows.forEach(workflow => {
+            // Only include workflows for this collection
+            if (workflow.collectionId === id) {
+                map.set(workflow.paperId, workflow);
+            }
+        });
+        return map;
+    }, [workflows, id]);
+
+    // Enhance papers with workflow data (progress and total pages)
+    const papersWithProgress = useMemo(() => {
+        if (!papers) return [];
+        return papers.map(paper => {
+            const workflow = workflowMap.get(paper.paperId);
+            // Calculate total_pages from progress if available
+            let total_pages = null;
+            if (workflow && workflow.progress > 0 && workflow.lastPage > 0) {
+                total_pages = Math.ceil((workflow.lastPage / (workflow.progress / 100)));
+            }
+            return {
+                ...paper,
+                last_read_page: workflow?.lastPage ?? null,
+                total_pages: total_pages,
+                progress: workflow?.progress ?? null,
+            };
+        });
+    }, [papers, workflowMap]);
+
     // Determine user's access level from members list or collection response
     const currentUserMember = useMemo(() => {
         if (!members || !user?.id) return null;
@@ -96,6 +139,7 @@ const CollectionDetails = () => {
     // Default to AUTHOR if user created the collection (role owner) or has AUTHOR access level
     // If user is in members but accessLevel is not set, assume they have at least CONTRIBUTOR access
     const isOwner = currentUserMember?.role === 'owner' || userAccessLevel === 'AUTHOR';
+    const hasAccess = !!currentUserMember || userAccessLevel; // User has access if they're in members list
     
     // If user is in members list but no access level set, default to CONTRIBUTOR (can add papers)
     const effectiveAccessLevel = userAccessLevel || (currentUserMember ? 'CONTRIBUTOR' : null);
@@ -111,7 +155,7 @@ const CollectionDetails = () => {
             // First, get the first page to know total pages
             const firstPage = await getPaginatedPapers(0, paperSearchApiPageSize, paperSearchQuery || undefined);
             const totalPages = firstPage?.data?.totalPages || 1;
-            const allPapers = [...(firstPage?.data?.content || [])];
+            const allPapers = [...(firstPage?.data?.papers || [])];
             
             // Fetch remaining pages if there are more
             if (totalPages > 1) {
@@ -123,8 +167,8 @@ const CollectionDetails = () => {
                 }
                 const remainingResults = await Promise.all(remainingPromises);
                 remainingResults.forEach(result => {
-                    if (result?.data?.content) {
-                        allPapers.push(...result.data.content);
+                    if (result?.data?.papers) {
+                        allPapers.push(...result.data.papers);
                     }
                 });
             }
@@ -144,7 +188,7 @@ const CollectionDetails = () => {
     const allAvailablePapers = useMemo(() => {
         if (!paperSearchData?.data?.content) return [];
         const existingPaperIds = papers?.map(p => p.paperId) || [];
-        return paperSearchData.data.content.filter((paper) => !existingPaperIds.includes(paper.id));
+        return paperSearchData.data.content.filter((paper: any) => !existingPaperIds.includes(paper.id));
     }, [paperSearchData, papers]);
 
     // Client-side pagination for dialog (10 papers per page)
@@ -157,41 +201,43 @@ const CollectionDetails = () => {
 
     const totalDialogPages = Math.ceil((allAvailablePapers?.length || 0) / paperSearchDialogPageSize);
 
-    // Client-side pagination for papers list
+    // Client-side pagination for papers list (using papersWithProgress)
     const paginatedPapers = useMemo(() => {
-        if (!papers || papers.length === 0) return [];
+        if (!papersWithProgress || papersWithProgress.length === 0) return [];
         const startIndex = papersPage * papersPageSize;
         const endIndex = startIndex + papersPageSize;
-        return papers.slice(startIndex, endIndex);
-    }, [papers, papersPage, papersPageSize]);
+        return papersWithProgress.slice(startIndex, endIndex);
+    }, [papersWithProgress, papersPage, papersPageSize]);
 
-    const totalPapersPages = Math.ceil((papers?.length || 0) / papersPageSize);
+    const totalPapersPages = Math.ceil((papersWithProgress?.length || 0) / papersPageSize);
 
     // Reset pagination when papers list changes
     useEffect(() => {
-        if (papers && papers.length > 0) {
+        if (papersWithProgress && papersWithProgress.length > 0) {
             const maxPage = Math.max(0, totalPapersPages - 1);
             if (papersPage > maxPage) {
                 setPapersPage(maxPage);
             }
-        } else if (papers && papers.length === 0) {
+        } else if (papersWithProgress && papersWithProgress.length === 0) {
             setPapersPage(0);
         }
-    }, [papers?.length, totalPapersPages, papersPage]);
+    }, [papersWithProgress?.length, totalPapersPages, papersPage]);
 
     const addPaperMutation = useMutation({
-        mutationFn: async (paperId: string) => {
+        mutationFn: async ({ paperId, priority }: { paperId: string; priority: string }) => {
             if (!id || !user?.id || !paperId) throw new Error('Missing required fields');
             return await addPaperToCollection({
                 collectionId: id,
                 paperId: paperId,
                 userId: user.id,
+                priority: priority || 'MEDIUM',
             });
         },
         onSuccess: () => {
             toast.success('Paper added to collection successfully');
             queryClient.invalidateQueries({queryKey: ['collection-papers']});
             queryClient.invalidateQueries({queryKey: ['paper-search']});
+            setIsAddPaperOpen(false);
         },
         onError: (error: Error) => {
             console.error('Add paper error:', error);
@@ -205,7 +251,8 @@ const CollectionDetails = () => {
     });
 
     const handleAddPaper = (paperId: string) => {
-        addPaperMutation.mutate(paperId);
+        // Default priority is MEDIUM when adding paper
+        addPaperMutation.mutate({ paperId, priority: 'MEDIUM' });
     };
 
     /**
@@ -351,7 +398,6 @@ const CollectionDetails = () => {
                         <CardContent className="text-center py-12">
                             <p className="text-muted-foreground">Collection not found</p>
                             <Button onClick={() => navigate('/collections')} className="mt-4">
-                                <ArrowLeft className="h-4 w-4 mr-2"/>
                                 Back to Collections
                             </Button>
                         </CardContent>
@@ -371,21 +417,10 @@ const CollectionDetails = () => {
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <Button variant="ghost" size="icon" onClick={() => navigate('/collections')}>
-                                <ArrowLeft className="h-5 w-5"/>
-                            </Button>
-                            <div className="flex-1">
-                                <h1 className="text-3xl font-bold">{collection.name}</h1>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                    <span>Papers: {collection.paperCount || 0}</span>
-                                    <span>Members: {collection.memberCount || 0}</span>
-                                    {collection.currentUserAccessLevel && (
-                                        <Badge variant="outline">{collection.currentUserAccessLevel}</Badge>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <CollectionHeader 
+                            collection={collection} 
+                            onBack={() => navigate('/collections')} 
+                        />
 
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'papers' | 'members' | 'progress')}>
                             <div className="flex items-center justify-between">
@@ -406,357 +441,66 @@ const CollectionDetails = () => {
                                     )}
                                 </TabsList>
                                 {activeTab === 'papers' && canAddPaper && (
-                                    <Dialog open={isAddPaperOpen}                                     onOpenChange={(open) => {
-                                        setIsAddPaperOpen(open);
-                                        if (!open) {
-                                            setPaperSearchQuery('');
-                                            setPaperSearchDialogPage(0);
-                                        }
-                                    }}>
-                                        <DialogTrigger asChild>
-                                            <Button>
-                                                <Plus className="h-4 w-4 mr-2"/>
-                                                Add Paper
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-                                            <DialogHeader>
-                                                <DialogTitle>Add Paper to Collection</DialogTitle>
-                                            </DialogHeader>
-                                            <div className="flex flex-col gap-4 flex-1 overflow-hidden">
-                                                <div className="relative">
-                                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
-                                                    <Input
-                                                        placeholder="Search papers by title, author, or keyword..."
-                                                        value={paperSearchQuery}
-                                                        onChange={(e) => {
-                                                            setPaperSearchQuery(e.target.value);
-                                                            setPaperSearchDialogPage(0);
-                                                        }}
-                                                        className="pl-10"
-                                                    />
-                                                </div>
-                                                
-                                                <div className="flex-1 overflow-y-auto space-y-2">
-                                                    {isLoadingPaperSearch ? (
-                                                        <div className="flex justify-center items-center py-12">
-                                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground"/>
-                                                        </div>
-                                                    ) : allAvailablePapers && allAvailablePapers.length > 0 ? (
-                                                        <>
-                                                            {paginatedAvailablePapers.map((paper) => (
-                                                                <Card key={paper.id} className="hover:shadow-md transition-shadow">
-                                                                    <CardHeader>
-                                                                        <CardTitle className="text-base line-clamp-2">{paper.title}</CardTitle>
-                                                                        <div className="text-sm text-muted-foreground space-y-1">
-                                                                            <p className="line-clamp-1">{paper.authors}</p>
-                                                                            {paper.journal && <p>{paper.journal}</p>}
-                                                                            {paper.publicationYear && <p>{paper.publicationYear}</p>}
-                                                                        </div>
-                                                                    </CardHeader>
-                                                                    <CardContent>
-                                                                        <Button
-                                                                            onClick={() => handleAddPaper(paper.id)}
-                                                                            disabled={addPaperMutation.isPending}
-                                                                            size="sm"
-                                                                            className="w-full"
-                                                                        >
-                                                                            {addPaperMutation.isPending ? (
-                                                                <>
-                                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
-                                                                    Adding...
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Plus className="h-4 w-4 mr-2"/>
-                                                                    Add to Collection
-                                                                </>
-                                                            )}
-                                                                        </Button>
-                                                                    </CardContent>
-                                                                </Card>
-                                                            ))}
-                                                            {allAvailablePapers && allAvailablePapers.length > 0 && (
-                                                                <div className="flex items-center justify-center gap-3 pt-4 border-t">
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => setPaperSearchDialogPage(p => Math.max(0, p - 1))}
-                                                                        disabled={paperSearchDialogPage === 0 || isLoadingPaperSearch || totalDialogPages <= 1}
-                                                                    >
-                                                                        Previous
-                                                                    </Button>
-                                                                    <span className="text-sm text-muted-foreground min-w-[140px] text-center">
-                                                                        Page {paperSearchDialogPage + 1} of {totalDialogPages}
-                                                                        {allAvailablePapers.length > 0 && (
-                                                                            <span className="block text-xs mt-1">
-                                                                                ({allAvailablePapers.length} total papers)
-                                                                            </span>
-                                                                        )}
-                                                                    </span>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => setPaperSearchDialogPage(p => Math.min(totalDialogPages - 1, p + 1))}
-                                                                        disabled={paperSearchDialogPage >= totalDialogPages - 1 || isLoadingPaperSearch || totalDialogPages <= 1}
-                                                                    >
-                                                                        Next
-                                                                    </Button>
-                                                                </div>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <div className="text-center py-12">
-                                                            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
-                                                            <h3 className="text-lg font-semibold mb-2">No papers found</h3>
-                                                            <p className="text-muted-foreground">
-                                                                {paperSearchQuery 
-                                                                    ? 'Try a different search query' 
-                                                                    : 'Start typing to search for papers'}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
+                                    <AddPaperDialog
+                                        open={isAddPaperOpen}
+                                        onOpenChange={setIsAddPaperOpen}
+                                        paperSearchQuery={paperSearchQuery}
+                                        setPaperSearchQuery={setPaperSearchQuery}
+                                        isLoadingPaperSearch={isLoadingPaperSearch}
+                                        paginatedAvailablePapers={paginatedAvailablePapers}
+                                        paperSearchDialogPage={paperSearchDialogPage}
+                                        setPaperSearchDialogPage={setPaperSearchDialogPage}
+                                        totalDialogPages={totalDialogPages}
+                                        addPaperMutation={addPaperMutation}
+                                        handleAddPaper={handleAddPaper}
+                                    />
                                 )}
                                 {activeTab === 'members' && canManageMembers && (
-                                    <Dialog open={isAddMemberOpen} onOpenChange={(open) => {
-                                        setIsAddMemberOpen(open);
-                                        if (!open) {
-                                            setNewMemberEmail('');
-                                            setNewMemberAccessLevel('CONTRIBUTOR');
-                                        }
-                                    }}>
-                                        <DialogTrigger asChild>
-                                            <Button>
-                                                <Plus className="h-4 w-4 mr-2"/>
-                                                Invite Member
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Invite Member to Collection</DialogTitle>
-                                            </DialogHeader>
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="member-email">Member Email</Label>
-                                                    <Input
-                                                        id="member-email"
-                                                        type="email"
-                                                        value={newMemberEmail}
-                                                        onChange={(e) => setNewMemberEmail(e.target.value)}
-                                                        placeholder="Enter member email address"
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && newMemberEmail && !addMemberMutation.isPending) {
-                                                                addMemberMutation.mutate();
-                                                            }
-                                                        }}
-                                                    />
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Enter the email address of the user you want to invite. They must have an account on LabVerse.
-                                                    </p>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="access-level">Access Level</Label>
-                                                    <Select
-                                                        value={newMemberAccessLevel}
-                                                        onValueChange={(v) => setNewMemberAccessLevel(v as typeof newMemberAccessLevel)}
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue/>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="READ_ONLY">Read Only - Can view papers only</SelectItem>
-                                                            <SelectItem value="CONTRIBUTOR">Contributor - Can add papers and update status</SelectItem>
-                                                            <SelectItem value="AUTHOR">Author - Full access including priority and members</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => setIsAddMemberOpen(false)}
-                                                        className="flex-1"
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                    <Button
-                                                        onClick={() => addMemberMutation.mutate()}
-                                                        disabled={!newMemberEmail || addMemberMutation.isPending || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newMemberEmail)}
-                                                        className="flex-1"
-                                                    >
-                                                        {addMemberMutation.isPending ? (
-                                                            <>
-                                                                <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
-                                                                Inviting...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Users className="h-4 w-4 mr-2"/>
-                                                                Send Invite
-                                                            </>
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
+                                    <AddMemberDialog
+                                        open={isAddMemberOpen}
+                                        onOpenChange={setIsAddMemberOpen}
+                                        newMemberEmail={newMemberEmail}
+                                        setNewMemberEmail={setNewMemberEmail}
+                                        newMemberAccessLevel={newMemberAccessLevel}
+                                        setNewMemberAccessLevel={setNewMemberAccessLevel}
+                                        addMemberMutation={addMemberMutation}
+                                    />
                                 )}
                             </div>
 
                             <TabsContent value="papers" className="mt-6">
-                                {isLoadingPapers ? (
-                                    <div className="flex justify-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                                    </div>
-                                ) : papers && papers.length > 0 ? (
-                                    <>
-                                        <div className="grid gap-4">
-                                            {paginatedPapers.map((paper) => (
-                                                <Card key={paper.paperId} className="hover:shadow-md transition-shadow">
-                                                    <CardHeader>
-                                                        <div className="flex items-start justify-between">
-                                                            <div className="flex-1">
-                                                                <CardTitle className="text-lg mb-2">{paper.title}</CardTitle>
-                                                                <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
-                                                                    <span>{paper.authors}</span>
-                                                                    {paper.journal && <span>• {paper.journal}</span>}
-                                                                    {paper.publicationYear && <span>• {paper.publicationYear}</span>}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                {paper.status && (
-                                                                    <Badge
-                                                                        className={`${getStatusColor(paper.status)} text-white`}
-                                                                        title="Status is calculated automatically based on all members' reading progress"
-                                                                    >
-                                                                        {paper.status}
-                                                                    </Badge>
-                                                                )}
-                                                                {paper.priority && (
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className={`${getPriorityColor(paper.priority)} text-white ${canSetPriority ? 'cursor-pointer hover:opacity-80' : ''}`}
-                                                                        onClick={() => canSetPriority && handlePriorityClick(paper)}
-                                                                        title={canSetPriority ? 'Click to change priority' : 'Only collection authors can change priority'}
-                                                                    >
-                                                                        {paper.priority}
-                                                                    </Badge>
-                                                                )}
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleRemovePaper(paper)}
-                                                                >
-                                                                    <Trash2 className="h-4 w-4"/>
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    </CardHeader>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                        {papers && papers.length > 0 && (
-                                            <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setPapersPage(p => Math.max(0, p - 1))}
-                                                    disabled={papersPage === 0 || totalPapersPages <= 1}
-                                                >
-                                                    Previous
-                                                </Button>
-                                                <span className="text-sm text-muted-foreground min-w-[120px] text-center">
-                                                    Page {papersPage + 1} of {totalPapersPages}
-                                                    <span className="block text-xs mt-1">
-                                                        ({papers.length} total papers)
-                                                    </span>
-                                                </span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setPapersPage(p => Math.min(totalPapersPages - 1, p + 1))}
-                                                    disabled={papersPage >= totalPapersPages - 1 || totalPapersPages <= 1}
-                                                >
-                                                    Next
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <Card className="text-center py-12">
-                                        <CardContent>
-                                            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
-                                            <h3 className="text-lg font-semibold mb-2">No papers yet</h3>
-                                            <p className="text-muted-foreground mb-4">
-                                                {canAddPaper
-                                                    ? 'Add papers to this collection to get started'
-                                                    : 'No papers have been added to this collection'}
-                                            </p>
-                                            {canAddPaper && (
+                                <PapersTab
+                                    isLoadingPapers={isLoadingPapers}
+                                    papers={papersWithProgress}
+                                    paginatedPapers={paginatedPapers}
+                                    papersPage={papersPage}
+                                    setPapersPage={setPapersPage}
+                                    totalPapersPages={totalPapersPages}
+                                    canAddPaper={canAddPaper}
+                                    canSetPriority={canSetPriority}
+                                    handleRemovePaper={handleRemovePaper}
+                                    handlePriorityClick={handlePriorityClick}
+                                    getStatusColor={getStatusColor}
+                                    getPriorityColor={getPriorityColor}
+                                />
+                                {canAddPaper && papersWithProgress && papersWithProgress.length === 0 && (
+                                    <div className="text-center mt-4">
                                                 <Button onClick={() => setIsAddPaperOpen(true)}>
                                                     <Plus className="h-4 w-4 mr-2"/>
                                                     Add Paper
                                                 </Button>
-                                            )}
-                                        </CardContent>
-                                    </Card>
+                                    </div>
                                 )}
                             </TabsContent>
 
                             <TabsContent value="members" className="mt-6">
-                                {isLoadingMembers ? (
-                                    <div className="flex justify-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                                    </div>
-                                ) : members && members.length > 0 ? (
-                                    <div className="grid gap-4">
-                                        {members.map((member) => (
-                                            <Card key={member.memberId} className="hover:shadow-md transition-shadow">
-                                                <CardHeader>
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <CardTitle className="text-lg font-semibold mb-1">
-                                                                {member.memberName}
-                                                            </CardTitle>
-                                                            <p className="text-xs text-muted-foreground mb-3">
-                                                                {member.memberEmail}
-                                                            </p>
-                                                            <div className="flex gap-2">
-                                                                <Badge variant="outline">{member.accessLevel}</Badge>
-                                                                <Badge variant="secondary">{member.role}</Badge>
-                                                            </div>
-                                                        </div>
-                                                        {canManageMembers && member.memberId !== user?.id && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => handleRemoveMember(member)}
-                                                                className="flex-shrink-0"
-                                                            >
-                                                                <Trash2 className="h-4 w-4"/>
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </CardHeader>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <Card className="text-center py-12">
-                                        <CardContent>
-                                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
-                                            <h3 className="text-lg font-semibold mb-2">No members yet</h3>
-                                            <p className="text-muted-foreground">
-                                                {canManageMembers
-                                                    ? 'Add members to this collection to start collaborating'
-                                                    : 'No members have been added to this collection'}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                )}
+                                <MembersTab
+                                    isLoadingMembers={isLoadingMembers}
+                                    members={members}
+                                    canManageMembers={canManageMembers}
+                                    currentUserId={user?.id}
+                                    handleRemoveMember={handleRemoveMember}
+                                />
                             </TabsContent>
 
                             {isOwner && (
@@ -771,44 +515,14 @@ const CollectionDetails = () => {
                             )}
                         </Tabs>
 
-                        {/* Priority Update Dialog (Status is now read-only, calculated automatically) */}
-                        <Dialog open={isPriorityDialogOpen} onOpenChange={setIsPriorityDialogOpen}>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Update Paper Priority</DialogTitle>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        Status is calculated automatically based on all members' reading progress
-                                    </p>
-                                </DialogHeader>
-                                {selectedPaper && (
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="priority">Priority</Label>
-                                            <Select
-                                                value={selectedPriority}
-                                                onValueChange={setSelectedPriority}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue/>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="HIGH">High</SelectItem>
-                                                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                    <SelectItem value="LOW">Low</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Button
-                                            onClick={() => updatePriorityMutation.mutate()}
-                                            disabled={updatePriorityMutation.isPending}
-                                            className="w-full"
-                                        >
-                                            {updatePriorityMutation.isPending ? 'Updating...' : 'Update Priority'}
-                                        </Button>
-                                    </div>
-                                )}
-                            </DialogContent>
-                        </Dialog>
+                        <PriorityDialog
+                            open={isPriorityDialogOpen}
+                            onOpenChange={setIsPriorityDialogOpen}
+                            selectedPaper={selectedPaper}
+                            selectedPriority={selectedPriority}
+                            setSelectedPriority={setSelectedPriority}
+                            updatePriorityMutation={updatePriorityMutation}
+                        />
                     </div>
                 </main>
             </div>

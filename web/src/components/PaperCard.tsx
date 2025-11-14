@@ -1,6 +1,7 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { FileText, Calendar, Users, ExternalLink } from "lucide-react";
 
 interface PaperCardProps {
@@ -15,9 +16,11 @@ interface PaperCardProps {
   title: string;
   status?: string | null;
   priority?: string | null;
+  last_read_page?: number | null;
+  total_pages?: number | null;
 }
 
-const PaperCard = ({ title, authors, journal, publicationYear: year, status, priority }: PaperCardProps) => {
+const PaperCard = ({ title, authors, journal, publicationYear: year, status, priority, last_read_page, total_pages }: PaperCardProps) => {
   const statusColors: Record<string, string> = {
     "To Read": "bg-muted text-muted-foreground",
     "Reading": "bg-accent/10 text-accent",
@@ -29,6 +32,11 @@ const PaperCard = ({ title, authors, journal, publicationYear: year, status, pri
     "Medium": "bg-accent/10 text-accent",
     "Low": "bg-muted text-muted-foreground",
   };
+
+  // Calculate reading progress percentage
+  const progressPercentage = total_pages && last_read_page !== null && last_read_page !== undefined
+    ? Math.min(100, Math.round((last_read_page / total_pages) * 100))
+    : 0;
 
   return (
     <Card className="hover:shadow-custom-md transition-smooth group h-[260px] flex flex-col">
@@ -69,12 +77,23 @@ const PaperCard = ({ title, authors, journal, publicationYear: year, status, pri
             )}
           </div>
         </div>
+
+        {/* Reading Progress Bar */}
+        {total_pages && last_read_page !== null && last_read_page !== undefined && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Reading Progress</span>
+              <span>{last_read_page} / {total_pages} pages ({progressPercentage}%)</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1">
+        {/* <Button variant="outline" size="sm" className="flex-1">
           View Details
-        </Button>
+        </Button> */}
         <Button size="sm" className="flex-1">
           <ExternalLink className="h-4 w-4 mr-2" />
           Open

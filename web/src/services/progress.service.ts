@@ -84,3 +84,83 @@ export const getTeamMemberProgress = async (
     return handleResponse<TeamMemberProgressResponse>(response);
 };
 
+/**
+ * Update reading workflow progress
+ */
+export interface UpdateReadingProgressRequest {
+    collectionId: string; // Encoded
+    paperId: string; // Encoded
+    usersid: string; // Encoded
+    lastPage: number;
+    progress: number; // 0-100
+}
+
+export const updateReadingProgress = async (
+    request: UpdateReadingProgressRequest
+): Promise<string> => {
+    const response = await fetch(
+        `${BASE_API_URL}/${READING_SERVICE_PREDICATE}/workflows/progress`,
+        {
+            method: METHOD.PUT.toString(),
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(request)
+        }
+    );
+    return handleResponse<string>(response);
+};
+
+/**
+ * Get workflows by user
+ */
+export interface ReadingWorkflowResponse {
+    collectionId: string; // Encoded
+    paperId: string; // Encoded
+    usersid: string; // Encoded
+    status: string; // "unread" | "reading" | "finished"
+    lastPage: number;
+    progress: number; // 0-100
+}
+
+export const getWorkflowsByUser = async (
+    userId: string, // Encoded
+    status?: string
+): Promise<ReadingWorkflowResponse[]> => {
+    const url = status 
+        ? `${BASE_API_URL}/${READING_SERVICE_PREDICATE}/workflows/user/${userId}?status=${status}`
+        : `${BASE_API_URL}/${READING_SERVICE_PREDICATE}/workflows/user/${userId}`;
+    const response = await fetch(url, {
+        method: METHOD.GET.toString(),
+        headers: getAuthHeaders()
+    });
+    return handleResponse<ReadingWorkflowResponse[]>(response);
+};
+
+/**
+ * Create reading workflow
+ */
+export interface CreateReadingWorkflowRequest {
+    collectionId: string; // Encoded
+    paperId: string; // Encoded
+    usersid: string; // Encoded
+}
+
+export const createReadingWorkflow = async (
+    request: CreateReadingWorkflowRequest
+): Promise<ReadingWorkflowResponse> => {
+    const response = await fetch(
+        `${BASE_API_URL}/${READING_SERVICE_PREDICATE}/workflows`,
+        {
+            method: METHOD.POST.toString(),
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(request)
+        }
+    );
+    return handleResponse<ReadingWorkflowResponse>(response);
+};
+

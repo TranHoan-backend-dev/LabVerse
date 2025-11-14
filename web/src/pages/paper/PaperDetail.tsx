@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +14,16 @@ import PaperDetailsHeader from "./components/PaperDetailsHeader";
 import PaperDetailsMainContent from "./components/PaperDetailsMainContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import PDFViewer from "@/components/PDFViewer";
+import { updateReadingProgress, createReadingWorkflow, getWorkflowsByUser } from "@/services/progress.service";
+import { getMyCollections, createCollection } from "@/services/collection.service";
 
 const PaperDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
 
     const { data, isLoading } = useQuery({
         queryKey: ['paper', id, user?.id],
@@ -67,6 +72,99 @@ const PaperDetail = () => {
             toast.error(error.message || 'Failed to update favorite');
         },
     });
+
+    // Get user's collections to find or create personal library
+    const { data: myCollections } = useQuery({
+        queryKey: ['collections', 'my', user?.id],
+        queryFn: async () => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await getMyCollections(user.id);
+        },
+        enabled: !!user,
+    });
+
+    // Get or create personal library collection
+    const personalLibraryCollection = useMemo(() => {
+        if (!myCollections?.content) return null;
+        // Try to find "Personal Library" collection
+        let collection = myCollections.content.find(c => c.name === 'Personal Library');
+        // If not found, use first collection or create one
+        if (!collection && myCollections.content.length > 0) {
+            collection = myCollections.content[0];
+        }
+        return collection;
+    }, [myCollections]);
+
+    // Create personal library if needed
+    const createPersonalLibraryMutation = useMutation({
+        mutationFn: async () => {
+            if (!user?.id) throw new Error('User not logged in');
+            return await createCollection('Personal Library', user.id);
+        },
+    });
+
+    // Get collectionId - use personal library or first collection
+    const collectionId = useMemo(() => {
+        if (personalLibraryCollection) return personalLibraryCollection.id;
+        // If no collections, create personal library
+        if (myCollections?.content && myCollections.content.length === 0 && user?.id) {
+            createPersonalLibraryMutation.mutate();
+        }
+        return null;
+    }, [personalLibraryCollection, myCollections, user?.id]);
+
+    const updateProgressMutation = useMutation({
+        mutationFn: async ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => {
+            if (!user?.id || !paper?.id || !collectionId) {
+                throw new Error('Missing required fields');
+            }
+
+            // Calculate progress percentage
+            const progress = totalPages > 0 ? Math.round((pageNumber / totalPages) * 100) : 0;
+
+            // Try to update existing workflow, if fails create new one
+            try {
+                await updateReadingProgress({
+                    collectionId,
+                    paperId: paper.id,
+                    usersid: user.id,
+                    lastPage: pageNumber,
+                    progress: Math.min(100, Math.max(0, progress))
+                });
+            } catch (error: any) {
+                // If workflow doesn't exist, create it first
+                if (error.message?.includes('not found') || error.message?.includes('404')) {
+                    await createReadingWorkflow({
+                        collectionId,
+                        paperId: paper.id,
+                        usersid: user.id
+                    });
+                    // Then update progress
+                    await updateReadingProgress({
+                        collectionId,
+                        paperId: paper.id,
+                        usersid: user.id,
+                        lastPage: pageNumber,
+                        progress: Math.min(100, Math.max(0, progress))
+                    });
+                } else {
+                    throw error;
+                }
+            }
+        },
+        onSuccess: () => {
+            // Invalidate queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ['paper', id] });
+            queryClient.invalidateQueries({ queryKey: ['papers'] });
+            queryClient.invalidateQueries({ queryKey: ['workflows', user?.id] });
+        },
+    });
+
+    const handleProgressUpdate = (pageNumber: number, totalPages: number) => {
+        if (collectionId) {
+            updateProgressMutation.mutate({ pageNumber, totalPages });
+        }
+    };
 
     if (isLoading) {
         return (
@@ -132,7 +230,7 @@ const PaperDetail = () => {
                             <TabsList>
                                 <TabsTrigger value="description">Description</TabsTrigger>
                                 <TabsTrigger value="details">Details</TabsTrigger>
-                                <TabsTrigger value="notes">Notes</TabsTrigger>
+                                {/* <TabsTrigger value="notes">Notes</TabsTrigger> */}
                             </TabsList>
 
                             <TabsContent value="description" className="space-y-4">
@@ -165,18 +263,17 @@ const PaperDetail = () => {
                                             </div>
                                         )}
 
-                                        {paper.dataUrl && (
+                                        {(paper.pdf_url || paper.dataUrl) && (
                                             <div>
                                                 <h3 className="font-semibold mb-2">PDF</h3>
-                                                <a
-                                                    href={paper.pdf_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setIsPDFViewerOpen(true)}
+                                                    className="inline-flex items-center gap-2"
                                                 >
                                                     <FileText className="h-4 w-4" />
                                                     View PDF
-                                                </a>
+                                                </Button>
                                             </div>
                                         )}
 
@@ -210,6 +307,18 @@ const PaperDetail = () => {
                     </div>
                 </main>
             </div>
+
+            {/* PDF Viewer Dialog */}
+            {(paper.pdf_url || paper.dataUrl) && (
+                <PDFViewer
+                    pdfUrl={paper.pdf_url || paper.dataUrl}
+                    isOpen={isPDFViewerOpen}
+                    onClose={() => setIsPDFViewerOpen(false)}
+                    title={paper.title || "PDF Viewer"}
+                    paperId={paper.id}
+                    onProgressUpdate={handleProgressUpdate}
+                />
+            )}
         </>
     );
 };
