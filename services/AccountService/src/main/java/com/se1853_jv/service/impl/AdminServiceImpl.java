@@ -201,6 +201,7 @@ public class AdminServiceImpl implements AdminService {
                 user.getFullName(),
                 user.getAvatarUrl(),
                 user.getRole().getName(),
+                user.getIsActive() != null ? user.getIsActive() : true,
                 user.getCreatedDate(),
                 user.getUpdatedDate()
         );

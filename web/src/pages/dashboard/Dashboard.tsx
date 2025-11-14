@@ -1,27 +1,27 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, Star } from "lucide-react";
+import { Plus, BookOpen, Star, Clock } from "lucide-react";
 import PaperCard from "@/components/PaperCard";
+import RecentlyReadCard from "./components/RecentlyReadCard";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
-import { getPaginatedPapers, importPaper, getFavoritePapers } from "@/services/paper.service.ts";
+import { getPaginatedPapers, importPaper, getFavoritePapers, getPaperDetails } from "@/services/paper.service.ts";
 import Header from "@/components/Header";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
 import { CreatePaperRequest } from "@/types/paper.types";
 import { getWorkflowsByUser } from "@/services/progress.service";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 
 
 const Dashboard = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [isImportOpen, setIsImportOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'all' | 'favourites'>('all');
+    const [activeTab, setActiveTab] = useState<'all' | 'recently_read' | 'favourites'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [newPaper, setNewPaper] = useState({
         authors: '',
@@ -98,6 +98,253 @@ const Dashboard = () => {
                         totalPages: Math.max(1, Math.ceil(favorites.length / pageSize)),
                     },
                 };
+            } else if (activeTab === 'recently_read') {
+                try {
+                    // Fetch from backend API - get all workflows, then filter for active reading
+                    const encodedUserId = btoa(user!.id);
+                    let allWorkflows;
+                    try {
+                        allWorkflows = await getWorkflowsByUser(encodedUserId);
+                        console.log('Recently read: Fetched', allWorkflows?.length || 0, 'workflows for user');
+                    } catch (error) {
+                        console.error('Failed to fetch workflows:', error);
+                        return {
+                            status: 200,
+                            data: {
+                                papers: [],
+                                totalElements: 0,
+                                totalPages: 1,
+                            },
+                        };
+                    }
+
+                    // Filter workflows that are actively being read
+                    // Show all workflows except "unread" with no progress and no lastPage
+                    const activeWorkflows = (allWorkflows || []).filter(workflow => {
+                        if (!workflow || !workflow.paperId) {
+                            console.log('Recently read: Skipping workflow without paperId:', workflow);
+                            return false;
+                        }
+                        
+                        const hasProgress = workflow.progress !== null && workflow.progress !== undefined 
+                            && workflow.progress > 0;
+                        const hasLastPage = workflow.lastPage !== null && workflow.lastPage !== undefined 
+                            && workflow.lastPage > 0;
+                        const isReading = workflow.status === 'reading';
+                        const isFinished = workflow.status === 'finished';
+                        const isUnread = workflow.status === 'unread';
+                        
+                        // Exclude only if: status is "unread" AND no progress AND no lastPage
+                        // Include everything else (reading, finished, or unread with progress/lastPage)
+                        const shouldExclude = isUnread && !hasProgress && !hasLastPage;
+                        
+                        if (!shouldExclude) {
+                            console.log('Recently read: Including workflow:', {
+                                paperId: workflow.paperId,
+                                status: workflow.status,
+                                progress: workflow.progress,
+                                lastPage: workflow.lastPage
+                            });
+                        } else {
+                            console.log('Recently read: Excluding unread workflow with no progress:', {
+                                paperId: workflow.paperId,
+                                status: workflow.status
+                            });
+                        }
+                        
+                        return !shouldExclude;
+                    });
+
+                    console.log('Recently read: Filtered', activeWorkflows.length, 'active workflows from', allWorkflows?.length || 0, 'total workflows');
+
+                    if (!activeWorkflows || activeWorkflows.length === 0) {
+                        console.log('Recently read: No active workflows found');
+                        return {
+                            status: 200,
+                            data: {
+                                papers: [],
+                                totalElements: 0,
+                                totalPages: 1,
+                            },
+                        };
+                    }
+
+                    // Helper function to decode base64 encoded ID
+                    const decodeId = (encodedId: string): string => {
+                        try {
+                            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(encodedId)) {
+                                return encodedId;
+                            }
+                            return atob(encodedId);
+                        } catch (e) {
+                            return encodedId;
+                        }
+                    };
+
+                    // Get paper details for each workflow
+                    const paperPromises = activeWorkflows.map(async (workflow) => {
+                        try {
+                            if (!workflow || !workflow.paperId) {
+                                console.log('Recently read: Skipping workflow without paperId');
+                                return null;
+                            }
+
+                            // Backend expects encoded ID in query param and will decode it
+                            // Try multiple ID formats to handle different encoding scenarios
+                            const decodedPaperId = decodeId(workflow.paperId);
+                            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workflow.paperId);
+                            
+                            console.log('Recently read: Fetching paper details for workflow:', {
+                                paperId: workflow.paperId,
+                                decodedPaperId: decodedPaperId,
+                                isUUID: isUUID,
+                                progress: workflow.progress,
+                                lastPage: workflow.lastPage,
+                                status: workflow.status
+                            });
+
+                            let paperResponse = null;
+                            let lastError = null;
+                            let workingId = null;
+                            
+                            // Try different ID formats
+                            const idVariants = [
+                                workflow.paperId, // Original (likely encoded)
+                                decodedPaperId,   // Decoded
+                                isUUID ? workflow.paperId : btoa(workflow.paperId), // Re-encode if not UUID
+                            ];
+                            
+                            // Remove duplicates
+                            const uniqueIds = [...new Set(idVariants)];
+                            
+                            for (const paperIdToTry of uniqueIds) {
+                                try {
+                                    console.log('Recently read: Trying paper ID:', paperIdToTry);
+                                    paperResponse = await getPaperDetails(paperIdToTry, user!.id);
+                                    if (paperResponse?.status === 200 && paperResponse?.data) {
+                                        console.log('Recently read: Success with ID:', paperIdToTry);
+                                        workingId = paperIdToTry;
+                                        break;
+                                    }
+                                } catch (e: any) {
+                                    console.log('Recently read: Failed with ID', paperIdToTry, ':', e.message);
+                                    lastError = e;
+                                    continue;
+                                }
+                            }
+                            
+                            if (!paperResponse || paperResponse?.status !== 200 || !paperResponse?.data) {
+                                console.error('Recently read: All ID variants failed. Last error:', lastError);
+                                console.log('Recently read: Paper response:', paperResponse);
+                                return null;
+                            }
+
+                            // Successfully fetched paper details
+                            const paper = paperResponse.data;
+                            
+                            // Determine ID for URL navigation
+                            // Backend expects encoded ID in URL params (it will decode it)
+                            // So we need to ensure the ID in URL is encoded
+                            let paperIdForUrl: string;
+                            
+                            // If working ID is a UUID (decoded), encode it for URL
+                            if (workingId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workingId)) {
+                                // Working ID is UUID, encode it
+                                paperIdForUrl = btoa(workingId);
+                            } else if (workingId) {
+                                // Working ID is already encoded or in correct format
+                                paperIdForUrl = workingId;
+                            } else {
+                                // Fallback: use workflow.paperId (should be encoded)
+                                paperIdForUrl = workflow.paperId;
+                            }
+                            
+                            const paperData = {
+                                id: paperIdForUrl, // Use encoded ID for URL navigation
+                                title: paper.title || '',
+                                authors: Array.isArray(paper.authors) 
+                                    ? paper.authors.join(', ') 
+                                    : (typeof paper.authors === 'string' ? paper.authors : ''),
+                                journal: paper.journal || '',
+                                publicationYear: paper.publicationYear || paper.year || null,
+                                doi: paper.doi || '',
+                                description: paper.description || paper.abstract || '',
+                                keywords: Array.isArray(paper.keywords) ? paper.keywords : [],
+                                status: workflow.status || null,
+                                priority: null,
+                                isFavorite: false,
+                                last_read_page: workflow.lastPage || 0,
+                                total_pages: paper.totalPages || paper.total_pages || null,
+                                progress: workflow.progress || null,
+                            };
+                            console.log('Recently read: Successfully fetched paper:', paperData.title, 'with ID:', paperData.id);
+                            return paperData;
+                        } catch (error) {
+                            console.error('Recently read: Failed to fetch paper', workflow?.paperId, ':', error);
+                            return null;
+                        }
+                    });
+
+                    const papersWithDetails = (await Promise.all(paperPromises)).filter(Boolean);
+                    console.log('Recently read: Found', papersWithDetails.length, 'papers with details from', activeWorkflows.length, 'workflows');
+
+                    // Apply search filter if provided
+                    let filteredPapers = papersWithDetails;
+                    if (searchQuery) {
+                        const searchLower = searchQuery.toLowerCase();
+                        filteredPapers = filteredPapers.filter((paper: any) =>
+                            paper.title?.toLowerCase().includes(searchLower) ||
+                            paper.authors?.toLowerCase().includes(searchLower) ||
+                            paper.journal?.toLowerCase().includes(searchLower)
+                        );
+                    }
+
+                    // Apply filters
+                    if (filters.author) {
+                        filteredPapers = filteredPapers.filter((paper: any) =>
+                            paper.authors?.toLowerCase().includes(filters.author.toLowerCase())
+                        );
+                    }
+                    if (filters.journal) {
+                        filteredPapers = filteredPapers.filter((paper: any) =>
+                            paper.journal?.toLowerCase().includes(filters.journal.toLowerCase())
+                        );
+                    }
+                    if (filters.yearFrom) {
+                        filteredPapers = filteredPapers.filter((paper: any) =>
+                            paper.publicationYear >= parseInt(filters.yearFrom)
+                        );
+                    }
+                    if (filters.yearTo) {
+                        filteredPapers = filteredPapers.filter((paper: any) =>
+                            paper.publicationYear <= parseInt(filters.yearTo)
+                        );
+                    }
+
+                    // Client-side pagination
+                    const startIndex = (page - 1) * pageSize;
+                    const endIndex = startIndex + pageSize;
+                    const paginatedPapers = filteredPapers.slice(startIndex, endIndex);
+
+                    return {
+                        status: 200,
+                        data: {
+                            papers: paginatedPapers,
+                            totalElements: filteredPapers.length,
+                            totalPages: Math.max(1, Math.ceil(filteredPapers.length / pageSize)),
+                        },
+                    };
+                } catch (error) {
+                    console.error('Error in recently_read tab:', error);
+                    return {
+                        status: 200,
+                        data: {
+                            papers: [],
+                            totalElements: 0,
+                            totalPages: 1,
+                        },
+                    };
+                }
             } else {
                 // Use existing API for 'all' tab
                 return await getPaginatedPapers(page, pageSize, searchQuery, filters, user?.id);
@@ -116,7 +363,9 @@ const Dashboard = () => {
         queryKey: ['workflows', user?.id],
         queryFn: async () => {
             if (!user?.id) throw new Error('User not logged in');
-            return await getWorkflowsByUser(user.id);
+            // Encode userId (base64) as required by backend API
+            const encodedUserId = btoa(user.id);
+            return await getWorkflowsByUser(encodedUserId);
         },
         enabled: !!user,
     });
@@ -131,8 +380,15 @@ const Dashboard = () => {
         return map;
     }, [workflows]);
 
-    // Enhance papers with workflow data
+    // Enhance papers with workflow data (only for 'all' and 'favourites' tabs)
+    // For 'recently_read' tab, papers already have progress data from backend
     const papersWithProgress = useMemo(() => {
+        // For recently_read tab, papers already have progress data from backend query
+        if (activeTab === 'recently_read') {
+            return papers;
+        }
+
+        // For other tabs, enhance papers with workflow data
         let processedPapers = papers.map(paper => {
             // Helper function to decode base64 encoded ID
             const decodeId = (encodedId: string): string => {
@@ -270,11 +526,15 @@ const Dashboard = () => {
 
                         {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={(v) => {
-                            setActiveTab(v as 'all' | 'favourites');
+                            setActiveTab(v as 'all' | 'recently_read' | 'favourites');
                             setPage(1); // Reset to first page when switching tabs
                         }}>
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="all">All Papers</TabsTrigger>
+                                <TabsTrigger value="recently_read">
+                                    <Clock className="h-4 w-4 mr-2" />
+                                    Recently Read
+                                </TabsTrigger>
                                 <TabsTrigger value="favourites">
                                     <Star className="h-4 w-4 mr-2" />
                                     Favourites
@@ -300,18 +560,39 @@ const Dashboard = () => {
                             </div>
                         ) : papers && papers.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {papersWithProgress.map((paper) => (
-                                    <Link key={paper.id} to={`/paper/${paper.id}`}>
-                                        <PaperCard {...paper} />
-                                    </Link>
-                                ))}
+                                {papersWithProgress.map((paper) => {
+                                    // Use RecentlyReadCard for recently_read tab, otherwise use PaperCard
+                                    if (activeTab === 'recently_read') {
+                                        return (
+                                            <RecentlyReadCard
+                                                key={paper.id}
+                                                id={paper.id}
+                                                title={paper.title}
+                                                authors={paper.authors}
+                                                journal={paper.journal}
+                                                publicationYear={paper.publicationYear}
+                                                last_read_page={paper.last_read_page}
+                                                total_pages={paper.total_pages}
+                                                progress={paper.progress}
+                                            />
+                                        );
+                                    } else {
+                                        return (
+                                            <Link key={paper.id} to={`/paper/${paper.id}`}>
+                                                <PaperCard {...paper} />
+                                            </Link>
+                                        );
+                                    }
+                                })}
                             </div>
                         ) : (
                             <div className="text-center py-12">
                                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                                 <h3 className="text-lg font-semibold mb-2">
                                     {activeTab === 'favourites' 
-                                        ? 'No favourite papers yet'
+                                        ? 'No favourite papers yet' 
+                                        : activeTab === 'recently_read'
+                                        ? 'No recently read papers'
                                         : 'No papers yet'}
                                 </h3>
                                 <p className="text-muted-foreground mb-4">
@@ -319,6 +600,8 @@ const Dashboard = () => {
                                         ? 'No papers found matching your search' 
                                         : activeTab === 'favourites'
                                         ? 'Mark papers as favourites to see them here'
+                                        : activeTab === 'recently_read'
+                                        ? 'Papers you\'ve read will appear here'
                                         : 'Import your first paper to get started'}
                                 </p>
                                 {!searchQuery && activeTab === 'all' && (

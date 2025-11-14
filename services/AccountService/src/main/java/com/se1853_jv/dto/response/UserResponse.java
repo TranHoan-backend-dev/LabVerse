@@ -10,6 +10,7 @@ public class UserResponse {
     private String fullName;
     private String avatarUrl;
     private String role;
+    private Boolean isActive;
     private LocalDate createdDate;
     private LocalDate updatedDate;
 
@@ -24,6 +25,19 @@ public class UserResponse {
         this.fullName = fullName;
         this.avatarUrl = avatarUrl;
         this.role = role;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
+    }
+
+    public UserResponse(String id, String email, String username, String fullName, 
+                       String avatarUrl, String role, Boolean isActive, LocalDate createdDate, LocalDate updatedDate) {
+        this.id = id;
+        this.email = email;
+        this.username = username;
+        this.fullName = fullName;
+        this.avatarUrl = avatarUrl;
+        this.role = role;
+        this.isActive = isActive;
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
     }
@@ -90,6 +104,14 @@ public class UserResponse {
 
     public void setUpdatedDate(LocalDate updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 }
 

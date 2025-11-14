@@ -30,13 +30,19 @@ export const getPaperDetails = async (id: string, userId?: string) => {
         headers['X-User-Id'] = encodeUserId(userId);
     }
     
-    const response = await fetch(`${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/details?id=${id}`, {
+    const response = await fetch(`${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/details?id=${encodeURIComponent(id)}`, {
         method: METHOD.GET.toString(),
         headers
-    })
-    const data = await response.json()
-    console.log(data)
-    return data
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to get paper details' }));
+        throw new Error(errorData.message || `Failed to get paper details: ${response.statusText} (${response.status})`);
+    }
+    
+    const data = await response.json();
+    console.log('getPaperDetails response:', data);
+    return data;
 }
 
 export const getReferencesOfPaper = async (id: string) => {

@@ -10,12 +10,12 @@ export interface AdminUser {
     fullName: string;
     avatarUrl: string | null;
     role: string;
+    isActive: boolean;
     createdDate: string;
     updatedDate: string;
 }
 
 export interface AdminUserDetails extends AdminUser {
-    isActive: boolean;
     paperCount: number;
     teamCount: number;
     collectionCount: number;

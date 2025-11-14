@@ -71,6 +71,8 @@ const UserManagement = () => {
             queryClient.invalidateQueries({ queryKey: ["admin-users"] });
             queryClient.invalidateQueries({ queryKey: ["admin-statistics"] });
             setIsDialogOpen(false);
+            setSelectedUser(null);
+            setAction(null);
         },
         onError: (error: Error) => {
             toast.error(error.message || "Failed to activate user");
@@ -84,6 +86,8 @@ const UserManagement = () => {
             queryClient.invalidateQueries({ queryKey: ["admin-users"] });
             queryClient.invalidateQueries({ queryKey: ["admin-statistics"] });
             setIsDialogOpen(false);
+            setSelectedUser(null);
+            setAction(null);
         },
         onError: (error: Error) => {
             toast.error(error.message || "Failed to deactivate user");
@@ -244,7 +248,12 @@ const UserManagement = () => {
                                             <Badge variant="outline">{user.role}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary">Active</Badge>
+                                            <Badge 
+                                                variant={user.isActive ? "default" : "secondary"}
+                                                className={user.isActive ? "bg-green-500 hover:bg-green-600" : "bg-gray-500 hover:bg-gray-600"}
+                                            >
+                                                {user.isActive ? "Active" : "Inactive"}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             {new Date(user.createdDate).toLocaleDateString()}
@@ -257,13 +266,23 @@ const UserManagement = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleAction(user, "deactivate")}
-                                                        disabled={user.id === currentUser?.id}
-                                                    >
-                                                        <UserX className="h-4 w-4 mr-2" />
-                                                        Deactivate
-                                                    </DropdownMenuItem>
+                                                    {user.isActive ? (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleAction(user, "deactivate")}
+                                                            disabled={user.id === currentUser?.id}
+                                                        >
+                                                            <UserX className="h-4 w-4 mr-2" />
+                                                            Deactivate
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleAction(user, "activate")}
+                                                            disabled={user.id === currentUser?.id}
+                                                        >
+                                                            <UserX className="h-4 w-4 mr-2" />
+                                                            Activate
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     <DropdownMenuItem
                                                         onClick={() => handleAction(user, "delete")}
                                                         disabled={user.id === currentUser?.id}
