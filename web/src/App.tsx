@@ -15,7 +15,9 @@ import Profile from "./pages/profile/Profile";
 import Discover from "./pages/Discover";
 import ReadingLists from "./pages/ReadingLists";
 import Teams from "./pages/Teams";
+import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./components/NotFound";
+
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,7 @@ const App = () => (
             <Route path="/teams" element={<ProtectedRoute><Teams /></ProtectedRoute>} />
             <Route path="/teams/:id" element={<ProtectedRoute><div>Team Details (Coming Soon)</div></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

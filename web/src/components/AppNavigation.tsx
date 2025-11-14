@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, BookMarked, Compass, UserPlus } from "lucide-react";
+import { BookOpen, Users, BookMarked, Compass, UserPlus, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AppNavigation = () => {
     const location = useLocation();
+    const { user } = useAuth();
 
     const navItems = [
         { path: "/dashboard", label: "Library", icon: BookOpen },
@@ -12,6 +14,11 @@ const AppNavigation = () => {
         { path: "/teams", label: "Teams", icon: UserPlus },
         { path: "/discover", label: "Discover", icon: Compass },
     ];
+
+    // Add Admin link if user is admin
+    if (user?.role === "ADMIN") {
+        navItems.push({ path: "/admin", label: "Admin", icon: Shield });
+    }
 
     const isActive = (path: string) => {
         if (path === "/dashboard") {
