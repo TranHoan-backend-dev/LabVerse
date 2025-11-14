@@ -28,14 +28,14 @@ const TeamsSearchFilter: React.FC<Props> = ({
                 />
             </div>
             <Select
-                value={privacyFilter}
-                onValueChange={(value: 'PUBLIC' | 'PRIVATE' | '') => onPrivacyFilterChange(value)}
+                value={privacyFilter === '' ? 'ALL' : privacyFilter}
+                onValueChange={(value: string) => onPrivacyFilterChange(value === 'ALL' ? '' : (value as 'PUBLIC' | 'PRIVATE'))}
             >
                 <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="All teams"/>
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">All teams</SelectItem>
+                    <SelectItem value="ALL">All teams</SelectItem>
                     <SelectItem value="PUBLIC">Public</SelectItem>
                     <SelectItem value="PRIVATE">Private</SelectItem>
                 </SelectContent>

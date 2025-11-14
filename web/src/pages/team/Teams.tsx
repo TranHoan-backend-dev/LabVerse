@@ -7,17 +7,17 @@ import {Plus, Users} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import {
     getTeams,
     createTeam,
     deleteTeam,
-    type TeamResponse
 } from "@/services/team.service";
 import CreateTeamDialog from "./components/CreateTeamDialog";
 import TeamsSearchFilter from "./components/TeamsSearchFilter";
 import TeamsGrid from "./components/TeamsGrid";
 import PaginationControls from "./components/PaginationControls";
+import { TeamResponse } from "@/types/team.types";
 
 const Teams = () => {
     const {user} = useAuth();
@@ -48,7 +48,9 @@ const Teams = () => {
         },
     });
 
-    const teams = teamsData?.content || [];
+    // teams can be null when the API returns no content field or the resource is missing
+    // keep null distinct from empty array so we can show a "data not found" message
+    const teams: TeamResponse[] | null = teamsData?.content ?? null;
     const totalPages = teamsData?.totalPages || 0;
 
     const createMutation = useMutation({
@@ -177,6 +179,14 @@ const Teams = () => {
                             <div className="flex justify-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                             </div>
+                        ) : teams === null ? (
+                            <Card className="text-center py-12">
+                                <CardContent>
+                                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
+                                    <h3 className="text-lg font-semibold mb-2">Data not found</h3>
+                                    <p className="text-muted-foreground mb-4">The requested teams data does not exist.</p>
+                                </CardContent>
+                            </Card>
                         ) : teams.length > 0 ? (
                             <>
                                 <TeamsGrid

@@ -1,23 +1,21 @@
 import React from 'react';
 import {Card, CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {Plus, Users} from 'lucide-react';
-import TeamCard from './TeamCard';
-import { TeamResponse } from '@/types/team.types';
+import {Plus, BookMarked} from 'lucide-react';
+import ReadingListCard from './ReadingListCard';
+import type { ReadingListResponse } from '@/services/reading-list.service';
 
 type Props = {
-    teams: TeamResponse[];
+    readingLists: ReadingListResponse[];
     isLoading: boolean;
-    onDelete: (team: TeamResponse) => void;
-    onClick: (team: TeamResponse) => void;
+    onDelete: (list: ReadingListResponse) => void;
     onCreateClick?: () => void;
 };
 
-const TeamsGrid: React.FC<Props> = ({
-    teams,
+const ReadingListsGrid: React.FC<Props> = ({
+    readingLists,
     isLoading,
     onDelete,
-    onClick,
     onCreateClick,
 }) => {
     if (isLoading) {
@@ -28,19 +26,19 @@ const TeamsGrid: React.FC<Props> = ({
         );
     }
 
-    if (teams.length === 0) {
+    if (readingLists.length === 0) {
         return (
             <Card className="text-center py-12">
                 <CardContent>
-                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
-                    <h3 className="text-lg font-semibold mb-2">No teams found</h3>
+                    <BookMarked className="h-12 w-12 mx-auto mb-4 text-muted-foreground"/>
+                    <h3 className="text-lg font-semibold mb-2">No reading lists yet</h3>
                     <p className="text-muted-foreground mb-4">
-                        Try adjusting your search or filters
+                        Create your first reading list to organize papers by theme or project
                     </p>
                     {onCreateClick && (
                         <Button onClick={onCreateClick}>
                             <Plus className="h-4 w-4 mr-2"/>
-                            Create Team
+                            Create List
                         </Button>
                     )}
                 </CardContent>
@@ -50,16 +48,15 @@ const TeamsGrid: React.FC<Props> = ({
 
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {teams.map((team) => (
-                <TeamCard
-                    key={team.id}
-                    team={team}
+            {readingLists.map((list) => (
+                <ReadingListCard
+                    key={list.id}
+                    list={list}
                     onDelete={onDelete}
-                    onClick={onClick}
                 />
             ))}
         </div>
     );
 };
 
-export default TeamsGrid;
+export default ReadingListsGrid;

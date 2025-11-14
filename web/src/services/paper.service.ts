@@ -1,5 +1,5 @@
 import { BASE_API_URL, METHOD, PAPER_SERVICE_PREDICATE } from "@/type/constant.ts";
-import { CreatePaperRequest } from "@/types/paper.type";
+import { CreatePaperRequest } from "@/types/paper.types";
 
 const endpoints = ["papers", "references", "tags"] as const;
 export type Endpoints = (typeof endpoints)[number];

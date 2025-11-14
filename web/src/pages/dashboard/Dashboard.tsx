@@ -8,12 +8,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { getPaginatedPapers, importPaper, getFavoritePapers } from "@/services/paper.service.ts";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
-import { CreatePaperRequest } from "@/types/paper.type";
+import { CreatePaperRequest } from "@/types/paper.types";
 import { getWorkflowsByUser } from "@/services/progress.service";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -162,7 +164,7 @@ const Dashboard = () => {
                     workflow = workflowMap.get(encodedPaperId);
                 }
             }
-            
+
             // Use workflow data if available, otherwise use paper data
             let last_read_page = paper.last_read_page;
             let total_pages = paper.total_pages || null;
@@ -181,7 +183,6 @@ const Dashboard = () => {
                     total_pages = null; // Keep null if we can't calculate accurately
                 }
             }
-
             return {
                 ...paper,
                 last_read_page: last_read_page,
@@ -310,7 +311,7 @@ const Dashboard = () => {
                                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                                 <h3 className="text-lg font-semibold mb-2">
                                     {activeTab === 'favourites' 
-                                        ? 'No favourite papers yet' 
+                                        ? 'No favourite papers yet'
                                         : 'No papers yet'}
                                 </h3>
                                 <p className="text-muted-foreground mb-4">
