@@ -10,7 +10,7 @@ import {Plus, BookMarked, Trash2, MoreVertical} from "lucide-react";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import {
     createReadingList,
     getReadingListsByUser,

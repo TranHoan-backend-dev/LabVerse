@@ -5,7 +5,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import {
     createCollection,
     getMyCollections,

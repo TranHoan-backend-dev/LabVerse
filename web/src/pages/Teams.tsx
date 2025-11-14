@@ -12,7 +12,7 @@ import {Plus, Users, Edit, Trash2, MoreVertical, Search, Globe, Lock} from "luci
 import {toast} from "sonner";
 import {useAuth} from "@/contexts/AuthContext";
 import {Helmet} from "react-helmet-async";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import {
     getTeams,
     createTeam,

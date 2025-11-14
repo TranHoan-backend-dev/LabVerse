@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { getPaginatedPapers, importPaper, getFavoritePapers } from "@/services/paper.service.ts";
-import Header from "@/pages/Header.tsx";
+import Header from "@/components/Header";
 import DashboardHeader from "./components/DashboardHeader";
 import SearchAndFilter from "./components/SearchAndFilter";
 import { CreatePaperRequest } from "@/types/paper.type";

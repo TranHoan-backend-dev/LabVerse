@@ -1,14 +1,14 @@
 import React from 'react';
-import {Link, useLocation} from "react-router-dom";
-import {BookOpen, Users, BookMarked, Compass} from "lucide-react";
-import {Button} from "@/components/ui/button.tsx";
-import {useAuth} from "@/contexts/AuthContext.tsx";
+import { Link, useLocation } from "react-router-dom";
+import { BookOpen, Users, BookMarked, Compass } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import AppNavigation from "@/components/AppNavigation.tsx";
 import NotificationBell from "@/components/NotificationBell.tsx";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const Header = () => {
-    const {signOut} = useAuth();
+    const { signOut } = useAuth();
 
     return (
         <>
@@ -16,8 +16,8 @@ const Header = () => {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         <Link to="/dashboard"
-                              className="flex items-center gap-2 transition-smooth hover:opacity-80">
-                            <BookOpen className="h-6 w-6 text-primary"/>
+                            className="flex items-center gap-2 transition-smooth hover:opacity-80">
+                            <BookOpen className="h-6 w-6 text-primary" />
                             <span className="text-xl font-bold text-gradient">LabVerse</span>
                         </Link>
 
