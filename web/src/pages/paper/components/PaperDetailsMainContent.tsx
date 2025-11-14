@@ -15,10 +15,10 @@ interface TabContentsProps {
         status: string;
         priority: string;
         id: string;
-        is_favorite: boolean;
+        isFavorite: boolean;
     };
     toggleFavoriteMutation: {
-        mutate: (is_favorite: boolean) => void;
+        mutate: (isFavorite: boolean) => void;
     };
     deleteMutation: {
         mutate: () => void;

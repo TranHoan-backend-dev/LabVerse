@@ -92,7 +92,6 @@ public class PaperDetailsFragment extends Fragment {
                 });
             } else if (apiStatus.get()) {
                 setupToolbar();
-                setupTabs();
                 displayPaperData(pr.get());
             } else if (!apiStatus.get()) {
                 hidingView(view);
@@ -105,6 +104,7 @@ public class PaperDetailsFragment extends Fragment {
             LinearLayout parent = view.findViewById(R.id.contentLayout);
             parent.addView(createNoDataTitle(view));
         }
+        setupTabs();
     }
 
     private void bindingView(@NonNull View view) {
@@ -191,6 +191,7 @@ public class PaperDetailsFragment extends Fragment {
             @Override
             public void onSuccess(PaperResearch data) {
                 // trình bày nội dung cho mô tả paper
+                Log.d("hahsd", data.toString());
                 bindingData(data);
 
                 // ném dữ liệu cho tab overview

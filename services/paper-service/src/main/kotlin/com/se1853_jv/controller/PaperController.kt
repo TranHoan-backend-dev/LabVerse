@@ -31,15 +31,19 @@ class PaperController(
     @Autowired(required = false) private val s3Service: S3Service?
 ) {
     @GetMapping("/details")
-    fun getDetails(@RequestParam("id") data: String): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to getDetails controller. id: ${encoder.decode(data)}" }
+    fun getDetails(
+        @RequestParam("id") data: String,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getDetails controller. id: ${encoder.decode(data)}, userId: $userId" }
         val id = encoder.decode(data)
+        val decodedUserId = userId?.let { encoder.decode(it) }
 
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get paper details successfully",
-                paperService.getPaperDetails(id),
+                paperService.getPaperDetails(id, decodedUserId),
                 LocalDateTime.now()
             )
         )
@@ -215,8 +219,9 @@ class PaperController(
         @RequestParam(value = "journal", required = false) journal: String?,
         @RequestParam(value = "from", required = false) publicationYearFrom: Int?,
         @RequestParam(value = "to", required = false) publicationYearTo: Int?,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
     ): ResponseEntity<WrapperApiResponse> {
-        logger.info { "Request to getAllPapers with search: $searchQuery" }
+        logger.info { "Request to getAllPapers with search: $searchQuery, userId: $userId" }
 
         if ((publicationYearFrom != null && publicationYearFrom > LocalDate.now().year) ||
             (publicationYearTo != null && publicationYearTo < 1000)
@@ -231,13 +236,15 @@ class PaperController(
             )
         }
 
+        val decodedUserId = userId?.let { encoder.decode(it) }
+
         return ResponseEntity.ok(
             WrapperApiResponse(
                 HttpStatus.OK.value(),
                 "Get all papers successfully",
                 paperService.getAllPapers(
                     searchQuery, index, pageSize,
-                    author, journal, publicationYearFrom, publicationYearTo
+                    author, journal, publicationYearFrom, publicationYearTo, decodedUserId
                 ),
                 LocalDateTime.now()
             )
@@ -271,6 +278,135 @@ class PaperController(
                 HttpStatus.OK.value(),
                 "Delete paper successfully",
                 null,
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    // Favorite endpoints
+    @PostMapping("/{paperId}/favorite")
+    fun addFavorite(
+        @PathVariable("paperId") paperId: String,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to addFavorite, encoded paperId: $paperId, userId: $userId" }
+        
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "User ID is required",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+        
+        val decodedPaperId = encoder.decode(paperId)
+        val decodedUserId = encoder.decode(userId)
+        
+        paperService.addFavorite(decodedPaperId, decodedUserId)
+        
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Paper added to favorites successfully",
+                null,
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @DeleteMapping("/{paperId}/favorite")
+    fun removeFavorite(
+        @PathVariable("paperId") paperId: String,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to removeFavorite, encoded paperId: $paperId, userId: $userId" }
+        
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "User ID is required",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+        
+        val decodedPaperId = encoder.decode(paperId)
+        val decodedUserId = encoder.decode(userId)
+        
+        paperService.removeFavorite(decodedPaperId, decodedUserId)
+        
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Paper removed from favorites successfully",
+                null,
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @GetMapping("/favorites")
+    fun getFavoritePapers(
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to getFavoritePapers, userId: $userId" }
+        
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "User ID is required",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+        
+        val decodedUserId = encoder.decode(userId)
+        val favorites = paperService.getFavoritePapersByUserId(decodedUserId)
+        
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Get favorite papers successfully",
+                favorites,
+                LocalDateTime.now()
+            )
+        )
+    }
+
+    @GetMapping("/{paperId}/favorite/check")
+    fun checkFavorite(
+        @PathVariable("paperId") paperId: String,
+        @RequestHeader(value = "X-User-Id", required = false) userId: String?
+    ): ResponseEntity<WrapperApiResponse> {
+        logger.info { "Request to checkFavorite, encoded paperId: $paperId, userId: $userId" }
+        
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(
+                WrapperApiResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "User ID is required",
+                    null,
+                    LocalDateTime.now()
+                )
+            )
+        }
+        
+        val decodedPaperId = encoder.decode(paperId)
+        val decodedUserId = encoder.decode(userId)
+        val isFavorite = paperService.isFavorite(decodedPaperId, decodedUserId)
+        
+        return ResponseEntity.ok(
+            WrapperApiResponse(
+                HttpStatus.OK.value(),
+                "Check favorite status successfully",
+                mapOf("isFavorite" to isFavorite),
                 LocalDateTime.now()
             )
         )

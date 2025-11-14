@@ -16,9 +16,23 @@ export const getCitationsByPaperId = async (id: string) => {
 // </editor-fold>
 
 // <editor-fold> desc="paper"
-export const getPaperDetails = async (id: string) => {
+// Helper function to encode userId (base64)
+const encodeUserId = (userId: string): string => {
+    return btoa(userId);
+}
+
+export const getPaperDetails = async (id: string, userId?: string) => {
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+    
+    if (userId) {
+        headers['X-User-Id'] = encodeUserId(userId);
+    }
+    
     const response = await fetch(`${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/details?id=${id}`, {
-        method: METHOD.GET.toString()
+        method: METHOD.GET.toString(),
+        headers
     })
     const data = await response.json()
     console.log(data)
@@ -43,7 +57,9 @@ export const getPaginatedPapers = async (
         journal: string,
         yearFrom: string,
         yearTo: string,
-    }) => {
+    },
+    userId?: string
+) => {
     try {
         const pageIndex = Math.max(0, currentPage - 1);
 
@@ -57,12 +73,18 @@ export const getPaginatedPapers = async (
             ...(filter?.yearTo ? { to: filter.yearTo } : {}),
         });
 
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        
+        if (userId) {
+            headers['X-User-Id'] = encodeUserId(userId);
+        }
+
         const url = `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/papers/all?${params.toString()}`;
         const response = await fetch(url, {
             method: METHOD.GET.toString(),
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers
         });
 
         if (!response.ok) {
@@ -116,7 +138,7 @@ export const importPaper = async (request: CreatePaperRequest) => {
         const response = await fetch(`${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/pdf/upload-with-file`, {
             method: METHOD.POST.toString(),
             headers: {
-                'X-User-Id': request.userId,
+                'X-User-Id': encodeUserId(request.userId),
             },
             body: formData,
         });
@@ -125,5 +147,122 @@ export const importPaper = async (request: CreatePaperRequest) => {
         return data;
     } catch (error) {
         console.error("Import paper failed:", error);
+    }
+}
+
+// Favorite API functions
+export const addFavorite = async (paperId: string, userId: string) => {
+    try {
+        const response = await fetch(
+            `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/${paperId}/favorite`,
+            {
+                method: METHOD.POST.toString(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': encodeUserId(userId),
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to add favorite' }));
+            throw new Error(errorData.message || `Failed to add favorite: ${response.statusText} (${response.status})`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error: any) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error(`Cannot connect to Paper Service. Please make sure the service is running.`);
+        }
+        throw error;
+    }
+}
+
+export const removeFavorite = async (paperId: string, userId: string) => {
+    try {
+        const response = await fetch(
+            `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/${paperId}/favorite`,
+            {
+                method: METHOD.DELETE.toString(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': encodeUserId(userId),
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to remove favorite' }));
+            throw new Error(errorData.message || `Failed to remove favorite: ${response.statusText} (${response.status})`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error: any) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error(`Cannot connect to Paper Service. Please make sure the service is running.`);
+        }
+        throw error;
+    }
+}
+
+export const getFavoritePapers = async (userId: string) => {
+    try {
+        const response = await fetch(
+            `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/favorites`,
+            {
+                method: METHOD.GET.toString(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': encodeUserId(userId),
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to fetch favorites' }));
+            throw new Error(errorData.message || `Failed to fetch favorites: ${response.statusText} (${response.status})`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error: any) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error(`Cannot connect to Paper Service. Please make sure the service is running.`);
+        }
+        throw error;
+    }
+}
+
+export const checkFavorite = async (paperId: string, userId: string): Promise<boolean> => {
+    try {
+        const response = await fetch(
+            `${BASE_API_URL}/${PAPER_SERVICE_PREDICATE}/${endpoints[0]}/${paperId}/favorite/check`,
+            {
+                method: METHOD.GET.toString(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Id': encodeUserId(userId),
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to check favorite' }));
+            throw new Error(errorData.message || `Failed to check favorite: ${response.statusText} (${response.status})`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data?.data?.isFavorite || false;
+    } catch (error: any) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error(`Cannot connect to Paper Service. Please make sure the service is running.`);
+        }
+        throw error;
     }
 }

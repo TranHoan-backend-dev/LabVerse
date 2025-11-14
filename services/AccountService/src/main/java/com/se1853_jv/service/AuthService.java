@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.se1853_jv.dto.request.GoogleLoginRequest;
 import com.se1853_jv.dto.request.LoginRequest;
 import com.se1853_jv.dto.request.RegisterRequest;
+import com.se1853_jv.dto.request.VerifyOtpRequest;
 import com.se1853_jv.dto.response.AuthResponse;
 import com.se1853_jv.exception.BadRequestException;
 import com.se1853_jv.exception.ResourceNotFoundException;
@@ -36,6 +37,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final GoogleOAuth2Service googleOAuth2Service;
     private final EmailService emailService;
+    private final OtpService otpService;
 
     @Autowired
     public AuthService(AuthenticationManager authenticationManager,
@@ -44,7 +46,8 @@ public class AuthService {
                       PasswordEncoder passwordEncoder,
                       JwtTokenProvider tokenProvider,
                       GoogleOAuth2Service googleOAuth2Service,
-                      EmailService emailService) {
+                      EmailService emailService,
+                      OtpService otpService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -52,10 +55,11 @@ public class AuthService {
         this.tokenProvider = tokenProvider;
         this.googleOAuth2Service = googleOAuth2Service;
         this.emailService = emailService;
+        this.otpService = otpService;
     }
 
     @Transactional
-    public AuthResponse register(RegisterRequest registerRequest) {
+    public void register(RegisterRequest registerRequest) {
         // Check if email already exists
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new BadRequestException("Email address already in use");
@@ -78,24 +82,56 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + registerRequest.getRoleName()));
         user.setRole(role);
 
+        // Generate and set OTP
+        String otpCode = otpService.generateOtp();
+        user.setOtpCode(otpCode);
+        user.setOtpExpiresAt(otpService.calculateExpiryTime());
+        user.setEmailVerified(false);
+
         User savedUser = userRepository.save(user);
+
+        // Send OTP email
+        try {
+            emailService.sendOtpEmail(savedUser.getEmail(), savedUser.getFullName(), otpCode);
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to send verification email: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public AuthResponse verifyOtp(VerifyOtpRequest verifyOtpRequest) {
+        // Find user by email
+        User user = userRepository.findByEmail(verifyOtpRequest.getEmail())
+                .orElseThrow(() -> new BadRequestException("User not found with email: " + verifyOtpRequest.getEmail()));
+
+        // Verify OTP
+        if (!otpService.verifyOtp(user.getOtpCode(), verifyOtpRequest.getOtpCode(), user.getOtpExpiresAt())) {
+            throw new BadRequestException("Invalid or expired OTP code");
+        }
+
+        // Mark email as verified and clear OTP
+        user.setEmailVerified(true);
+        user.setOtpCode(null);
+        user.setOtpExpiresAt(null);
+        user.setIsActive(true);
+        userRepository.save(user);
 
         // Generate JWT token
         String token = tokenProvider.generateTokenFromUserId(
-            savedUser.getId(),
-            savedUser.getEmail(),
-            savedUser.getUsername(),
-            savedUser.getRole().getName()
+            user.getId(),
+            user.getEmail(),
+            user.getUsername(),
+            user.getRole().getName()
         );
 
         return new AuthResponse(
             token,
-            IdEncoder.encode(savedUser.getId()),
-            savedUser.getEmail(),
-            savedUser.getUsername(),
-            savedUser.getFullName(),
-            savedUser.getAvatarUrl(),
-            savedUser.getRole().getName()
+            IdEncoder.encode(user.getId()),
+            user.getEmail(),
+            user.getUsername(),
+            user.getFullName(),
+            user.getAvatarUrl(),
+            user.getRole().getName()
         );
     }
 
@@ -114,6 +150,11 @@ public class AuthService {
 
         User user = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Check if email is verified
+        if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+            throw new BadRequestException("Please verify your email before logging in. Check your inbox for the verification code.");
+        }
 
         return new AuthResponse(
             token,
@@ -154,6 +195,8 @@ public class AuthService {
                 user.setFullName(name);
                 user.setUsername(email.split("@")[0]); // Use email prefix as username
                 user.setAvatarUrl(pictureUrl);
+                // Google users are automatically verified
+                user.setEmailVerified(true);
 
                 // Set default role as RESEARCHER
                 Role role = roleRepository.findByName("RESEARCHER")
@@ -168,6 +211,10 @@ public class AuthService {
                 }
                 if (user.getAvatarUrl() == null || !user.getAvatarUrl().equals(pictureUrl)) {
                     user.setAvatarUrl(pictureUrl);
+                }
+                // Mark as verified if not already
+                if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+                    user.setEmailVerified(true);
                 }
                 user = userRepository.save(user);
             }

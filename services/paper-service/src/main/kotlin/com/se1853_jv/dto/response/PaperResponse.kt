@@ -10,4 +10,5 @@ data class PaperResponse(
     val publicationYear: Int,
     val doi: String,
     val description: String?,
+    val isFavorite: Boolean = false,
 )
