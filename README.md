@@ -24,11 +24,11 @@ This project is developed as part of the **Mobile Application Development course
 
 ## 🛠️ Technologies Used
 
-- **Mobile**: Android (Java + Kotlin)
-- **Frontend**: Next.js (Typescript, Tailwindcss)
+- **Mobile**: Android (Java)
+- **Frontend**: React Vite (Typescript, Tailwindcss)
 - **Backend**: Microservices (Java + Kotlin)  
 - **Database**: Room (offline) + backend APIs  
-- **Cloud & Messaging**: Firebase (Authentication, Storage, FCM)  
+- **Cloud & Messaging**: Firebase (Authentication, Storage, FCM), Cloudinary, AWS S3  
 
 ---
 
@@ -49,7 +49,7 @@ This project is developed as part of the **Mobile Application Development course
 ## ⏰ Timeline
 
 - **Start Date**: September 27th, 2025  
-- **End Date**: December 1st, 2025  
+- **End Date**: November 13th, 2025  
 
 ---
 
